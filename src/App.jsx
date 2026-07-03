@@ -326,7 +326,7 @@ export default function AutoFlowLanding() {
     if (key === "email") processed = value.toLowerCase().trim();
     if (key === "whatsapp") processed = value.replace(/[^0-9+\-\s()]/g, "");
     if (key === "name" || key === "business") processed = value.replace(/[^a-zA-Z\s\-'.]/g, "");
-    if (key === "message") processed = sanitize(value).slice(0, 500);
+    if (key === "message") processed = value.slice(0, 500);
     setForm(prev => ({ ...prev, [key]: processed }));
     if (errors[key]) setErrors(prev => ({ ...prev, [key]: null }));
   };
