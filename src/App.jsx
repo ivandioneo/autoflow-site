@@ -301,15 +301,8 @@ export default function AutoFlowLanding() {
     return () => window.removeEventListener("scroll", h);
   }, []);
 
-  const handleSubmit = async () => {
-    if (form.name && form.email) {
-      await fetch('https://automate.ivanit.work/api/v1/webhooks/wY9q4h6U6Qhbnzfiyk5c5', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
-      });
-      setSubmitted(true);
-    }
+  const handleSubmit = () => {
+    if (form.name && form.email) setSubmitted(true);
   };
 
   return (
