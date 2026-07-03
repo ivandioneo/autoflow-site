@@ -292,7 +292,9 @@ function PricingCard({ tier, price, desc, features, highlight, badge }) {
 // ─── Main Page ───
 export default function AutoFlowLanding() {
   const [form, setForm] = useState({ name: "", business: "", email: "", whatsapp: "", type: "", message: "" });
+  const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -301,8 +303,72 @@ export default function AutoFlowLanding() {
     return () => window.removeEventListener("scroll", h);
   }, []);
 
-  const handleSubmit = () => {
-    if (form.name && form.email) setSubmitted(true);
+  // Sanitize input — strip HTML/script tags
+  const sanitize = (str) => str.replace(/<[^>]*>/g, "").replace(/[<>"'`]/g, "").trim();
+
+  // Validate email format
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  // Validate WhatsApp — digits, spaces, +, -, min 7 digits
+  const isValidWhatsApp = (num) => {
+    const digits = num.replace(/[\s\-\+\(\)]/g, "");
+    return /^\d{7,15}$/.test(digits);
+  };
+
+  // Validate name/business — letters, spaces, basic punctuation, 2-50 chars
+  const isValidName = (name) => /^[a-zA-Z\s\-'.]{2,50}$/.test(name);
+
+  // Rate limiting — prevent spam submissions
+  const lastSubmitRef = useRef(0);
+
+  const handleInputChange = (key, value) => {
+    let processed = value;
+    if (key === "email") processed = value.toLowerCase().trim();
+    if (key === "whatsapp") processed = value.replace(/[^0-9+\-\s()]/g, "");
+    if (key === "name" || key === "business") processed = value.replace(/[^a-zA-Z\s\-'.]/g, "");
+    if (key === "message") processed = sanitize(value).slice(0, 500);
+    setForm(prev => ({ ...prev, [key]: processed }));
+    if (errors[key]) setErrors(prev => ({ ...prev, [key]: null }));
+  };
+
+  const validate = () => {
+    const e = {};
+    if (!form.name || !isValidName(form.name)) e.name = "Enter a valid name (letters only, 2-50 chars)";
+    if (!form.business || form.business.trim().length < 2) e.business = "Enter a business name";
+    if (!form.email || !isValidEmail(form.email)) e.email = "Enter a valid email address";
+    if (!form.whatsapp || !isValidWhatsApp(form.whatsapp)) e.whatsapp = "Enter a valid phone number (7-15 digits)";
+    if (!form.type) e.type = "Select a business type";
+    if (form.message && form.message.length > 500) e.message = "Message too long (max 500 characters)";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const handleSubmit = async () => {
+    // Rate limit — 10 second cooldown
+    const now = Date.now();
+    if (now - lastSubmitRef.current < 10000) return;
+    if (!validate()) return;
+    setSubmitting(true);
+    lastSubmitRef.current = now;
+    try {
+      const sanitizedForm = {
+        name: sanitize(form.name),
+        business: sanitize(form.business),
+        email: form.email.toLowerCase().trim(),
+        whatsapp: form.whatsapp.replace(/[^0-9+\-\s()]/g, ""),
+        type: form.type,
+        message: sanitize(form.message).slice(0, 500),
+      };
+      await fetch('https://automate.ivanit.work/api/v1/webhooks/wY9q4h6U6Qhbnzfiyk5c5', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sanitizedForm)
+      });
+      setSubmitted(true);
+    } catch (err) {
+      setErrors({ submit: "Something went wrong. Please try again." });
+    }
+    setSubmitting(false);
   };
 
   return (
@@ -647,26 +713,38 @@ export default function AutoFlowLanding() {
                 background: "#F8FAFC", borderRadius: 20, padding: "36px 28px",
                 border: "1px solid #E2E8F0",
               }}>
+                {errors.submit && (
+                  <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, padding: "10px 14px", marginBottom: 14, color: "#DC2626", fontSize: 13 }}>
+                    {errors.submit}
+                  </div>
+                )}
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginBottom: 14 }}>
                   {[
-                    { key: "name", label: "Your name", ph: "Ahmed", w: "1 1 48%" },
-                    { key: "business", label: "Business name", ph: "GlowCuts Salon", w: "1 1 48%" },
-                    { key: "email", label: "Email", ph: "ahmed@glowcuts.ae", w: "1 1 48%" },
-                    { key: "whatsapp", label: "WhatsApp", ph: "+971 50 123 4567", w: "1 1 48%" },
+                    { key: "name", label: "Your name", ph: "Ahmed", w: "1 1 48%", type: "text", maxLen: 50 },
+                    { key: "business", label: "Business name", ph: "GlowCuts Salon", w: "1 1 48%", type: "text", maxLen: 50 },
+                    { key: "email", label: "Email", ph: "ahmed@glowcuts.ae", w: "1 1 48%", type: "email", maxLen: 100 },
+                    { key: "whatsapp", label: "WhatsApp", ph: "+971 50 123 4567", w: "1 1 48%", type: "tel", maxLen: 20 },
                   ].map(f => (
                     <div key={f.key} style={{ flex: f.w }}>
                       <label style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
                         {f.label}
                       </label>
                       <input
-                        placeholder={f.ph} value={form[f.key]}
-                        onChange={e => setForm({ ...form, [f.key]: e.target.value })}
+                        type={f.type}
+                        placeholder={f.ph}
+                        value={form[f.key]}
+                        maxLength={f.maxLen}
+                        onChange={e => handleInputChange(f.key, e.target.value)}
                         style={{
                           width: "100%", padding: "12px 14px", borderRadius: 10,
-                          border: "1px solid #E2E8F0", fontSize: 14, outline: "none",
+                          border: errors[f.key] ? "1px solid #EF4444" : "1px solid #E2E8F0",
+                          fontSize: 14, outline: "none",
                           fontFamily: "inherit", background: "white", transition: "all 0.2s",
                         }}
                       />
+                      {errors[f.key] && (
+                        <p style={{ color: "#EF4444", fontSize: 11, marginTop: 4 }}>{errors[f.key]}</p>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -678,10 +756,10 @@ export default function AutoFlowLanding() {
                     {["Salon", "Clinic", "Tutor", "Spa", "Travel", "Other"].map(t => (
                       <button
                         key={t}
-                        onClick={() => setForm({ ...form, type: t })}
+                        onClick={() => { setForm(prev => ({ ...prev, type: t })); if (errors.type) setErrors(prev => ({ ...prev, type: null })); }}
                         style={{
                           padding: "8px 16px", borderRadius: 10, fontSize: 13, fontWeight: 600,
-                          border: form.type === t ? "2px solid #0D9488" : "1px solid #E2E8F0",
+                          border: form.type === t ? "2px solid #0D9488" : errors.type ? "1px solid #EF4444" : "1px solid #E2E8F0",
                           background: form.type === t ? "rgba(13,148,136,0.08)" : "white",
                           color: form.type === t ? "#0D9488" : "#64748B",
                           cursor: "pointer", transition: "all 0.2s",
@@ -689,6 +767,9 @@ export default function AutoFlowLanding() {
                       >{t}</button>
                     ))}
                   </div>
+                  {errors.type && (
+                    <p style={{ color: "#EF4444", fontSize: 11, marginTop: 4 }}>{errors.type}</p>
+                  )}
                 </div>
                 <div style={{ marginBottom: 18 }}>
                   <label style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
@@ -697,7 +778,8 @@ export default function AutoFlowLanding() {
                   <textarea
                     placeholder="e.g. appointment reminders, follow-ups, booking confirmations..."
                     value={form.message} rows={3}
-                    onChange={e => setForm({ ...form, message: e.target.value })}
+                    maxLength={500}
+                    onChange={e => handleInputChange("message", e.target.value)}
                     style={{
                       width: "100%", padding: "12px 14px", borderRadius: 10,
                       border: "1px solid #E2E8F0", fontSize: 14, outline: "none",
@@ -705,18 +787,23 @@ export default function AutoFlowLanding() {
                       transition: "all 0.2s",
                     }}
                   />
+                  <p style={{ textAlign: "right", fontSize: 11, color: "#94A3B8", marginTop: 2 }}>
+                    {form.message.length}/500
+                  </p>
                 </div>
                 <button
                   onClick={handleSubmit}
+                  disabled={submitting}
                   style={{
                     width: "100%", padding: "16px", borderRadius: 14, border: "none",
-                    background: "linear-gradient(135deg, #0D9488, #14B8A6)",
-                    color: "white", fontWeight: 800, fontSize: 16, cursor: "pointer",
-                    boxShadow: "0 8px 32px rgba(13,148,136,0.3)",
-                    transition: "transform 0.2s",
+                    background: submitting ? "#94A3B8" : "linear-gradient(135deg, #0D9488, #14B8A6)",
+                    color: "white", fontWeight: 800, fontSize: 16,
+                    cursor: submitting ? "not-allowed" : "pointer",
+                    boxShadow: submitting ? "none" : "0 8px 32px rgba(13,148,136,0.3)",
+                    transition: "all 0.2s",
                   }}
                 >
-                  Submit — It's Free
+                  {submitting ? "Submitting..." : "Submit — It's Free"}
                 </button>
                 <p style={{ textAlign: "center", fontSize: 12, color: "#94A3B8", marginTop: 10 }}>
                   No payment required. We'll design your automation and show you how it works first.
