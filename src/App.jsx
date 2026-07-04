@@ -359,7 +359,7 @@ export default function AutoFlowLanding() {
         type: form.type,
         message: sanitize(form.message).slice(0, 500),
       };
-      await fetch('https://automate.ivanit.work/api/v1/webhooks/wY9q4h6U6Qhbnzfiyk5c5', {
+      await fetch('https://automate.ivanit.work/api/v1/webhooks/1UIlGrv4FI4uRYsYdfWc5', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(sanitizedForm)
