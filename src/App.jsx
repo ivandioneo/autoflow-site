@@ -1,5 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 
+const DASHBOARD_URL = "https://dashboard.autoflow.ivanit.work";
+
+function scrollToQuote() {
+  const el = document.getElementById("quote");
+  if (el) el.scrollIntoView({ behavior: "smooth" });
+}
+
 // ─── Savings Calculator (the wow factor) ───
 function SavingsCalculator() {
   const [bookingsPerWeek, setBookingsPerWeek] = useState(40);
@@ -38,6 +45,7 @@ function SavingsCalculator() {
           <input
             type="range" min={s.min} max={s.max} value={s.value}
             onChange={e => s.set(Number(e.target.value))}
+            aria-label={s.label}
             style={{ width: "100%", accentColor: "#F59E0B", cursor: "pointer" }}
           />
         </div>
@@ -101,7 +109,6 @@ function PhoneMockup() {
 
   return (
     <div style={{ position: "relative" }}>
-      {/* Glow */}
       <div style={{
         position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
         width: 320, height: 420, borderRadius: "50%",
@@ -113,12 +120,10 @@ function PhoneMockup() {
         width: 260, background: "#111", borderRadius: 32, padding: "6px",
         boxShadow: "0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)",
       }}>
-        {/* Notch */}
         <div style={{
           width: 80, height: 6, background: "#333", borderRadius: 3,
           margin: "6px auto 0",
         }} />
-        {/* Header */}
         <div style={{
           padding: "14px 14px 10px", display: "flex", alignItems: "center", gap: 10,
         }}>
@@ -131,7 +136,6 @@ function PhoneMockup() {
             <div style={{ color: "#25D366", fontSize: 10 }}>● online</div>
           </div>
         </div>
-        {/* Chat */}
         <div style={{
           background: "#0B141A", borderRadius: 0, minHeight: 260, padding: "10px 8px",
           display: "flex", flexDirection: "column", gap: 5,
@@ -224,7 +228,7 @@ function FadeIn({ children, style = {} }) {
 }
 
 // ─── Pricing Card ───
-function PricingCard({ tier, price, desc, features, highlight, badge }) {
+function PricingCard({ tier, price, desc, features, highlight, badge, onCta, ctaLabel }) {
   const [hover, setHover] = useState(false);
   return (
     <div
@@ -274,16 +278,18 @@ function PricingCard({ tier, price, desc, features, highlight, badge }) {
           </div>
         ))}
       </div>
-      <button style={{
-        marginTop: "auto", padding: "13px 20px", borderRadius: 12, border: "none",
-        background: highlight
-          ? "linear-gradient(135deg, #F59E0B, #F97316)"
-          : "#0D9488",
-        color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer",
-        transition: "transform 0.2s",
-        transform: hover ? "scale(1.02)" : "scale(1)",
-      }}>
-        {price === "Free" ? "Start Free" : "Get Started"}
+      <button
+        onClick={onCta}
+        style={{
+          marginTop: "auto", padding: "13px 20px", borderRadius: 12, border: "none",
+          background: highlight
+            ? "linear-gradient(135deg, #F59E0B, #F97316)"
+            : "#0D9488",
+          color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer",
+          transition: "transform 0.2s",
+          transform: hover ? "scale(1.02)" : "scale(1)",
+        }}>
+        {ctaLabel}
       </button>
     </div>
   );
@@ -303,22 +309,14 @@ export default function AutoFlowLanding() {
     return () => window.removeEventListener("scroll", h);
   }, []);
 
-  // Sanitize input — strip HTML/script tags
   const sanitize = (str) => str.replace(/<[^>]*>/g, "").replace(/[<>"'`]/g, "").trim();
-
-  // Validate email format
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-  // Validate WhatsApp — digits, spaces, +, -, min 7 digits
   const isValidWhatsApp = (num) => {
     const digits = num.replace(/[\s\-\+\(\)]/g, "");
     return /^\d{7,15}$/.test(digits);
   };
-
-  // Validate name/business — letters, spaces, basic punctuation, 2-50 chars
   const isValidName = (name) => /^[a-zA-Z\s\-'.]{2,50}$/.test(name);
 
-  // Rate limiting — prevent spam submissions
   const lastSubmitRef = useRef(0);
 
   const handleInputChange = (key, value) => {
@@ -344,7 +342,6 @@ export default function AutoFlowLanding() {
   };
 
   const handleSubmit = async () => {
-    // Rate limit — 10 second cooldown
     const now = Date.now();
     if (now - lastSubmitRef.current < 10000) return;
     if (!validate()) return;
@@ -395,6 +392,12 @@ export default function AutoFlowLanding() {
           50% { transform: translateY(-12px); }
         }
         input:focus, textarea:focus { border-color: #0D9488 !important; box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
+        a:focus-visible, button:focus-visible { outline: 2px solid #14B8A6; outline-offset: 2px; }
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+        }
+        .nav-link:hover { color: white !important; }
+        .login-link:hover { border-color: rgba(255,255,255,0.4) !important; color: white !important; }
       `}</style>
 
       {/* ─── NAV ─── */}
@@ -417,10 +420,15 @@ export default function AutoFlowLanding() {
           }}>A</div>
           <span style={{ fontWeight: 900, fontSize: 19, color: "white", letterSpacing: -0.5 }}>AutoFlow</span>
         </div>
-        <div style={{ display: "flex", gap: 28, alignItems: "center" }}>
-          <a href="#calc" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13 }}>Calculator</a>
-          <a href="#how" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13 }}>How it works</a>
-          <a href="#pricing" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13 }}>Pricing</a>
+        <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+          <a href="#calc" className="nav-link" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>Calculator</a>
+          <a href="#how" className="nav-link" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>How it works</a>
+          <a href="#pricing" className="nav-link" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>Pricing</a>
+          <a href={DASHBOARD_URL} className="login-link" style={{
+            color: "rgba(255,255,255,0.75)", textDecoration: "none", fontWeight: 600, fontSize: 13,
+            padding: "8px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)",
+            transition: "all 0.2s",
+          }}>Log in</a>
           <a href="#quote" style={{
             background: "linear-gradient(135deg, #F59E0B, #F97316)",
             color: "white", padding: "9px 20px", borderRadius: 10,
@@ -437,7 +445,6 @@ export default function AutoFlowLanding() {
         animation: "gradientShift 12s ease infinite",
         padding: "120px 32px 80px", position: "relative", overflow: "hidden",
       }}>
-        {/* Decorative orbs */}
         <div style={{
           position: "absolute", top: -100, right: -100, width: 400, height: 400,
           borderRadius: "50%", background: "radial-gradient(circle, rgba(13,148,136,0.12) 0%, transparent 70%)",
@@ -461,7 +468,7 @@ export default function AutoFlowLanding() {
             }}>
               <div style={{ width: 6, height: 6, borderRadius: 3, background: "#F59E0B", animation: "dotPulse 2s infinite" }} />
               <span style={{ color: "#F59E0B", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                Stop losing money to no-shows
+                Automation built for UAE businesses
               </span>
             </div>
 
@@ -469,17 +476,17 @@ export default function AutoFlowLanding() {
               fontSize: 52, fontWeight: 900, color: "white", lineHeight: 1.08,
               letterSpacing: -1.5, marginBottom: 20,
             }}>
-              Fill every chair.{" "}
+              Put your business on{" "}
               <span style={{
                 background: "linear-gradient(135deg, #14B8A6, #F59E0B)",
                 WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-              }}>Automatically.</span>
+              }}>autopilot.</span>
             </h1>
             <p style={{
               fontSize: 17, color: "rgba(255,255,255,0.5)", lineHeight: 1.7,
               marginBottom: 32, maxWidth: 440,
             }}>
-              WhatsApp reminders that go out on their own. Fewer no-shows, more confirmed bookings, zero work from you. Built for clinics, salons, and tutors in the UAE.
+              Automated reminders, follow-ups, and booking confirmations that run on their own — so you stop chasing customers and start reclaiming your time. Built for salons, clinics, tutors, and travel agencies in the UAE.
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 36 }}>
               <a href="#quote" style={{
@@ -645,12 +652,18 @@ export default function AutoFlowLanding() {
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center", alignItems: "stretch" }}>
               <PricingCard tier="Starter" price="Free" desc="Try it with basic reminders"
+                ctaLabel="Start Free" onCta={scrollToQuote}
                 features={["1 active automation", "Up to 50 reminders/month", "WhatsApp or SMS", "Basic dashboard"]} />
               <PricingCard tier="Professional" price="AED 149" desc="For businesses that can't afford no-shows" highlight badge="Most Popular"
+                ctaLabel="Get Started" onCta={scrollToQuote}
                 features={["5 active automations", "Unlimited reminders", "WhatsApp + SMS", "No-show tracking dashboard", "Follow-up sequences", "Priority support"]} />
               <PricingCard tier="Business" price="AED 349" desc="Full automation suite, custom workflows"
+                ctaLabel="Get Started" onCta={scrollToQuote}
                 features={["Unlimited automations", "Custom workflow builds", "Multi-location support", "Lead capture + CRM sync", "Dedicated account manager", "Monthly performance report"]} />
             </div>
+            <p style={{ textAlign: "center", color: "#94A3B8", fontSize: 13, marginTop: 28 }}>
+              Already a customer? <a href={DASHBOARD_URL} style={{ color: "#0D9488", fontWeight: 700, textDecoration: "none" }}>Log in to your dashboard →</a>
+            </p>
           </div>
         </FadeIn>
       </section>
@@ -671,12 +684,13 @@ export default function AutoFlowLanding() {
             }}>🔒</div>
             <div style={{ flex: 1, minWidth: 280 }}>
               <div style={{ fontWeight: 800, fontSize: 18, color: "white", marginBottom: 6 }}>
-                Enterprise-grade security, small-business pricing
+                Built security-first, from the ground up
               </div>
               <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.7 }}>
-                Every account is fully isolated — your customer data, credentials, and automations
-                are encrypted and separated from other businesses. We run 24/7 intrusion detection
-                and security monitoring. Your clients' information never touches another tenant's space.
+                Every account is fully isolated — one business can never see another's data,
+                credentials, or automations. Access is enforced at the server, not just hidden
+                in the interface. We run continuous security monitoring and intrusion detection
+                across our own infrastructure, so your customers' details stay yours alone.
               </div>
             </div>
           </div>
@@ -827,6 +841,11 @@ export default function AutoFlowLanding() {
             color: "white", fontWeight: 900, fontSize: 15,
           }}>A</div>
           <span style={{ fontWeight: 900, fontSize: 17, color: "white" }}>AutoFlow</span>
+        </div>
+        <div style={{ display: "flex", justifyContent: "center", gap: 20, marginBottom: 16 }}>
+          <a href="#pricing" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Pricing</a>
+          <a href="#quote" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Get a Quote</a>
+          <a href={DASHBOARD_URL} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Log in</a>
         </div>
         <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, marginBottom: 6 }}>
           Automation services for businesses in the UAE
