@@ -1,0 +1,5 @@
+# Force canonical HTTPS — Cloudflare Pages handles SSL termination
+# but this ensures any http:// variant is caught at the edge.
+http://autoflow.ivanit.work/* https://autoflow.ivanit.work/:splat 301
+http://www.autoflow.ivanit.work/* https://autoflow.ivanit.work/:splat 301
+https://www.autoflow.ivanit.work/* https://autoflow.ivanit.work/:splat 301
