@@ -1,0 +1,3 @@
+# Redirect apex domain to dashboard (handled at Cloudflare DNS level,
+# but this acts as a fallback if Pages ever serves the apex)
+https://autoflow.ivanit.work/* https://dashboard.autoflow.ivanit.work/:splat 301
