@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 
 const DASHBOARD_URL = "https://dashboard.autoflow.ivanit.work";
+const WEBHOOK_URL = import.meta.env.VITE_WEBHOOK_URL;
 
 function scrollToQuote() {
   const el = document.getElementById("quote");
   if (el) el.scrollIntoView({ behavior: "smooth" });
 }
 
-// ─── Savings Calculator (the wow factor) ───
+// ─── Savings Calculator ───
 function SavingsCalculator() {
   const [bookingsPerWeek, setBookingsPerWeek] = useState(40);
   const [avgPrice, setAvgPrice] = useState(150);
@@ -228,7 +229,7 @@ function FadeIn({ children, style = {} }) {
 }
 
 // ─── Pricing Card ───
-function PricingCard({ tier, price, desc, features, highlight, badge, onCta, ctaLabel }) {
+function PricingCard({ tier, price, desc, features, highlight, badge, onCta, ctaLabel, featured }) {
   const [hover, setHover] = useState(false);
   return (
     <div
@@ -238,15 +239,20 @@ function PricingCard({ tier, price, desc, features, highlight, badge, onCta, cta
         background: highlight
           ? "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)"
           : "white",
-        borderRadius: 20, padding: "36px 26px", flex: "1 1 260px", maxWidth: 320,
+        borderRadius: 20,
+        padding: featured ? "44px 28px" : "36px 26px",
+        flex: featured ? "1 1 300px" : "1 1 240px",
+        maxWidth: featured ? 360 : 300,
         border: highlight ? "1px solid rgba(245,158,11,0.3)" : "1px solid #E2E8F0",
         boxShadow: highlight
-          ? hover ? "0 20px 60px rgba(245,158,11,0.2)" : "0 12px 40px rgba(15,23,42,0.3)"
+          ? hover ? "0 24px 64px rgba(245,158,11,0.25), 0 0 0 1px rgba(245,158,11,0.15)" : "0 12px 40px rgba(15,23,42,0.3), 0 0 0 1px rgba(245,158,11,0.1)"
           : hover ? "0 12px 32px rgba(0,0,0,0.08)" : "0 2px 8px rgba(0,0,0,0.04)",
         display: "flex", flexDirection: "column", gap: 16,
-        transform: hover ? "translateY(-6px)" : "translateY(0)",
-        transition: "all 0.3s ease",
+        transform: featured ? (hover ? "translateY(-10px) scale(1.02)" : "translateY(-4px) scale(1.01)") : (hover ? "translateY(-6px)" : "translateY(0)"),
+        transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
         cursor: "default",
+        position: "relative",
+        zIndex: featured ? 1 : 0,
       }}
     >
       {badge && (
@@ -256,7 +262,7 @@ function PricingCard({ tier, price, desc, features, highlight, badge, onCta, cta
           borderRadius: 20, alignSelf: "flex-start", textTransform: "uppercase", letterSpacing: 1,
         }}>{badge}</div>
       )}
-      <div style={{ fontSize: 20, fontWeight: 800, color: highlight ? "white" : "#0F172A" }}>{tier}</div>
+      <div style={{ fontSize: 20, fontWeight: 800, color: highlight ? "white" : "#0F172A", fontFamily: "'Instrument Serif', Georgia, serif" }}>{tier}</div>
       <div style={{ fontSize: 13, color: highlight ? "rgba(255,255,255,0.5)" : "#64748B", lineHeight: 1.5 }}>{desc}</div>
       <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
         <span style={{ fontSize: 40, fontWeight: 900, color: highlight ? "white" : "#0F172A", letterSpacing: -1 }}>{price}</span>
@@ -282,12 +288,11 @@ function PricingCard({ tier, price, desc, features, highlight, badge, onCta, cta
         onClick={onCta}
         style={{
           marginTop: "auto", padding: "13px 20px", borderRadius: 12, border: "none",
-          background: highlight
-            ? "linear-gradient(135deg, #F59E0B, #F97316)"
-            : "#0D9488",
+          background: highlight ? "linear-gradient(135deg, #F59E0B, #F97316)" : "#0D9488",
           color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer",
-          transition: "transform 0.2s",
+          transition: "transform 0.2s, box-shadow 0.2s",
           transform: hover ? "scale(1.02)" : "scale(1)",
+          boxShadow: highlight && hover ? "0 8px 24px rgba(245,158,11,0.4)" : "none",
         }}>
         {ctaLabel}
       </button>
@@ -302,6 +307,7 @@ export default function AutoFlowLanding() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 40);
@@ -313,7 +319,7 @@ export default function AutoFlowLanding() {
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isValidWhatsApp = (num) => {
     const digits = num.replace(/[\s\-\+\(\)]/g, "");
-    return /^\d{7,15}$/.test(digits);
+    return /^[1-9]\d{6,13}$/.test(digits);
   };
   const isValidName = (name) => /^[a-zA-Z\s\-'.]{2,50}$/.test(name);
 
@@ -345,6 +351,7 @@ export default function AutoFlowLanding() {
     const now = Date.now();
     if (now - lastSubmitRef.current < 10000) return;
     if (!validate()) return;
+    if (!WEBHOOK_URL) { setErrors({ submit: "Form is temporarily unavailable. Please try again later." }); return; }
     setSubmitting(true);
     lastSubmitRef.current = now;
     try {
@@ -356,10 +363,11 @@ export default function AutoFlowLanding() {
         type: form.type,
         message: sanitize(form.message).slice(0, 500),
       };
-      await fetch('https://automate.ivanit.work/api/v1/webhooks/1UIlGrv4FI4uRYsYdfWc5', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sanitizedForm)
+      await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        referrerPolicy: "no-referrer",
+        body: JSON.stringify(sanitizedForm),
       });
       setSubmitted(true);
     } catch (err) {
@@ -371,7 +379,7 @@ export default function AutoFlowLanding() {
   return (
     <div style={{ fontFamily: "'Inter', system-ui, sans-serif", color: "#334155", background: "#F0F4F8", overflowX: "hidden" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
         @keyframes msgPop {
@@ -382,26 +390,43 @@ export default function AutoFlowLanding() {
           0%, 80% { opacity: 0.3; transform: scale(0.8); }
           40% { opacity: 1; transform: scale(1.2); }
         }
-        @keyframes gradientShift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
           50% { transform: translateY(-12px); }
         }
-        input:focus, textarea:focus { border-color: #0D9488 !important; box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
-        a:focus-visible, button:focus-visible { outline: 2px solid #14B8A6; outline-offset: 2px; }
         @media (prefers-reduced-motion: reduce) {
           *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
         }
+        input:focus, textarea:focus { border-color: #0D9488 !important; box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
+        a:focus-visible, button:focus-visible { outline: 2px solid #14B8A6; outline-offset: 2px; }
         .nav-link:hover { color: white !important; }
         .login-link:hover { border-color: rgba(255,255,255,0.4) !important; color: white !important; }
+        .mobile-nav-link { display: block; color: rgba(255,255,255,0.7); text-decoration: none; font-weight: 500; font-size: 16px; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.06); transition: color 0.2s; }
+        .mobile-nav-link:hover { color: white; }
+        .hero-heading { font-family: 'Instrument Serif', Georgia, serif; }
+        .section-heading { font-family: 'Instrument Serif', Georgia, serif; }
+        @media (max-width: 640px) {
+          .desktop-nav { display: none !important; }
+          .mobile-hamburger { display: flex !important; }
+          .phone-float { animation: none !important; }
+        }
+        @media (min-width: 641px) {
+          .mobile-hamburger { display: none !important; }
+          .mobile-nav-drawer { display: none !important; }
+        }
       `}</style>
 
+      {/* ─── SKIP LINK ─── */}
+      <a href="#main-content" style={{
+        position: "absolute", top: -40, left: 8, background: "#0D9488", color: "white",
+        padding: "8px 14px", borderRadius: 8, fontSize: 13, fontWeight: 700, zIndex: 9999,
+        textDecoration: "none", transition: "top 0.2s",
+      }} onFocus={e => e.target.style.top = "8px"} onBlur={e => e.target.style.top = "-40px"}>
+        Skip to content
+      </a>
+
       {/* ─── NAV ─── */}
-      <nav style={{
+      <nav role="navigation" aria-label="Main navigation" style={{
         display: "flex", justifyContent: "space-between", alignItems: "center",
         padding: scrolled ? "12px 32px" : "18px 32px",
         background: scrolled ? "rgba(15,23,42,0.95)" : "transparent",
@@ -410,6 +435,7 @@ export default function AutoFlowLanding() {
         transition: "all 0.3s ease",
         borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "none",
       }}>
+        {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{
             width: 36, height: 36, borderRadius: 10,
@@ -420,7 +446,9 @@ export default function AutoFlowLanding() {
           }}>A</div>
           <span style={{ fontWeight: 900, fontSize: 19, color: "white", letterSpacing: -0.5 }}>AutoFlow</span>
         </div>
-        <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+
+        {/* Desktop Nav */}
+        <div className="desktop-nav" style={{ display: "flex", gap: 24, alignItems: "center" }}>
           <a href="#calc" className="nav-link" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>Calculator</a>
           <a href="#how" className="nav-link" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>How it works</a>
           <a href="#pricing" className="nav-link" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>Pricing</a>
@@ -430,19 +458,61 @@ export default function AutoFlowLanding() {
             transition: "all 0.2s",
           }}>Log in</a>
           <a href="#quote" style={{
-            background: "linear-gradient(135deg, #F59E0B, #F97316)",
+            background: "#F59E0B",
             color: "white", padding: "9px 20px", borderRadius: 10,
             textDecoration: "none", fontWeight: 700, fontSize: 13,
-            boxShadow: "0 4px 16px rgba(245,158,11,0.3)",
+            boxShadow: "0 4px 14px rgba(245,158,11,0.35)",
+            transition: "background 0.2s, box-shadow 0.2s",
           }}>Get a Quote</a>
         </div>
+
+        {/* Mobile Hamburger */}
+        <button
+          className="mobile-hamburger"
+          aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileNavOpen}
+          onClick={() => setMobileNavOpen(o => !o)}
+          style={{
+            background: "none", border: "none", cursor: "pointer",
+            color: "white", padding: "8px", display: "flex", flexDirection: "column",
+            gap: 5, alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <span style={{ display: "block", width: 22, height: 2, background: "white", borderRadius: 2, transition: "all 0.2s", transform: mobileNavOpen ? "rotate(45deg) translateY(7px)" : "none" }} />
+          <span style={{ display: "block", width: 22, height: 2, background: "white", borderRadius: 2, transition: "all 0.2s", opacity: mobileNavOpen ? 0 : 1 }} />
+          <span style={{ display: "block", width: 22, height: 2, background: "white", borderRadius: 2, transition: "all 0.2s", transform: mobileNavOpen ? "rotate(-45deg) translateY(-7px)" : "none" }} />
+        </button>
       </nav>
 
+      {/* Mobile Nav Drawer */}
+      <div
+        className="mobile-nav-drawer"
+        style={{
+          position: "fixed", top: 64, left: 0, right: 0, zIndex: 99,
+          background: "rgba(15,23,42,0.98)", backdropFilter: "blur(20px)",
+          padding: "16px 32px 28px",
+          transform: mobileNavOpen ? "translateY(0)" : "translateY(-110%)",
+          transition: "transform 0.3s cubic-bezier(0.16,1,0.3,1)",
+          borderBottom: "1px solid rgba(255,255,255,0.08)",
+        }}
+      >
+        <a href="#calc" className="mobile-nav-link" onClick={() => setMobileNavOpen(false)}>Calculator</a>
+        <a href="#how" className="mobile-nav-link" onClick={() => setMobileNavOpen(false)}>How it works</a>
+        <a href="#pricing" className="mobile-nav-link" onClick={() => setMobileNavOpen(false)}>Pricing</a>
+        <a href={DASHBOARD_URL} className="mobile-nav-link">Log in</a>
+        <a href="#quote"
+          onClick={() => setMobileNavOpen(false)}
+          style={{
+            display: "block", marginTop: 16, background: "#F59E0B",
+            color: "white", padding: "14px 20px", borderRadius: 12,
+            textAlign: "center", fontWeight: 700, fontSize: 15, textDecoration: "none",
+          }}>Get a Quote</a>
+      </div>
+
       {/* ─── HERO ─── */}
+      <main id="main-content">
       <section style={{
         background: "linear-gradient(135deg, #0F172A 0%, #1E293B 40%, #0F172A 100%)",
-        backgroundSize: "200% 200%",
-        animation: "gradientShift 12s ease infinite",
         padding: "120px 32px 80px", position: "relative", overflow: "hidden",
       }}>
         <div style={{
@@ -472,18 +542,20 @@ export default function AutoFlowLanding() {
               </span>
             </div>
 
-            <h1 style={{
-              fontSize: 52, fontWeight: 900, color: "white", lineHeight: 1.08,
-              letterSpacing: -1.5, marginBottom: 20,
+            <h1 className="hero-heading" style={{
+              fontSize: "clamp(2.4rem, 5vw + 1rem, 3.5rem)",
+              fontWeight: 400, color: "white", lineHeight: 1.08,
+              letterSpacing: -0.5, marginBottom: 20,
             }}>
               Put your business on{" "}
-              <span style={{
+              <em style={{
+                fontStyle: "italic",
                 background: "linear-gradient(135deg, #14B8A6, #F59E0B)",
                 WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-              }}>autopilot.</span>
+              }}>autopilot.</em>
             </h1>
             <p style={{
-              fontSize: 17, color: "rgba(255,255,255,0.5)", lineHeight: 1.7,
+              fontSize: 17, color: "rgba(255,255,255,0.55)", lineHeight: 1.7,
               marginBottom: 32, maxWidth: 440,
             }}>
               Automated reminders, follow-ups, and booking confirmations that run on their own — so you stop chasing customers and start reclaiming your time. Built for salons, clinics, tutors, and travel agencies in the UAE.
@@ -502,13 +574,13 @@ export default function AutoFlowLanding() {
                 textDecoration: "none", fontWeight: 600, fontSize: 15,
               }}>Calculate Your Savings ↓</a>
             </div>
-            <div style={{ display: "flex", gap: 20, fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
+            <div style={{ display: "flex", gap: 20, fontSize: 13, color: "rgba(255,255,255,0.35)", flexWrap: "wrap" }}>
               <span>✦ No setup fees</span>
               <span>✦ Works with WhatsApp</span>
               <span>✦ Cancel anytime</span>
             </div>
           </div>
-          <div style={{ flex: "0 0 auto", animation: "float 6s ease-in-out infinite" }}>
+          <div className="phone-float" style={{ flex: "0 0 auto", animation: "float 6s ease-in-out infinite" }}>
             <PhoneMockup />
           </div>
         </div>
@@ -522,7 +594,7 @@ export default function AutoFlowLanding() {
         <FadeIn>
           <div style={{ maxWidth: 1140, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: 48, alignItems: "center", justifyContent: "center" }}>
             <div style={{ flex: "1 1 340px", maxWidth: 440 }}>
-              <h2 style={{ fontSize: 34, fontWeight: 900, color: "white", lineHeight: 1.15, letterSpacing: -1, marginBottom: 16 }}>
+              <h2 className="section-heading" style={{ fontSize: "clamp(1.6rem, 3vw, 2.1rem)", fontWeight: 400, color: "white", lineHeight: 1.2, letterSpacing: -0.3, marginBottom: 16 }}>
                 See exactly how much you're leaving on the table
               </h2>
               <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 15, lineHeight: 1.7, marginBottom: 24 }}>
@@ -559,7 +631,7 @@ export default function AutoFlowLanding() {
             { n: 0, s: "", label: "Messages you send manually" },
           ].map((s, i) => (
             <div key={i} style={{ textAlign: "center", minWidth: 160 }}>
-              <div style={{ fontSize: 42, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>
+              <div style={{ fontSize: 42, fontWeight: 900, color: "#0F172A", letterSpacing: -1, fontFamily: "'Instrument Serif', Georgia, serif" }}>
                 {s.n === 0 ? "0" : <Counter target={s.n} />}{s.s}
               </div>
               <div style={{ fontSize: 13, color: "#94A3B8", marginTop: 4, fontWeight: 500 }}>{s.label}</div>
@@ -571,36 +643,43 @@ export default function AutoFlowLanding() {
       {/* ─── HOW IT WORKS ─── */}
       <section id="how" style={{ padding: "80px 32px", background: "#F8FAFC" }}>
         <FadeIn>
-          <div style={{ maxWidth: 900, margin: "0 auto" }}>
-            <div style={{ textAlign: "center", marginBottom: 48 }}>
-              <h2 style={{ fontSize: 34, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>How it works</h2>
-              <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>
+          <div style={{ maxWidth: 960, margin: "0 auto" }}>
+            <div style={{ marginBottom: 56 }}>
+              <h2 className="section-heading" style={{ fontSize: "clamp(1.8rem, 3vw, 2.2rem)", fontWeight: 400, color: "#0F172A", letterSpacing: -0.3, marginBottom: 10 }}>How it works</h2>
+              <p style={{ color: "#64748B", fontSize: 15, maxWidth: 400 }}>
                 From booking to confirmation — fully automated
               </p>
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center" }}>
+            {/* Timeline layout replacing icon-circle grid */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
               {[
-                { icon: "📅", title: "Customer books", desc: "Via your form, phone, Instagram, or walk-in. We connect to however you take bookings.", color: "#0D9488" },
-                { icon: "⚡", title: "Flow triggers", desc: "Our automation engine picks it up instantly — no delay, no manual entry needed.", color: "#F59E0B" },
-                { icon: "💬", title: "Reminders go out", desc: "WhatsApp or SMS, 24h and 2h before. Customer confirms or reschedules right in the chat.", color: "#8B5CF6" },
-                { icon: "📊", title: "Everything logged", desc: "Dashboard shows confirmed, pending, no-shows. You see the full picture at a glance.", color: "#EF4444" },
-              ].map((s, i) => (
-                <div key={i} style={{
-                  flex: "1 1 200px", maxWidth: 210, textAlign: "center", padding: "28px 16px",
-                  background: "white", borderRadius: 18, border: "1px solid #E2E8F0",
-                  position: "relative",
-                }}>
+                { num: "01", title: "Customer books", desc: "Via your form, phone, Instagram, or walk-in. We connect to however you take bookings.", color: "#0D9488" },
+                { num: "02", title: "Flow triggers instantly", desc: "Our automation engine picks it up — no delay, no manual entry needed.", color: "#F59E0B" },
+                { num: "03", title: "Reminders go out", desc: "WhatsApp or SMS, 24h and 2h before. Customer confirms or reschedules right in the chat.", color: "#14B8A6" },
+                { num: "04", title: "Everything logged", desc: "Dashboard shows confirmed, pending, no-shows. You see the full picture at a glance.", color: "#0D9488" },
+              ].map((s, i, arr) => (
+                <div key={i} style={{ display: "flex", gap: 28, alignItems: "flex-start", position: "relative" }}>
+                  {/* Line connector */}
+                  {i < arr.length - 1 && (
+                    <div style={{
+                      position: "absolute", left: 23, top: 48, width: 2,
+                      height: "calc(100% - 16px)",
+                      background: "linear-gradient(to bottom, rgba(13,148,136,0.25), transparent)",
+                    }} />
+                  )}
                   <div style={{
-                    position: "absolute", top: -1, left: "50%", transform: "translateX(-50%)",
-                    width: 40, height: 3, borderRadius: 2, background: s.color,
-                  }} />
-                  <div style={{
-                    width: 52, height: 52, borderRadius: 16, margin: "8px auto 14px",
-                    background: `${s.color}12`, display: "flex", alignItems: "center",
-                    justifyContent: "center", fontSize: 24,
-                  }}>{s.icon}</div>
-                  <div style={{ fontWeight: 800, fontSize: 15, color: "#0F172A", marginBottom: 6 }}>{s.title}</div>
-                  <div style={{ fontSize: 12.5, color: "#64748B", lineHeight: 1.5 }}>{s.desc}</div>
+                    width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+                    background: `${s.color}14`,
+                    border: `1px solid ${s.color}30`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontFamily: "'Instrument Serif', Georgia, serif",
+                    fontSize: 18, fontWeight: 700, color: s.color,
+                    position: "relative", zIndex: 1,
+                  }}>{s.num}</div>
+                  <div style={{ paddingBottom: 36 }}>
+                    <div style={{ fontWeight: 700, fontSize: 16, color: "#0F172A", marginBottom: 6 }}>{s.title}</div>
+                    <div style={{ fontSize: 14, color: "#64748B", lineHeight: 1.6, maxWidth: 460 }}>{s.desc}</div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -612,13 +691,13 @@ export default function AutoFlowLanding() {
       <section style={{ padding: "72px 32px", background: "white" }}>
         <FadeIn>
           <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-            <h2 style={{ fontSize: 30, fontWeight: 900, color: "#0F172A", textAlign: "center", marginBottom: 12, letterSpacing: -0.5 }}>
+            <h2 className="section-heading" style={{ fontSize: "clamp(1.6rem, 3vw, 2rem)", fontWeight: 400, color: "#0F172A", marginBottom: 10, letterSpacing: -0.3 }}>
               Built for businesses like yours
             </h2>
-            <p style={{ color: "#94A3B8", textAlign: "center", fontSize: 15, marginBottom: 40 }}>
+            <p style={{ color: "#64748B", fontSize: 15, marginBottom: 40, maxWidth: 420 }}>
               If people book time with you, we make sure they show up
             </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "flex-start" }}>
               {[
                 { icon: "💇", title: "Salons", stat: "28%", desc: "average no-show rate in UAE salons. Reminders cut that to under 10%." },
                 { icon: "🏥", title: "Clinics", stat: "4 hrs", desc: "per week staff spend calling patients to confirm. Zero with automation." },
@@ -627,13 +706,12 @@ export default function AutoFlowLanding() {
                 { icon: "✈️", title: "Travel", stat: "92%", desc: "of travelers appreciate pre-trip reminders (visa, docs, check-in)." },
               ].map((c, i) => (
                 <div key={i} style={{
-                  background: "#F8FAFC", borderRadius: 18, padding: "24px 20px",
-                  flex: "1 1 170px", maxWidth: 190, border: "1px solid #E2E8F0",
-                  textAlign: "center",
+                  background: "#F8FAFC", borderRadius: 16, padding: "24px 20px",
+                  flex: "1 1 170px", maxWidth: 200, border: "1px solid #E2E8F0",
                 }}>
-                  <div style={{ fontSize: 32, marginBottom: 8 }}>{c.icon}</div>
-                  <div style={{ fontWeight: 800, fontSize: 15, color: "#0F172A", marginBottom: 6 }}>{c.title}</div>
-                  <div style={{ fontSize: 24, fontWeight: 900, color: "#0D9488", marginBottom: 6 }}>{c.stat}</div>
+                  <div style={{ fontSize: 28, marginBottom: 10 }}>{c.icon}</div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: "#0F172A", marginBottom: 4 }}>{c.title}</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: "#0D9488", marginBottom: 6, fontFamily: "'Instrument Serif', Georgia, serif" }}>{c.stat}</div>
                   <div style={{ fontSize: 12, color: "#64748B", lineHeight: 1.5 }}>{c.desc}</div>
                 </div>
               ))}
@@ -646,22 +724,22 @@ export default function AutoFlowLanding() {
       <section id="pricing" style={{ padding: "80px 32px", background: "#F8FAFC" }}>
         <FadeIn>
           <div style={{ maxWidth: 1060, margin: "0 auto" }}>
-            <div style={{ textAlign: "center", marginBottom: 44 }}>
-              <h2 style={{ fontSize: 34, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>Simple, honest pricing</h2>
-              <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>Start free. Upgrade when the ROI is obvious.</p>
+            <div style={{ marginBottom: 52 }}>
+              <h2 className="section-heading" style={{ fontSize: "clamp(1.8rem, 3vw, 2.2rem)", fontWeight: 400, color: "#0F172A", letterSpacing: -0.3, marginBottom: 8 }}>Simple, honest pricing</h2>
+              <p style={{ color: "#64748B", fontSize: 15 }}>Start free. Upgrade when the ROI is obvious.</p>
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center", alignItems: "stretch" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center", alignItems: "center" }}>
               <PricingCard tier="Starter" price="Free" desc="Try it with basic reminders"
                 ctaLabel="Start Free" onCta={scrollToQuote}
                 features={["1 active automation", "Up to 50 reminders/month", "WhatsApp or SMS", "Basic dashboard"]} />
-              <PricingCard tier="Professional" price="AED 149" desc="For businesses that can't afford no-shows" highlight badge="Most Popular"
+              <PricingCard tier="Professional" price="AED 149" desc="For businesses that can't afford no-shows" highlight featured badge="Most Popular"
                 ctaLabel="Get Started" onCta={scrollToQuote}
                 features={["5 active automations", "Unlimited reminders", "WhatsApp + SMS", "No-show tracking dashboard", "Follow-up sequences", "Priority support"]} />
               <PricingCard tier="Business" price="AED 349" desc="Full automation suite, custom workflows"
                 ctaLabel="Get Started" onCta={scrollToQuote}
                 features={["Unlimited automations", "Custom workflow builds", "Multi-location support", "Lead capture + CRM sync", "Dedicated account manager", "Monthly performance report"]} />
             </div>
-            <p style={{ textAlign: "center", color: "#94A3B8", fontSize: 13, marginTop: 28 }}>
+            <p style={{ color: "#94A3B8", fontSize: 13, marginTop: 28 }}>
               Already a customer? <a href={DASHBOARD_URL} style={{ color: "#0D9488", fontWeight: 700, textDecoration: "none" }}>Log in to your dashboard →</a>
             </p>
           </div>
@@ -683,7 +761,7 @@ export default function AutoFlowLanding() {
               alignItems: "center", justifyContent: "center", fontSize: 30, flexShrink: 0,
             }}>🔒</div>
             <div style={{ flex: 1, minWidth: 280 }}>
-              <div style={{ fontWeight: 800, fontSize: 18, color: "white", marginBottom: 6 }}>
+              <div style={{ fontWeight: 800, fontSize: 18, color: "white", marginBottom: 6, fontFamily: "'Instrument Serif', Georgia, serif" }}>
                 Built security-first, from the ground up
               </div>
               <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.7 }}>
@@ -701,11 +779,11 @@ export default function AutoFlowLanding() {
       <section id="quote" style={{ padding: "80px 32px", background: "white" }}>
         <FadeIn>
           <div style={{ maxWidth: 560, margin: "0 auto" }}>
-            <div style={{ textAlign: "center", marginBottom: 36 }}>
-              <h2 style={{ fontSize: 34, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>
+            <div style={{ marginBottom: 36 }}>
+              <h2 className="section-heading" style={{ fontSize: "clamp(1.8rem, 3vw, 2.2rem)", fontWeight: 400, color: "#0F172A", letterSpacing: -0.3, marginBottom: 8 }}>
                 Get your free automation plan
               </h2>
-              <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>
+              <p style={{ color: "#64748B", fontSize: 15 }}>
                 Tell us about your business — we'll design your first flow and set it up for free.
               </p>
             </div>
@@ -715,7 +793,7 @@ export default function AutoFlowLanding() {
                 textAlign: "center", border: "1px solid #BBF7D0",
               }}>
                 <div style={{ fontSize: 56, marginBottom: 16 }}>🎉</div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: "#0F172A", marginBottom: 8 }}>
+                <div style={{ fontSize: 22, fontWeight: 800, color: "#0F172A", marginBottom: 8, fontFamily: "'Instrument Serif', Georgia, serif" }}>
                   You're in!
                 </div>
                 <div style={{ color: "#64748B", fontSize: 14, lineHeight: 1.6 }}>
@@ -728,7 +806,7 @@ export default function AutoFlowLanding() {
                 border: "1px solid #E2E8F0",
               }}>
                 {errors.submit && (
-                  <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, padding: "10px 14px", marginBottom: 14, color: "#DC2626", fontSize: 13 }}>
+                  <div role="alert" style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, padding: "10px 14px", marginBottom: 14, color: "#DC2626", fontSize: 13 }}>
                     {errors.submit}
                   </div>
                 )}
@@ -740,14 +818,18 @@ export default function AutoFlowLanding() {
                     { key: "whatsapp", label: "WhatsApp", ph: "+971 50 123 4567", w: "1 1 48%", type: "tel", maxLen: 20 },
                   ].map(f => (
                     <div key={f.key} style={{ flex: f.w }}>
-                      <label style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
+                      <label htmlFor={`field-${f.key}`} style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
                         {f.label}
                       </label>
                       <input
+                        id={`field-${f.key}`}
                         type={f.type}
                         placeholder={f.ph}
                         value={form[f.key]}
                         maxLength={f.maxLen}
+                        autoComplete={f.key === "email" ? "email" : f.key === "whatsapp" ? "tel" : "off"}
+                        aria-invalid={!!errors[f.key]}
+                        aria-describedby={errors[f.key] ? `err-${f.key}` : undefined}
                         onChange={e => handleInputChange(f.key, e.target.value)}
                         style={{
                           width: "100%", padding: "12px 14px", borderRadius: 10,
@@ -757,39 +839,44 @@ export default function AutoFlowLanding() {
                         }}
                       />
                       {errors[f.key] && (
-                        <p style={{ color: "#EF4444", fontSize: 11, marginTop: 4 }}>{errors[f.key]}</p>
+                        <p id={`err-${f.key}`} role="alert" style={{ color: "#EF4444", fontSize: 11, marginTop: 4 }}>{errors[f.key]}</p>
                       )}
                     </div>
                   ))}
                 </div>
                 <div style={{ marginBottom: 14 }}>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
-                    Business type
-                  </label>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                    {["Salon", "Clinic", "Tutor", "Spa", "Travel", "Other"].map(t => (
-                      <button
-                        key={t}
-                        onClick={() => { setForm(prev => ({ ...prev, type: t })); if (errors.type) setErrors(prev => ({ ...prev, type: null })); }}
-                        style={{
-                          padding: "8px 16px", borderRadius: 10, fontSize: 13, fontWeight: 600,
-                          border: form.type === t ? "2px solid #0D9488" : errors.type ? "1px solid #EF4444" : "1px solid #E2E8F0",
-                          background: form.type === t ? "rgba(13,148,136,0.08)" : "white",
-                          color: form.type === t ? "#0D9488" : "#64748B",
-                          cursor: "pointer", transition: "all 0.2s",
-                        }}
-                      >{t}</button>
-                    ))}
-                  </div>
+                  <fieldset style={{ border: "none", padding: 0 }}>
+                    <legend style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", display: "block", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.3 }}>
+                      Business type
+                    </legend>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                      {["Salon", "Clinic", "Tutor", "Spa", "Travel", "Other"].map(t => (
+                        <button
+                          key={t}
+                          type="button"
+                          aria-pressed={form.type === t}
+                          onClick={() => { setForm(prev => ({ ...prev, type: t })); if (errors.type) setErrors(prev => ({ ...prev, type: null })); }}
+                          style={{
+                            padding: "8px 16px", borderRadius: 10, fontSize: 13, fontWeight: 600,
+                            border: form.type === t ? "2px solid #0D9488" : errors.type ? "1px solid #EF4444" : "1px solid #E2E8F0",
+                            background: form.type === t ? "rgba(13,148,136,0.08)" : "white",
+                            color: form.type === t ? "#0D9488" : "#64748B",
+                            cursor: "pointer", transition: "all 0.2s",
+                          }}
+                        >{t}</button>
+                      ))}
+                    </div>
+                  </fieldset>
                   {errors.type && (
-                    <p style={{ color: "#EF4444", fontSize: 11, marginTop: 4 }}>{errors.type}</p>
+                    <p role="alert" style={{ color: "#EF4444", fontSize: 11, marginTop: 4 }}>{errors.type}</p>
                   )}
                 </div>
                 <div style={{ marginBottom: 18 }}>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
+                  <label htmlFor="field-message" style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
                     What do you need automated?
                   </label>
                   <textarea
+                    id="field-message"
                     placeholder="e.g. appointment reminders, follow-ups, booking confirmations..."
                     value={form.message} rows={3}
                     maxLength={500}
@@ -806,8 +893,10 @@ export default function AutoFlowLanding() {
                   </p>
                 </div>
                 <button
+                  type="button"
                   onClick={handleSubmit}
                   disabled={submitting}
+                  aria-busy={submitting}
                   style={{
                     width: "100%", padding: "16px", borderRadius: 14, border: "none",
                     background: submitting ? "#94A3B8" : "linear-gradient(135deg, #0D9488, #14B8A6)",
@@ -830,28 +919,28 @@ export default function AutoFlowLanding() {
 
       {/* ─── FOOTER ─── */}
       <footer style={{
-        background: "#0F172A", padding: "48px 32px", textAlign: "center",
+        background: "#0F172A", padding: "48px 32px",
         borderTop: "1px solid rgba(255,255,255,0.05)",
       }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 16 }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: 8,
-            background: "linear-gradient(135deg, #0D9488, #14B8A6)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "white", fontWeight: 900, fontSize: 15,
-          }}>A</div>
-          <span style={{ fontWeight: 900, fontSize: 17, color: "white" }}>AutoFlow</span>
+        <div style={{ maxWidth: 1060, margin: "0 auto" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: 8,
+              background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "white", fontWeight: 900, fontSize: 15,
+            }}>A</div>
+            <span style={{ fontWeight: 900, fontSize: 17, color: "white" }}>AutoFlow</span>
+          </div>
+          <div style={{ display: "flex", gap: 20, marginBottom: 24, flexWrap: "wrap" }}>
+            <a href="#pricing" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Pricing</a>
+            <a href="#quote" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Get a Quote</a>
+            <a href={DASHBOARD_URL} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Log in</a>
+          </div>
+          <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 12 }}>© 2026 AutoFlow. All rights reserved. · Automation services for businesses in the UAE</div>
         </div>
-        <div style={{ display: "flex", justifyContent: "center", gap: 20, marginBottom: 16 }}>
-          <a href="#pricing" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Pricing</a>
-          <a href="#quote" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Get a Quote</a>
-          <a href={DASHBOARD_URL} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Log in</a>
-        </div>
-        <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, marginBottom: 6 }}>
-          Automation services for businesses in the UAE
-        </div>
-        <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 12 }}>© 2026 AutoFlow. All rights reserved.</div>
       </footer>
+      </main>
     </div>
   );
 }
