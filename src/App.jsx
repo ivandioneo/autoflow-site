@@ -240,17 +240,19 @@ function PricingCard({ tier, price, desc, features, highlight, badge, onCta, cta
           ? "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)"
           : "white",
         borderRadius: 20,
-        padding: highlight ? "40px 26px" : "36px 26px",
-        flex: highlight ? "1 1 280px" : "1 1 260px",
-        maxWidth: highlight ? 340 : 320,
+        padding: highlight ? "44px 28px" : "36px 26px",
+        flex: highlight ? "1 1 300px" : "1 1 260px",
+        maxWidth: highlight ? 360 : 310,
         border: highlight ? "1px solid rgba(245,158,11,0.3)" : "1px solid #E2E8F0",
         boxShadow: highlight
-          ? hover ? "0 24px 64px rgba(245,158,11,0.18), 0 0 0 1px rgba(245,158,11,0.15)" : "0 12px 40px rgba(15,23,42,0.3)"
+          ? hover
+            ? "0 28px 72px rgba(245,158,11,0.2), 0 0 0 1px rgba(245,158,11,0.18)"
+            : "0 16px 48px rgba(15,23,42,0.35), 0 0 0 1px rgba(245,158,11,0.12)"
           : hover ? "0 12px 32px rgba(0,0,0,0.08)" : "0 2px 8px rgba(0,0,0,0.04)",
         display: "flex", flexDirection: "column", gap: 16,
         transform: highlight
-          ? hover ? "translateY(-10px) scale(1.02)" : "translateY(-4px) scale(1.01)"
-          : hover ? "translateY(-6px)" : "translateY(0)",
+          ? hover ? "translateY(-12px) scale(1.03)" : "translateY(-6px) scale(1.02)"
+          : hover ? "translateY(-4px)" : "translateY(0)",
         transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
         cursor: "default",
         position: "relative", zIndex: highlight ? 2 : 1,
@@ -356,9 +358,10 @@ export default function AutoFlowLanding() {
 
   const sanitize = (str) => str.replace(/<[^>]*>/g, "").replace(/[<>"'`]/g, "").trim();
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  // E.164-compliant: optional leading +, then 7-15 digits, no leading zero after country code
   const isValidWhatsApp = (num) => {
     const digits = num.replace(/[\s\-\+\(\)]/g, "");
-    return /^\+?[1-9]\d{6,14}$/.test(digits);
+    return /^[1-9]\d{6,14}$/.test(digits);
   };
   const isValidName = (name) => /^[a-zA-Z\s\-'.]{2,50}$/.test(name);
 
@@ -379,7 +382,7 @@ export default function AutoFlowLanding() {
     if (!form.name || !isValidName(form.name)) e.name = "Enter a valid name (letters only, 2–50 chars)";
     if (!form.business || form.business.trim().length < 2) e.business = "Enter a business name";
     if (!form.email || !isValidEmail(form.email)) e.email = "Enter a valid email address";
-    if (!form.whatsapp || !isValidWhatsApp(form.whatsapp)) e.whatsapp = "Enter a valid phone number (7–15 digits)";
+    if (!form.whatsapp || !isValidWhatsApp(form.whatsapp)) e.whatsapp = "Enter a valid phone number (7–15 digits, no leading zero)";
     if (!form.type) e.type = "Select a business type";
     if (form.message && form.message.length > 500) e.message = "Message too long (max 500 characters)";
     setErrors(e);
@@ -447,6 +450,10 @@ export default function AutoFlowLanding() {
         .login-link:hover { border-color: rgba(255,255,255,0.4) !important; color: white !important; }
         .desktop-nav { display: flex; }
         .mobile-menu-btn { display: none; }
+        /* float only runs when motion is acceptable */
+        @media (prefers-reduced-motion: no-preference) {
+          .hero-phone-float { animation: float 6s ease-in-out infinite; }
+        }
         @media (max-width: 640px) {
           .desktop-nav { display: none !important; }
           .mobile-menu-btn { display: block !important; }
@@ -462,6 +469,8 @@ export default function AutoFlowLanding() {
           width: 2px; height: 40px; background: linear-gradient(to bottom, rgba(13,148,136,0.4), transparent);
           margin-left: 19px;
         }
+        /* Use-cases table hover */
+        .usecase-row:hover { background: #F1F5F9 !important; }
       `}</style>
 
       {/* Skip to content */}
@@ -501,6 +510,7 @@ export default function AutoFlowLanding() {
             padding: "8px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)",
             transition: "all 0.2s",
           }}>Log in</a>
+          {/* Primary nav CTA: teal only — amber is reserved for the hero CTA */}
           <a href="#quote" style={{
             background: "#0D9488",
             color: "white", padding: "9px 20px", borderRadius: 10,
@@ -562,6 +572,7 @@ export default function AutoFlowLanding() {
               Automated reminders, follow-ups, and booking confirmations that run on their own — so you stop chasing customers and start reclaiming your time. Built for salons, clinics, tutors, and travel agencies in the UAE.
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 36 }}>
+              {/* Amber CTA — one instance only, the primary conversion action */}
               <a href="#quote" style={{
                 background: "#F59E0B",
                 color: "white", padding: "16px 32px", borderRadius: 14,
@@ -581,7 +592,8 @@ export default function AutoFlowLanding() {
               <span>✦ Cancel anytime</span>
             </div>
           </div>
-          <div className="hero-phone" style={{ flex: "0 0 auto", animation: "float 6s ease-in-out infinite" }}>
+          {/* float class respects prefers-reduced-motion via CSS */}
+          <div className="hero-phone hero-phone-float" style={{ flex: "0 0 auto" }}>
             <PhoneMockup />
           </div>
         </div>
@@ -676,33 +688,37 @@ export default function AutoFlowLanding() {
         </FadeIn>
       </section>
 
-      {/* ─── USE CASES ─── */}
+      {/* ─── USE CASES — left-aligned table layout, no emoji-in-circle cards ─── */}
       <section style={{ padding: "72px 32px", background: "white" }}>
         <FadeIn>
-          <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-            <h2 style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: "clamp(1.75rem,3.5vw,2rem)", fontWeight: 400, color: "#0F172A", textAlign: "center", marginBottom: 12, letterSpacing: -0.3 }}>
+          <div style={{ maxWidth: 860, margin: "0 auto" }}>
+            <h2 style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: "clamp(1.75rem,3.5vw,2rem)", fontWeight: 400, color: "#0F172A", marginBottom: 8, letterSpacing: -0.3 }}>
               Built for businesses like yours
             </h2>
-            <p style={{ color: "#94A3B8", textAlign: "center", fontSize: "clamp(0.875rem,1.6vw,0.9375rem)", marginBottom: 40 }}>
+            <p style={{ color: "#94A3B8", fontSize: "clamp(0.875rem,1.6vw,0.9375rem)", marginBottom: 36 }}>
               If people book time with you, we make sure they show up
             </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
+            <div style={{ display: "flex", flexDirection: "column", borderRadius: 16, overflow: "hidden", border: "1px solid #E2E8F0" }}>
               {[
-                { icon: "💇", title: "Salons", stat: "28%", desc: "average no-show rate in UAE salons. Reminders cut that to under 10%." },
-                { icon: "🏥", title: "Clinics", stat: "4 hrs", desc: "per week staff spend calling patients to confirm. Zero with automation." },
-                { icon: "📚", title: "Tutors", stat: "3×", desc: "more rebookings when students get a follow-up after their session." },
-                { icon: "💅", title: "Spas", stat: "AED 600+", desc: "average revenue recovered per month from prevented no-shows." },
-                { icon: "✈️", title: "Travel", stat: "92%", desc: "of travelers appreciate pre-trip reminders (visa, docs, check-in)." },
-              ].map((c, i) => (
-                <div key={i} style={{
-                  background: "#F8FAFC", borderRadius: 18, padding: "24px 20px",
-                  flex: "1 1 170px", maxWidth: 190, border: "1px solid #E2E8F0",
-                  textAlign: "center",
+                { icon: "💇", title: "Salons", stat: "28% no-show rate", desc: "UAE salons average 28% no-shows. Automated reminders cut that to under 10%." },
+                { icon: "🏥", title: "Clinics", stat: "4 hrs saved weekly", desc: "Staff spend 4 hours a week calling patients to confirm. Zero with automation." },
+                { icon: "📚", title: "Tutors", stat: "3× more rebookings", desc: "Students rebook 3× more often when they get a follow-up after each session." },
+                { icon: "💅", title: "Spas & Beauty", stat: "AED 600+ recovered/mo", desc: "Average monthly revenue recovered from no-shows that would have been lost." },
+                { icon: "✈️", title: "Travel Agencies", stat: "92% satisfaction", desc: "Travelers value pre-trip reminders for visas, documents, and check-in windows." },
+              ].map((c, i, arr) => (
+                <div key={i} className="usecase-row" style={{
+                  display: "grid", gridTemplateColumns: "40px 1fr 1fr", gap: "0 24px",
+                  alignItems: "center", padding: "20px 24px",
+                  background: i % 2 === 0 ? "white" : "#F8FAFC",
+                  borderBottom: i < arr.length - 1 ? "1px solid #E2E8F0" : "none",
+                  transition: "background 0.15s",
                 }}>
-                  <div style={{ fontSize: 32, marginBottom: 8 }} role="img" aria-hidden="true">{c.icon}</div>
-                  <div style={{ fontWeight: 700, fontSize: "clamp(0.875rem,1.6vw,0.9375rem)", color: "#0F172A", marginBottom: 6 }}>{c.title}</div>
-                  <div style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: "clamp(1.25rem,2.5vw,1.5rem)", fontWeight: 400, color: "#0D9488", marginBottom: 6 }}>{c.stat}</div>
-                  <div style={{ fontSize: "clamp(0.75rem,1.3vw,0.75rem)", color: "#64748B", lineHeight: 1.5 }}>{c.desc}</div>
+                  <span style={{ fontSize: 22 }} role="img" aria-hidden="true">{c.icon}</span>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: "clamp(0.875rem,1.6vw,0.9375rem)", color: "#0F172A" }}>{c.title}</div>
+                    <div style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: "clamp(0.875rem,1.8vw,1rem)", color: "#0D9488", fontStyle: "italic", marginTop: 2 }}>{c.stat}</div>
+                  </div>
+                  <div style={{ fontSize: "clamp(0.75rem,1.4vw,0.8125rem)", color: "#64748B", lineHeight: 1.6 }}>{c.desc}</div>
                 </div>
               ))}
             </div>
@@ -714,7 +730,7 @@ export default function AutoFlowLanding() {
       <section id="pricing" style={{ padding: "80px 32px", background: "#F8FAFC" }}>
         <FadeIn>
           <div style={{ maxWidth: 1060, margin: "0 auto" }}>
-            <div style={{ textAlign: "center", marginBottom: 44 }}>
+            <div style={{ marginBottom: 44 }}>
               <h2 style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: "clamp(1.75rem,3.5vw,2.25rem)", fontWeight: 400, color: "#0F172A", letterSpacing: -0.3 }}>Simple, honest pricing</h2>
               <p style={{ color: "#94A3B8", fontSize: "clamp(0.875rem,1.6vw,0.9375rem)", marginTop: 8 }}>Start free. Upgrade when the ROI is obvious.</p>
             </div>
@@ -729,7 +745,7 @@ export default function AutoFlowLanding() {
                 ctaLabel="Get Started" onCta={scrollToQuote}
                 features={["Unlimited automations", "Custom workflow builds", "Multi-location support", "Lead capture + CRM sync", "Dedicated account manager", "Monthly performance report"]} />
             </div>
-            <p style={{ textAlign: "center", color: "#94A3B8", fontSize: "clamp(0.75rem,1.3vw,0.8125rem)", marginTop: 28 }}>
+            <p style={{ color: "#94A3B8", fontSize: "clamp(0.75rem,1.3vw,0.8125rem)", marginTop: 28 }}>
               Already a customer? <a href={DASHBOARD_URL} style={{ color: "#0D9488", fontWeight: 700, textDecoration: "none" }}>Log in to your dashboard →</a>
             </p>
           </div>
