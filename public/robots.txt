@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://autoflow.ivanit.work/sitemap.xml
