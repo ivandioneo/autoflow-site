@@ -1,14 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 
 const DASHBOARD_URL = "https://dashboard.autoflow.ivanit.work";
-// Set VITE_WEBHOOK_URL in Cloudflare Pages environment variables.
-// Never commit the actual webhook URL to source control.
-const WEBHOOK_URL = import.meta.env.VITE_WEBHOOK_URL || "";
-
-// Respect prefers-reduced-motion for the phone float animation
-const prefersReducedMotion =
-  typeof window !== "undefined" &&
-  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+// Webhook URL must be set as VITE_WEBHOOK_URL in Cloudflare Pages environment variables.
+// Never hardcode this value in source code.
+const WEBHOOK_URL = import.meta.env.VITE_WEBHOOK_URL;
 
 function scrollToQuote() {
   const el = document.getElementById("quote");
@@ -31,7 +26,7 @@ function SavingsCalculator() {
       borderRadius: 24, padding: "40px 32px", border: "1px solid rgba(255,255,255,0.08)",
       maxWidth: 520, width: "100%",
     }}>
-      <h3 style={{ color: "white", fontSize: 22, fontWeight: 800, marginBottom: 4, letterSpacing: -0.3, fontFamily: "'Instrument Serif', Georgia, serif" }}>
+      <h3 style={{ color: "white", fontSize: 22, fontWeight: 800, marginBottom: 4, letterSpacing: -0.5, fontFamily: "'Instrument Serif', Georgia, serif" }}>
         How much are no-shows costing you?
       </h3>
       <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, marginBottom: 28 }}>
@@ -115,8 +110,16 @@ function PhoneMockup() {
     return () => clearTimeout(reset);
   }, [step]);
 
+  // Respect prefers-reduced-motion for float animation
+  const prefersReducedMotion = typeof window !== 'undefined'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    : false;
+
   return (
-    <div style={{ position: "relative" }}>
+    <div style={{
+      position: "relative",
+      animation: prefersReducedMotion ? "none" : "float 6s ease-in-out infinite",
+    }}>
       <div style={{
         position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
         width: 320, height: 420, borderRadius: "50%",
@@ -128,13 +131,8 @@ function PhoneMockup() {
         width: 260, background: "#111", borderRadius: 32, padding: "6px",
         boxShadow: "0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)",
       }}>
-        <div style={{
-          width: 80, height: 6, background: "#333", borderRadius: 3,
-          margin: "6px auto 0",
-        }} />
-        <div style={{
-          padding: "14px 14px 10px", display: "flex", alignItems: "center", gap: 10,
-        }}>
+        <div style={{ width: 80, height: 6, background: "#333", borderRadius: 3, margin: "6px auto 0" }} />
+        <div style={{ padding: "14px 14px 10px", display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{
             width: 30, height: 30, borderRadius: 15, background: "#25D366",
             display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15,
@@ -292,9 +290,12 @@ function PricingCard({ tier, price, desc, features, highlight, badge, onCta, cta
           marginTop: "auto", padding: "13px 20px", borderRadius: 12, border: "none",
           background: "#0D9488",
           color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer",
-          transition: "background 0.2s, transform 0.2s",
+          transition: "transform 0.2s, background 0.2s",
           transform: hover ? "scale(1.02)" : "scale(1)",
-        }}>
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = "#0B7A72"}
+        onMouseLeave={e => e.currentTarget.style.background = "#0D9488"}
+      >
         {ctaLabel}
       </button>
     </div>
@@ -318,10 +319,10 @@ export default function AutoFlowLanding() {
 
   const sanitize = (str) => str.replace(/<[^>]*>/g, "").replace(/[<>"'`]/g, "").trim();
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  // E.164-style: optional leading +, first digit 1-9, 6-13 more digits = 7-14 total
   const isValidWhatsApp = (num) => {
-    const digits = num.replace(/[\s\-()]/g, "");
-    return /^\+?[1-9]\d{6,13}$/.test(digits);
+    const digits = num.replace(/[\s\-\+\(\)]/g, "");
+    // E.164-style: leading digit 1-9, total 7–15 digits
+    return /^[1-9]\d{6,14}$/.test(digits);
   };
   const isValidName = (name) => /^[a-zA-Z\s\-'.]{2,50}$/.test(name);
 
@@ -342,7 +343,7 @@ export default function AutoFlowLanding() {
     if (!form.name || !isValidName(form.name)) e.name = "Enter a valid name (letters only, 2-50 chars)";
     if (!form.business || form.business.trim().length < 2) e.business = "Enter a business name";
     if (!form.email || !isValidEmail(form.email)) e.email = "Enter a valid email address";
-    if (!form.whatsapp || !isValidWhatsApp(form.whatsapp)) e.whatsapp = "Enter a valid phone number";
+    if (!form.whatsapp || !isValidWhatsApp(form.whatsapp)) e.whatsapp = "Enter a valid phone number (7-15 digits)";
     if (!form.type) e.type = "Select a business type";
     if (form.message && form.message.length > 500) e.message = "Message too long (max 500 characters)";
     setErrors(e);
@@ -369,10 +370,10 @@ export default function AutoFlowLanding() {
         message: sanitize(form.message).slice(0, 500),
       };
       await fetch(WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        referrerPolicy: "no-referrer",
-        mode: "no-cors",
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        referrerPolicy: 'no-referrer',
+        mode: 'no-cors',
         body: JSON.stringify(sanitizedForm),
       });
       setSubmitted(true);
@@ -382,7 +383,7 @@ export default function AutoFlowLanding() {
     setSubmitting(false);
   };
 
-  const displayFont = "'Instrument Serif', Georgia, serif";
+  const closeMobileNav = () => setMobileNavOpen(false);
 
   return (
     <div style={{ fontFamily: "'Inter', system-ui, sans-serif", color: "#334155", background: "#F0F4F8", overflowX: "hidden" }}>
@@ -414,29 +415,34 @@ export default function AutoFlowLanding() {
         }
         .nav-link:hover { color: white !important; }
         .login-link:hover { border-color: rgba(255,255,255,0.4) !important; color: white !important; }
-        /* Mobile nav */
-        .nav-links { display: flex; gap: 24px; align-items: center; }
+        .mobile-nav-links { display: none; }
         @media (max-width: 640px) {
-          .nav-links { display: none; }
-          .nav-links.open {
+          .desktop-nav-links { display: none !important; }
+          .mobile-menu-btn { display: flex !important; }
+          .mobile-nav-links.open {
             display: flex;
             flex-direction: column;
             position: fixed;
-            top: 56px;
+            top: 60px;
             left: 0; right: 0;
-            background: rgba(15,23,42,0.97);
+            background: rgba(15,23,42,0.98);
             backdrop-filter: blur(20px);
-            padding: 24px 24px 32px;
-            gap: 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 24px 32px;
+            gap: 20px;
             z-index: 99;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
           }
-          .nav-links.open a { font-size: 16px !important; }
-          .hamburger { display: flex !important; }
-          .hero-h1 { font-size: clamp(2rem, 8vw, 3.25rem) !important; }
+          .mobile-nav-links a {
+            color: rgba(255,255,255,0.8) !important;
+            font-size: 16px !important;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 8px 0;
+          }
         }
-        .hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; }
-        .hamburger span { display: block; width: 22px; height: 2px; background: rgba(255,255,255,0.8); border-radius: 2px; transition: all 0.2s; }
+        @media (min-width: 641px) {
+          .mobile-menu-btn { display: none !important; }
+        }
       `}</style>
 
       {/* ─── NAV ─── */}
@@ -457,42 +463,56 @@ export default function AutoFlowLanding() {
             color: "white", fontWeight: 900, fontSize: 17,
             boxShadow: "0 4px 12px rgba(13,148,136,0.3)",
           }}>A</div>
-          <span style={{ fontWeight: 900, fontSize: 19, color: "white", letterSpacing: -0.5, fontFamily: displayFont }}>AutoFlow</span>
+          <span style={{ fontWeight: 900, fontSize: 19, color: "white", letterSpacing: -0.5 }}>AutoFlow</span>
         </div>
 
-        {/* Hamburger */}
-        <button
-          className="hamburger"
-          aria-label={mobileNavOpen ? "Close navigation" : "Open navigation"}
-          aria-expanded={mobileNavOpen}
-          onClick={() => setMobileNavOpen(o => !o)}
-        >
-          <span style={{ transform: mobileNavOpen ? "rotate(45deg) translate(5px, 5px)" : "none" }} />
-          <span style={{ opacity: mobileNavOpen ? 0 : 1 }} />
-          <span style={{ transform: mobileNavOpen ? "rotate(-45deg) translate(5px, -5px)" : "none" }} />
-        </button>
-
-        <div className={`nav-links${mobileNavOpen ? " open" : ""}`}>
-          <a href="#calc" className="nav-link" onClick={() => setMobileNavOpen(false)} style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>Calculator</a>
-          <a href="#how" className="nav-link" onClick={() => setMobileNavOpen(false)} style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>How it works</a>
-          <a href="#pricing" className="nav-link" onClick={() => setMobileNavOpen(false)} style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>Pricing</a>
+        {/* Desktop nav */}
+        <div className="desktop-nav-links" style={{ display: "flex", gap: 24, alignItems: "center" }}>
+          <a href="#calc" className="nav-link" onClick={closeMobileNav} style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>Calculator</a>
+          <a href="#how" className="nav-link" onClick={closeMobileNav} style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>How it works</a>
+          <a href="#pricing" className="nav-link" onClick={closeMobileNav} style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>Pricing</a>
           <a href={DASHBOARD_URL} className="login-link" style={{
             color: "rgba(255,255,255,0.75)", textDecoration: "none", fontWeight: 600, fontSize: 13,
             padding: "8px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)",
             transition: "all 0.2s",
           }}>Log in</a>
-          <a href="#quote" onClick={() => setMobileNavOpen(false)} style={{
-            background: "#0D9488",
+          <a href="#quote" style={{
+            background: "linear-gradient(135deg, #F59E0B, #F97316)",
             color: "white", padding: "9px 20px", borderRadius: 10,
             textDecoration: "none", fontWeight: 700, fontSize: 13,
-            boxShadow: "0 4px 16px rgba(13,148,136,0.25)",
+            boxShadow: "0 4px 16px rgba(245,158,11,0.3)",
           }}>Get a Quote</a>
         </div>
+
+        {/* Mobile hamburger */}
+        <button
+          className="mobile-menu-btn"
+          onClick={() => setMobileNavOpen(o => !o)}
+          aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
+          style={{
+            display: "none", background: "none", border: "none",
+            color: "white", cursor: "pointer", padding: 8, alignItems: "center",
+          }}
+        >
+          {mobileNavOpen
+            ? <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            : <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+          }
+        </button>
       </nav>
+
+      {/* Mobile nav dropdown */}
+      <div className={`mobile-nav-links${mobileNavOpen ? " open" : ""}`}>
+        <a href="#calc" onClick={closeMobileNav}>Calculator</a>
+        <a href="#how" onClick={closeMobileNav}>How it works</a>
+        <a href="#pricing" onClick={closeMobileNav}>Pricing</a>
+        <a href={DASHBOARD_URL} onClick={closeMobileNav}>Log in</a>
+        <a href="#quote" onClick={closeMobileNav} style={{ color: "#F59E0B !important" }}>Get a Quote</a>
+      </div>
 
       {/* ─── HERO ─── */}
       <section style={{
-        background: "#0F172A",
+        background: "linear-gradient(135deg, #0F172A 0%, #1E293B 40%, #0F172A 100%)",
         padding: "120px 32px 80px", position: "relative", overflow: "hidden",
       }}>
         <div style={{
@@ -502,7 +522,7 @@ export default function AutoFlowLanding() {
         }} />
         <div style={{
           position: "absolute", bottom: -80, left: -80, width: 300, height: 300,
-          borderRadius: "50%", background: "radial-gradient(circle, rgba(245,158,11,0.07) 0%, transparent 70%)",
+          borderRadius: "50%", background: "radial-gradient(circle, rgba(245,158,11,0.08) 0%, transparent 70%)",
           filter: "blur(50px)",
         }} />
 
@@ -522,10 +542,11 @@ export default function AutoFlowLanding() {
               </span>
             </div>
 
-            <h1 className="hero-h1" style={{
-              fontSize: "clamp(2rem, 5vw, 3.25rem)", fontWeight: 700, color: "white",
-              lineHeight: 1.1, letterSpacing: -0.5, marginBottom: 20,
-              fontFamily: displayFont,
+            <h1 style={{
+              fontSize: "clamp(2.2rem, 5vw, 3.25rem)",
+              fontFamily: "'Instrument Serif', Georgia, serif",
+              fontWeight: 400, color: "white", lineHeight: 1.1,
+              letterSpacing: -0.5, marginBottom: 20,
             }}>
               Put your business on{" "}
               <span style={{
@@ -534,8 +555,8 @@ export default function AutoFlowLanding() {
               }}>autopilot.</span>
             </h1>
             <p style={{
-              fontSize: 17, color: "rgba(255,255,255,0.5)", lineHeight: 1.7,
-              marginBottom: 32, maxWidth: 440,
+              fontSize: 17, color: "rgba(255,255,255,0.55)", lineHeight: 1.7,
+              marginBottom: 32, maxWidth: 440, textAlign: "left",
             }}>
               Automated reminders, follow-ups, and booking confirmations that run on their own — so you stop chasing customers and start reclaiming your time. Built for salons, clinics, tutors, and travel agencies in the UAE.
             </p>
@@ -544,7 +565,7 @@ export default function AutoFlowLanding() {
                 background: "linear-gradient(135deg, #F59E0B, #F97316)",
                 color: "white", padding: "16px 32px", borderRadius: 14,
                 textDecoration: "none", fontWeight: 800, fontSize: 16,
-                boxShadow: "0 8px 32px rgba(245,158,11,0.3)",
+                boxShadow: "0 8px 32px rgba(245,158,11,0.35)",
                 transition: "transform 0.2s", display: "inline-block",
               }}>Request a Free Quote</a>
               <a href="#calc" style={{
@@ -559,7 +580,7 @@ export default function AutoFlowLanding() {
               <span>✦ Cancel anytime</span>
             </div>
           </div>
-          <div style={{ flex: "0 0 auto", animation: prefersReducedMotion ? "none" : "float 6s ease-in-out infinite" }}>
+          <div style={{ flex: "0 0 auto" }}>
             <PhoneMockup />
           </div>
         </div>
@@ -573,10 +594,14 @@ export default function AutoFlowLanding() {
         <FadeIn>
           <div style={{ maxWidth: 1140, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: 48, alignItems: "center", justifyContent: "center" }}>
             <div style={{ flex: "1 1 340px", maxWidth: 440 }}>
-              <h2 style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.1rem)", fontWeight: 700, color: "white", lineHeight: 1.2, letterSpacing: -0.3, marginBottom: 16, fontFamily: displayFont }}>
+              <h2 style={{
+                fontSize: "clamp(1.6rem, 3vw, 2.1rem)",
+                fontFamily: "'Instrument Serif', Georgia, serif",
+                fontWeight: 400, color: "white", lineHeight: 1.2, letterSpacing: -0.3, marginBottom: 16,
+              }}>
                 See exactly how much you're leaving on the table
               </h2>
-              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 15, lineHeight: 1.7, marginBottom: 24 }}>
+              <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 15, lineHeight: 1.7, marginBottom: 24, textAlign: "left" }}>
                 The average appointment business loses 15–30% of revenue to no-shows. Drag the sliders to see your numbers — then let us fix them.
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -610,7 +635,7 @@ export default function AutoFlowLanding() {
             { n: 0, s: "", label: "Messages you send manually" },
           ].map((s, i) => (
             <div key={i} style={{ textAlign: "center", minWidth: 160 }}>
-              <div style={{ fontSize: 42, fontWeight: 900, color: "#0F172A", letterSpacing: -1, fontFamily: displayFont }}>
+              <div style={{ fontSize: 42, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>
                 {s.n === 0 ? "0" : <Counter target={s.n} />}{s.s}
               </div>
               <div style={{ fontSize: 13, color: "#94A3B8", marginTop: 4, fontWeight: 500 }}>{s.label}</div>
@@ -624,7 +649,11 @@ export default function AutoFlowLanding() {
         <FadeIn>
           <div style={{ maxWidth: 900, margin: "0 auto" }}>
             <div style={{ textAlign: "center", marginBottom: 48 }}>
-              <h2 style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.1rem)", fontWeight: 700, color: "#0F172A", letterSpacing: -0.3, fontFamily: displayFont }}>How it works</h2>
+              <h2 style={{
+                fontSize: "clamp(1.6rem, 3vw, 2.1rem)",
+                fontFamily: "'Instrument Serif', Georgia, serif",
+                fontWeight: 400, color: "#0F172A", letterSpacing: -0.3,
+              }}>How it works</h2>
               <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>
                 From booking to confirmation — fully automated
               </p>
@@ -632,9 +661,9 @@ export default function AutoFlowLanding() {
             <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center" }}>
               {[
                 { step: "01", title: "Customer books", desc: "Via your form, phone, Instagram, or walk-in. We connect to however you take bookings.", color: "#0D9488" },
-                { step: "02", title: "Flow triggers", desc: "Our automation engine picks it up instantly — no delay, no manual entry needed.", color: "#0D9488" },
+                { step: "02", title: "Flow triggers", desc: "Our automation engine picks it up instantly — no delay, no manual entry needed.", color: "#F59E0B" },
                 { step: "03", title: "Reminders go out", desc: "WhatsApp or SMS, 24h and 2h before. Customer confirms or reschedules right in the chat.", color: "#0D9488" },
-                { step: "04", title: "Everything logged", desc: "Dashboard shows confirmed, pending, no-shows. You see the full picture at a glance.", color: "#0D9488" },
+                { step: "04", title: "Everything logged", desc: "Dashboard shows confirmed, pending, no-shows. You see the full picture at a glance.", color: "#F59E0B" },
               ].map((s, i) => (
                 <div key={i} style={{
                   flex: "1 1 200px", maxWidth: 210, padding: "28px 16px",
@@ -642,11 +671,18 @@ export default function AutoFlowLanding() {
                   position: "relative",
                 }}>
                   <div style={{
-                    fontSize: 11, fontWeight: 800, color: "#0D9488",
-                    letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 10,
+                    position: "absolute", top: -1, left: "50%", transform: "translateX(-50%)",
+                    width: 40, height: 3, borderRadius: 2, background: s.color,
+                  }} />
+                  <div style={{
+                    fontSize: 11, fontWeight: 800, color: s.color, letterSpacing: 1.5,
+                    textTransform: "uppercase", marginBottom: 10, marginTop: 8,
                   }}>{s.step}</div>
-                  <div style={{ fontWeight: 700, fontSize: 15, color: "#0F172A", marginBottom: 8, fontFamily: displayFont }}>{s.title}</div>
-                  <div style={{ fontSize: 13, color: "#64748B", lineHeight: 1.6 }}>{s.desc}</div>
+                  <div style={{
+                    fontFamily: "'Instrument Serif', Georgia, serif",
+                    fontWeight: 400, fontSize: 17, color: "#0F172A", marginBottom: 8,
+                  }}>{s.title}</div>
+                  <div style={{ fontSize: 12.5, color: "#64748B", lineHeight: 1.55 }}>{s.desc}</div>
                 </div>
               ))}
             </div>
@@ -658,7 +694,11 @@ export default function AutoFlowLanding() {
       <section style={{ padding: "72px 32px", background: "white" }}>
         <FadeIn>
           <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-            <h2 style={{ fontSize: "clamp(1.5rem, 3vw, 1.9rem)", fontWeight: 700, color: "#0F172A", textAlign: "center", marginBottom: 12, letterSpacing: -0.3, fontFamily: displayFont }}>
+            <h2 style={{
+              fontSize: "clamp(1.4rem, 2.5vw, 1.9rem)",
+              fontFamily: "'Instrument Serif', Georgia, serif",
+              fontWeight: 400, color: "#0F172A", textAlign: "center", marginBottom: 12, letterSpacing: -0.3,
+            }}>
               Built for businesses like yours
             </h2>
             <p style={{ color: "#94A3B8", textAlign: "center", fontSize: 15, marginBottom: 40 }}>
@@ -678,7 +718,10 @@ export default function AutoFlowLanding() {
                   textAlign: "center",
                 }}>
                   <div style={{ fontSize: 32, marginBottom: 8 }}>{c.icon}</div>
-                  <div style={{ fontWeight: 700, fontSize: 15, color: "#0F172A", marginBottom: 6, fontFamily: displayFont }}>{c.title}</div>
+                  <div style={{
+                    fontFamily: "'Instrument Serif', Georgia, serif",
+                    fontWeight: 400, fontSize: 16, color: "#0F172A", marginBottom: 6,
+                  }}>{c.title}</div>
                   <div style={{ fontSize: 24, fontWeight: 900, color: "#0D9488", marginBottom: 6 }}>{c.stat}</div>
                   <div style={{ fontSize: 12, color: "#64748B", lineHeight: 1.5 }}>{c.desc}</div>
                 </div>
@@ -693,7 +736,11 @@ export default function AutoFlowLanding() {
         <FadeIn>
           <div style={{ maxWidth: 1060, margin: "0 auto" }}>
             <div style={{ textAlign: "center", marginBottom: 44 }}>
-              <h2 style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.1rem)", fontWeight: 700, color: "#0F172A", letterSpacing: -0.3, fontFamily: displayFont }}>Simple, honest pricing</h2>
+              <h2 style={{
+                fontSize: "clamp(1.6rem, 3vw, 2.1rem)",
+                fontFamily: "'Instrument Serif', Georgia, serif",
+                fontWeight: 400, color: "#0F172A", letterSpacing: -0.3,
+              }}>Simple, honest pricing</h2>
               <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>Start free. Upgrade when the ROI is obvious.</p>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center", alignItems: "stretch" }}>
@@ -729,10 +776,13 @@ export default function AutoFlowLanding() {
               alignItems: "center", justifyContent: "center", fontSize: 30, flexShrink: 0,
             }}>🔒</div>
             <div style={{ flex: 1, minWidth: 280 }}>
-              <div style={{ fontWeight: 700, fontSize: 18, color: "white", marginBottom: 6, fontFamily: displayFont }}>
+              <div style={{
+                fontFamily: "'Instrument Serif', Georgia, serif",
+                fontWeight: 400, fontSize: 20, color: "white", marginBottom: 6,
+              }}>
                 Built security-first, from the ground up
               </div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.7 }}>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.7, textAlign: "left" }}>
                 Every account is fully isolated — one business can never see another's data,
                 credentials, or automations. Access is enforced at the server, not just hidden
                 in the interface. We run continuous security monitoring and intrusion detection
@@ -748,7 +798,11 @@ export default function AutoFlowLanding() {
         <FadeIn>
           <div style={{ maxWidth: 560, margin: "0 auto" }}>
             <div style={{ textAlign: "center", marginBottom: 36 }}>
-              <h2 style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.1rem)", fontWeight: 700, color: "#0F172A", letterSpacing: -0.3, fontFamily: displayFont }}>
+              <h2 style={{
+                fontSize: "clamp(1.6rem, 3vw, 2.1rem)",
+                fontFamily: "'Instrument Serif', Georgia, serif",
+                fontWeight: 400, color: "#0F172A", letterSpacing: -0.3,
+              }}>
                 Get your free automation plan
               </h2>
               <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>
@@ -761,7 +815,10 @@ export default function AutoFlowLanding() {
                 textAlign: "center", border: "1px solid #BBF7D0",
               }}>
                 <div style={{ fontSize: 56, marginBottom: 16 }}>🎉</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: "#0F172A", marginBottom: 8, fontFamily: displayFont }}>
+                <div style={{
+                  fontFamily: "'Instrument Serif', Georgia, serif",
+                  fontSize: 24, fontWeight: 400, color: "#0F172A", marginBottom: 8,
+                }}>
                   You're in!
                 </div>
                 <div style={{ color: "#64748B", fontSize: 14, lineHeight: 1.6 }}>
@@ -856,10 +913,10 @@ export default function AutoFlowLanding() {
                   disabled={submitting}
                   style={{
                     width: "100%", padding: "16px", borderRadius: 14, border: "none",
-                    background: submitting ? "#94A3B8" : "linear-gradient(135deg, #F59E0B, #F97316)",
+                    background: submitting ? "#94A3B8" : "#0D9488",
                     color: "white", fontWeight: 800, fontSize: 16,
                     cursor: submitting ? "not-allowed" : "pointer",
-                    boxShadow: submitting ? "none" : "0 8px 32px rgba(245,158,11,0.25)",
+                    boxShadow: submitting ? "none" : "0 8px 32px rgba(13,148,136,0.3)",
                     transition: "all 0.2s",
                   }}
                 >
@@ -886,7 +943,7 @@ export default function AutoFlowLanding() {
             display: "flex", alignItems: "center", justifyContent: "center",
             color: "white", fontWeight: 900, fontSize: 15,
           }}>A</div>
-          <span style={{ fontWeight: 700, fontSize: 17, color: "white", fontFamily: displayFont }}>AutoFlow</span>
+          <span style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontWeight: 400, fontSize: 19, color: "white" }}>AutoFlow</span>
         </div>
         <div style={{ display: "flex", justifyContent: "center", gap: 20, marginBottom: 16 }}>
           <a href="#pricing" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Pricing</a>
