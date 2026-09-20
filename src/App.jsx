@@ -84,29 +84,47 @@ function SavingsCalculator() {
   );
 }
 
-// ─── Animated Phone ───
+// ─── Animated Phone — Booking Page UI ───
 function PhoneMockup() {
+  // Steps: 0=services, 1=date, 2=time, 3=confirm, 4=confirmed
   const [step, setStep] = useState(0);
-  const msgs = [
-    { dir: "in", text: "Hi, I'd like to book a haircut for Thursday 3pm", t: "10:32 AM" },
-    { dir: "out", text: "✅ Booked! Thursday at 3:00 PM. We'll remind you!", t: "10:32 AM" },
-    { dir: "out", text: "⏰ Reminder: Haircut tomorrow 3 PM. Reply YES to confirm.", t: "Wed 6:00 PM", slow: true },
-    { dir: "in", text: "YES", t: "Wed 6:12 PM" },
-    { dir: "out", text: "You're confirmed! See you tomorrow 💈", t: "Wed 6:12 PM" },
-  ];
+  const [selectedService, setSelectedService] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedTime, setSelectedTime] = useState(null);
+
+  const STEPS_COUNT = 5;
 
   useEffect(() => {
-    if (step < msgs.length) {
-      const d = msgs[step].slow ? 2400 : step === 0 ? 1400 : 1200;
-      const timer = setTimeout(() => setStep(s => s + 1), d);
-      return () => clearTimeout(timer);
-    }
-    const reset = setTimeout(() => setStep(0), 3000);
-    return () => clearTimeout(reset);
+    // Auto-advance through the booking flow
+    const delays = [
+      2200, // step 0→1: service selected
+      2000, // step 1→2: date selected
+      1800, // step 2→3: time selected
+      2000, // step 3→4: confirmed
+      3500, // step 4→0: reset
+    ];
+    const d = delays[step] ?? 2000;
+    const timer = setTimeout(() => {
+      if (step === 0) setSelectedService("Haircut & Style");
+      if (step === 1) setSelectedDate("Thu 25 Sep");
+      if (step === 2) setSelectedTime("3:00 PM");
+      if (step === 4) {
+        setSelectedService(null);
+        setSelectedDate(null);
+        setSelectedTime(null);
+      }
+      setStep(s => (s + 1) % STEPS_COUNT);
+    }, d);
+    return () => clearTimeout(timer);
   }, [step]);
+
+  const services = ["Haircut & Style", "Colour Treatment", "Blow-dry"];
+  const dates = ["Tue 23 Sep", "Wed 24 Sep", "Thu 25 Sep", "Fri 26 Sep"];
+  const times = ["10:00 AM", "11:30 AM", "3:00 PM", "4:30 PM"];
 
   return (
     <div style={{ position: "relative" }}>
+      {/* Ambient glow behind phone */}
       <div
         aria-hidden="true"
         style={{
@@ -116,56 +134,190 @@ function PhoneMockup() {
           filter: "blur(40px)", zIndex: 0,
         }}
       />
+
+      {/* Phone frame */}
       <div style={{
         position: "relative", zIndex: 1,
         width: 260, background: "#111", borderRadius: 32, padding: "6px",
         boxShadow: "0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)",
       }}>
+        {/* Notch */}
         <div style={{
           width: 80, height: 6, background: "#333", borderRadius: 3,
           margin: "6px auto 0",
         }} />
+
+        {/* Booking page header */}
         <div style={{
           padding: "14px 14px 10px", display: "flex", alignItems: "center", gap: 10,
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
         }}>
-          <div style={{
-            width: 30, height: 30, borderRadius: 15, background: "#0D9488",
-            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15,
-          }}>⦈</div>
+          <div
+            aria-hidden="true"
+            style={{
+              width: 30, height: 30, borderRadius: 15, background: "#0D9488",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "white", fontWeight: 900, fontSize: 14, letterSpacing: -0.5,
+            }}
+          >A</div>
           <div>
             <div style={{ color: "white", fontWeight: 700, fontSize: 13 }}>GlowCuts Salon</div>
             <div style={{ color: "#14B8A6", fontSize: 10 }}>● booking open</div>
           </div>
         </div>
+
+        {/* Booking page body */}
         <div style={{
-          background: "#0B141A", borderRadius: 0, minHeight: 260, padding: "10px 8px",
-          display: "flex", flexDirection: "column", gap: 5,
-          borderBottomLeftRadius: 26, borderBottomRightRadius: 26,
+          background: "#F8FAFC",
+          minHeight: 290,
+          padding: "12px 10px 14px",
+          borderBottomLeftRadius: 26,
+          borderBottomRightRadius: 26,
+          display: "flex",
+          flexDirection: "column",
+          gap: 0,
+          overflow: "hidden",
         }}>
-          {msgs.slice(0, step).map((m, i) => (
-            <div key={i} style={{
-              alignSelf: m.dir === "out" ? "flex-end" : "flex-start",
-              background: m.dir === "out" ? "#005C4B" : "#1F2C34",
-              padding: "6px 10px 3px", borderRadius: 8, maxWidth: "85%",
-              animation: "msgPop 0.3s cubic-bezier(0.34,1.56,0.64,1)",
-            }}>
-              <div style={{ fontSize: 12, color: "#E9EDEF", lineHeight: 1.35 }}>{m.text}</div>
-              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.3)", textAlign: "right", marginTop: 1 }}>{m.t}</div>
-            </div>
-          ))}
-          {step < msgs.length && (
-            <div style={{
-              alignSelf: msgs[step].dir === "out" ? "flex-end" : "flex-start",
-              background: msgs[step].dir === "out" ? "#005C4B" : "#1F2C34",
-              padding: "8px 16px", borderRadius: 8,
-            }}>
-              <div style={{ display: "flex", gap: 3 }}>
-                {[0,1,2].map(d => (
-                  <div key={d} style={{
-                    width: 5, height: 5, borderRadius: "50%", background: "rgba(255,255,255,0.3)",
-                    animation: `dotPulse 1.2s ${d * 0.2}s infinite`,
-                  }} />
+
+          {/* ── Step 0 & 1: Service Selection ── */}
+          {(step === 0 || step === 1) && (
+            <div style={{ animation: "stepIn 0.35s cubic-bezier(0.34,1.2,0.64,1)" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                Book an appointment
+              </div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: "#334155", marginBottom: 6 }}>Select a service</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                {services.map(svc => (
+                  <div
+                    key={svc}
+                    style={{
+                      padding: "7px 10px",
+                      borderRadius: 8,
+                      border: `1.5px solid ${(step === 1 && selectedService === svc) ? "#0D9488" : "#E2E8F0"}`,
+                      background: (step === 1 && selectedService === svc) ? "rgba(13,148,136,0.07)" : "white",
+                      fontSize: 11,
+                      fontWeight: (step === 1 && selectedService === svc) ? 700 : 500,
+                      color: (step === 1 && selectedService === svc) ? "#0D9488" : "#475569",
+                      display: "flex", alignItems: "center", justifyContent: "space-between",
+                      transition: "all 0.25s ease",
+                      animation: step === 1 && selectedService === svc ? "selectPop 0.25s ease" : "none",
+                    }}
+                  >
+                    <span>{svc}</span>
+                    {step === 1 && selectedService === svc && (
+                      <span style={{ fontSize: 10, color: "#0D9488" }}>✓</span>
+                    )}
+                  </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 2: Date Selection ── */}
+          {step === 2 && (
+            <div style={{ animation: "stepIn 0.35s cubic-bezier(0.34,1.2,0.64,1)" }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8", marginBottom: 6 }}>
+                Haircut &amp; Style
+              </div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: "#334155", marginBottom: 7 }}>Select a date</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5 }}>
+                {dates.map(d => (
+                  <div
+                    key={d}
+                    style={{
+                      padding: "7px 6px",
+                      borderRadius: 8,
+                      border: `1.5px solid ${selectedDate === d ? "#0D9488" : "#E2E8F0"}`,
+                      background: selectedDate === d ? "rgba(13,148,136,0.07)" : "white",
+                      fontSize: 10.5,
+                      fontWeight: selectedDate === d ? 700 : 500,
+                      color: selectedDate === d ? "#0D9488" : "#475569",
+                      textAlign: "center",
+                      animation: selectedDate === d ? "selectPop 0.25s ease" : "none",
+                    }}
+                  >
+                    {d}
+                  </div>
+                ))}
+              </div>
+              {selectedDate && (
+                <div style={{ marginTop: 8, fontSize: 10, color: "#0D9488", fontWeight: 600, textAlign: "center" }}>
+                  {selectedDate} selected ✓
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Step 3: Time Slot Selection ── */}
+          {step === 3 && (
+            <div style={{ animation: "stepIn 0.35s cubic-bezier(0.34,1.2,0.64,1)" }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8", marginBottom: 2 }}>
+                Haircut &amp; Style · Thu 25 Sep
+              </div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: "#334155", marginBottom: 7, marginTop: 4 }}>
+                Available times
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5 }}>
+                {times.map(t => (
+                  <div
+                    key={t}
+                    style={{
+                      padding: "7px 4px",
+                      borderRadius: 8,
+                      border: `1.5px solid ${selectedTime === t ? "#0D9488" : "#E2E8F0"}`,
+                      background: selectedTime === t ? "rgba(13,148,136,0.07)" : "white",
+                      fontSize: 11,
+                      fontWeight: selectedTime === t ? 700 : 500,
+                      color: selectedTime === t ? "#0D9488" : "#475569",
+                      textAlign: "center",
+                      animation: selectedTime === t ? "selectPop 0.25s ease" : "none",
+                    }}
+                  >
+                    {t}
+                  </div>
+                ))}
+              </div>
+              {selectedTime && (
+                <div style={{ marginTop: 10 }}>
+                  <div style={{
+                    background: "#0D9488", color: "white", borderRadius: 8,
+                    padding: "8px 0", fontSize: 11, fontWeight: 700,
+                    textAlign: "center", letterSpacing: 0.2,
+                  }}>
+                    Confirm Booking
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Step 4: Confirmed ── */}
+          {step === 4 && (
+            <div style={{
+              display: "flex", flexDirection: "column", alignItems: "center",
+              justifyContent: "center", flex: 1, padding: "20px 8px",
+              animation: "stepIn 0.4s cubic-bezier(0.34,1.56,0.64,1)",
+            }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: "50%",
+                background: "rgba(13,148,136,0.12)", display: "flex",
+                alignItems: "center", justifyContent: "center",
+                fontSize: 22, marginBottom: 10,
+              }}>✓</div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "#0F172A", marginBottom: 4 }}>
+                Booking confirmed
+              </div>
+              <div style={{ fontSize: 10, color: "#64748B", textAlign: "center", lineHeight: 1.5 }}>
+                Haircut &amp; Style<br />
+                Thu 25 Sep · 3:00 PM<br />
+                GlowCuts Salon
+              </div>
+              <div style={{
+                marginTop: 10, fontSize: 10, color: "#14B8A6", fontWeight: 600,
+                background: "rgba(13,148,136,0.07)", borderRadius: 6,
+                padding: "5px 10px", border: "1px solid rgba(13,148,136,0.15)",
+              }}>
+                Confirmation sent automatically
               </div>
             </div>
           )}
@@ -311,9 +463,14 @@ export default function AutoFlowLanding() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
-        @keyframes msgPop {
-          from { opacity: 0; transform: scale(0.9) translateY(8px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
+        @keyframes stepIn {
+          from { opacity: 0; transform: translateY(10px) scale(0.98); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes selectPop {
+          0%   { transform: scale(1); }
+          50%  { transform: scale(1.04); }
+          100% { transform: scale(1); }
         }
         @keyframes dotPulse {
           0%, 80% { opacity: 0.3; transform: scale(0.8); }
@@ -561,7 +718,7 @@ export default function AutoFlowLanding() {
                 {[
                   { icon: "📄", title: "Create your page", desc: "Set up your business booking page in minutes. Add your services, availability, and branding.", color: "#0D9488" },
                   { icon: "🔗", title: "Share your link", desc: "Publish your booking page and share it wherever your customers find you.", color: "#F59E0B" },
-                  { icon: "💬", title: "Customers book", desc: "They pick a time, fill in their details, and confirm. No back-and-forth messages needed.", color: "#8B5CF6" },
+                  { icon: "📅", title: "Customers book", desc: "They pick a service, choose a date and time, and confirm. No back-and-forth needed.", color: "#8B5CF6" },
                   { icon: "⚡", title: "AutoFlow takes over", desc: "Confirmations and reminders go out automatically. You just show up.", color: "#EF4444" },
                 ].map((s, i) => (
                   <div key={i} style={{
