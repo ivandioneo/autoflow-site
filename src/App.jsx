@@ -147,6 +147,45 @@ function PhoneMockup() {
 
   const confirmed = step === 4;
 
+  /* Sidebar card icon definitions — teal SVG line icons */
+  const sidebarCards = [
+    {
+      color: "#10B981",
+      label: "Booking confirmed",
+      sub: "Customer receives instant confirmation",
+      icon: (
+        /* Checkmark circle */
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      ),
+    },
+    {
+      color: "#F59E0B",
+      label: "Automatic reminders",
+      sub: "We handle the follow-ups",
+      icon: (
+        /* Bell */
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+        </svg>
+      ),
+    },
+    {
+      color: "#14B8A6",
+      label: "You get more customers",
+      sub: "Less no-shows, more revenue",
+      icon: (
+        /* Trending up */
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+          <polyline points="17 6 23 6 23 12" />
+        </svg>
+      ),
+    },
+  ];
+
   return (
     <div style={{ position: "relative", display: "flex", justifyContent: "center" }}>
       {/* Ambient glow */}
@@ -309,17 +348,13 @@ function PhoneMockup() {
         </div>
       </div>
 
-      {/* Floating sidebar cards */}
+      {/* Floating sidebar cards — teal SVG line icons */}
       <div style={{
         position: "absolute", right: -160, top: 60,
         display: "flex", flexDirection: "column", gap: 10,
         zIndex: 2,
       }}>
-        {[
-          { icon: "✓", color: "#10B981", label: "Booking confirmed", sub: "Customer receives instant confirmation" },
-          { icon: "🔔", color: "#F59E0B", label: "Automatic reminders", sub: "We handle the follow-ups" },
-          { icon: "📈", color: "#14B8A6", label: "You get more customers", sub: "Less no-shows, more revenue" },
-        ].map((c, i) => (
+        {sidebarCards.map((c, i) => (
           <div key={i} style={{
             background: "rgba(13,20,30,0.85)",
             backdropFilter: "blur(12px)",
@@ -334,7 +369,6 @@ function PhoneMockup() {
               width: 28, height: 28, borderRadius: 8, flexShrink: 0,
               background: `${c.color}22`,
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 13,
             }}>{c.icon}</div>
             <div>
               <div style={{ color: "white", fontSize: 11, fontWeight: 700, marginBottom: 2 }}>{c.label}</div>
@@ -344,7 +378,7 @@ function PhoneMockup() {
         ))}
       </div>
 
-      {/* FIX 2 — Handwritten annotation: "It just works in the background." */}
+      {/* Handwritten annotation: "It just works in the background." */}
       <div aria-hidden="true" style={{
         position: "absolute",
         top: 20,
@@ -394,7 +428,6 @@ function SavingsCalculator() {
       maxWidth: 680,
       width: "100%",
     }}>
-      {/* FIX 5 — Horizontal layout: slider area left, button right */}
       <div style={{
         display: "flex",
         alignItems: "center",
@@ -557,7 +590,6 @@ export default function App() {
           height: 64,
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          {/* FIX 7 — Flow-A logo in nav */}
           <a href="#" aria-label="AutoFlow home" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
             <FlowALogo size={34} />
             <div>
@@ -652,7 +684,7 @@ export default function App() {
               </div>
             </FadeIn>
 
-            {/* FIX 1 — Teal SVG line icons replacing emoji */}
+            {/* Hero trust icons — teal SVG line icons */}
             <FadeIn delay={260}>
               <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
                 {/* Lightning bolt — Save time */}
@@ -665,7 +697,7 @@ export default function App() {
                     <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>Automate routine tasks</div>
                   </div>
                 </div>
-                {/* People — Get more bookings */}
+                {/* Users — Get more bookings */}
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -726,9 +758,8 @@ export default function App() {
             </div>
           </FadeIn>
 
-          {/* FIX 3 — Steps with curved SVG wave connector and step numbers above */}
+          {/* Steps with curved SVG wave connector */}
           <div style={{ position: "relative" }}>
-            {/* Curved SVG connector spanning all 4 steps */}
             <svg
               className="step-connector"
               aria-hidden="true"
@@ -761,7 +792,6 @@ export default function App() {
                   title: "Create",
                   desc: "Set up your booking page in minutes.",
                   icon: (
-                    // Document icon
                     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                       <polyline points="14 2 14 8 20 8" />
@@ -776,7 +806,6 @@ export default function App() {
                   title: "Share",
                   desc: "Publish the link on your website, social media, or QR code.",
                   icon: (
-                    // Link icon
                     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                       <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
@@ -788,7 +817,6 @@ export default function App() {
                   title: "Customers book",
                   desc: "They choose a service, date, and time.",
                   icon: (
-                    // Calendar icon
                     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                       <line x1="16" y1="2" x2="16" y2="6" />
@@ -807,11 +835,9 @@ export default function App() {
                 <div key={i} style={{ flex: 1, display: "flex", alignItems: "flex-start" }}>
                   <FadeIn delay={i * 100} style={{ width: "100%" }}>
                     <div style={{ textAlign: "center", padding: "0 12px" }}>
-                      {/* Step number above the node */}
                       <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, fontWeight: 700, letterSpacing: 1, marginBottom: 8 }}>
                         {s.num}
                       </div>
-                      {/* Node circle */}
                       <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
                         <div style={{
                           width: 64, height: 64, borderRadius: 32,
@@ -822,7 +848,6 @@ export default function App() {
                           display: "flex", alignItems: "center", justifyContent: "center",
                           boxShadow: s.isLogo ? "0 8px 28px rgba(13,148,136,0.4)" : "none",
                         }}>
-                          {/* FIX 7 — Flow-A logo in final workflow node */}
                           {s.isLogo
                             ? (
                               <svg width="28" height="28" viewBox="0 0 34 34" fill="none" aria-hidden="true">
@@ -864,7 +889,6 @@ export default function App() {
           </FadeIn>
 
           <div style={{ flex: 1 }}>
-            {/* FIX 4 — Teal stroke SVG icons replacing emoji */}
             <div className="industry-grid" style={{
               display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12,
             }}>
@@ -873,7 +897,6 @@ export default function App() {
                   title: "Beauty & Salon",
                   desc: "Hair, nails, spa and more",
                   icon: (
-                    // Scissors
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <circle cx="6" cy="6" r="3" />
                       <circle cx="6" cy="18" r="3" />
@@ -887,7 +910,6 @@ export default function App() {
                   title: "Health & Wellness",
                   desc: "Clinics, dental, therapy",
                   icon: (
-                    // Cross/plus
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M9 3H15V9H21V15H15V21H9V15H3V9H9V3Z" />
                     </svg>
@@ -897,7 +919,6 @@ export default function App() {
                   title: "Education",
                   desc: "Tutoring, training, workshops",
                   icon: (
-                    // Graduation cap
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
                       <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" />
@@ -908,7 +929,6 @@ export default function App() {
                   title: "Fitness & Sports",
                   desc: "Gyms, personal training",
                   icon: (
-                    // Dumbbell
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M6 5v14M18 5v14" />
                       <path d="M2 9v6M22 9v6" />
@@ -920,7 +940,6 @@ export default function App() {
                   title: "Professional Services",
                   desc: "Consultations, coaching, and more",
                   icon: (
-                    // Briefcase
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
                       <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
@@ -966,7 +985,6 @@ export default function App() {
                   border: "1px solid rgba(20,184,166,0.2)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
-                  {/* Chart line icon */}
                   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-label="Chart">
                     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
                   </svg>
@@ -1150,7 +1168,6 @@ export default function App() {
       <footer style={{ padding: "60px 24px 40px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
         <div style={{ maxWidth: 1160, margin: "0 auto" }}>
           <div className="footer-grid" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 48, gap: 40, flexWrap: "wrap" }}>
-            {/* FIX 6 + 7 — Footer Flow-A logo with local <defs> */}
             <div>
               <a href="#" aria-label="AutoFlow home" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                 <FlowALogo size={28} />
