@@ -134,7 +134,7 @@ function PhoneMockup() {
           }}>⦈</div>
           <div>
             <div style={{ color: "white", fontWeight: 700, fontSize: 13 }}>GlowCuts Salon</div>
-            <div style={{ color: "#14B8A6", fontSize: 10 }}>\u25cf booking open</div>
+            <div style={{ color: "#14B8A6", fontSize: 10 }}>● booking open</div>
           </div>
         </div>
         <div style={{
@@ -271,7 +271,7 @@ function PricingCard({ tier, tagline, desc, features, highlight, badge, ctaLabel
               background: highlight ? "rgba(16,185,129,0.15)" : "rgba(13,148,136,0.1)",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 10, color: "#10B981", flexShrink: 0,
-            }}>\u2713</div>
+            }}>✓</div>
             <span>{f}</span>
           </div>
         ))}
@@ -554,7 +554,7 @@ export default function AutoFlowLanding() {
               <div style={{ textAlign: "center", marginBottom: 48 }}>
                 <h2 style={{ fontSize: 34, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>How it works</h2>
                 <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>
-                  From booking page to confirmed customer \u2014 fully automated
+                  From booking page to confirmed customer — fully automated
                 </p>
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center" }}>
@@ -687,7 +687,7 @@ export default function AutoFlowLanding() {
               </div>
               <p style={{ textAlign: "center", color: "#94A3B8", fontSize: 13, marginTop: 28 }}>
                 Already a customer?{" "}
-                <a href={DASHBOARD_URL} style={{ color: "#0D9488", fontWeight: 700, textDecoration: "none" }}>Log in to your dashboard \u2192</a>
+                <a href={DASHBOARD_URL} style={{ color: "#0D9488", fontWeight: 700, textDecoration: "none" }}>Log in to your dashboard →</a>
               </p>
             </div>
           </FadeIn>
@@ -706,7 +706,7 @@ export default function AutoFlowLanding() {
                 width: 64, height: 64, borderRadius: 18,
                 background: "rgba(13,148,136,0.15)", display: "flex",
                 alignItems: "center", justifyContent: "center", fontSize: 30, flexShrink: 0,
-              }} aria-hidden="true">\ud83d\udd12</div>
+              }} aria-hidden="true">🔒</div>
               <div style={{ flex: 1, minWidth: 280 }}>
                 <div style={{ fontWeight: 800, fontSize: 18, color: "white", marginBottom: 6 }}>
                   Designed with data separation in mind
@@ -786,7 +786,7 @@ export default function AutoFlowLanding() {
         <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, marginBottom: 6 }}>
           Booking automation for businesses in the UAE
         </div>
-        <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 12 }}>\u00a9 2026 AutoFlow. All rights reserved.</div>
+        <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 12 }}>© 2026 AutoFlow. All rights reserved.</div>
       </footer>
     </div>
   );
