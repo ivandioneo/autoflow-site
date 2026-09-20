@@ -51,100 +51,157 @@ function FadeIn({ children, delay = 0, style = {} }) {
   );
 }
 
-/*
- * ─── Flow-A Logo — Concept 01: "Modern Flow" ────────────────────────────
- *
- * Design brief:
- *   A custom letterform A where the RIGHT LEG does not stop at the
- *   baseline — it extends past the foot, bends forward-right, and
- *   terminates as an integrated arrowhead.  This communicates forward
- *   motion / flow / automation as part of the letterform itself.
- *
- * Geometry (viewBox 44 × 38):
- *
- *   LEFT LEG  : M 2,36  L 19,3          — angled stroke, left side
- *   CROSSBAR  : M 10,23 L 30,23         — horizontal bar ~60% up
- *   RIGHT LEG : M 19,3  L 33,34         — angled stroke, right side
- *   EXTENSION : L 40,28                 — right leg bends forward-right
- *   ARROWHEAD : ← two short strokes closing the arrowhead at (40,28)
- *                 up-back:   M 40,28 L 34,22
- *                 down-back: M 40,28 L 36,35
- *
- * The arrowhead is PART OF the right leg path, not a separate element.
- * The gradient runs left→right so the arrow tip glows brightest.
- *
- * No background shape, no rounded-square container.
- * Works at 24 px through 200 px.
- */
-function FlowALogo({ size = 34, white = false }) {
-  const uid = useRef(`fg-${Math.random().toString(36).slice(2, 7)}`);
-  const gid = uid.current;
-
-  const stroke = white ? "white" : `url(#${gid})`;
-
+/* ─── AutoFlow Mark — flowing A with integrated forward arrow ───────── */
+function AutoFlowMark({ size = 44, animated = true, className = "" }) {
   return (
     <svg
+      className={`autoflow-mark ${animated ? "autoflow-mark-animated" : ""} ${className}`}
       width={size}
-      height={Math.round(size * 38 / 44)}
-      viewBox="0 0 44 38"
+      height={size}
+      viewBox="0 0 64 64"
       fill="none"
-      aria-hidden="true"
-      style={{ display: "block", flexShrink: 0 }}
+      xmlns="http://www.w3.org/2000/svg"
+      aria-label="AutoFlow"
+      role="img"
     >
-      {!white && (
-        <defs>
-          <linearGradient id={gid} x1="0" y1="19" x2="44" y2="19" gradientUnits="userSpaceOnUse">
-            <stop offset="0%"   stopColor="#0BBFB8" />
-            <stop offset="100%" stopColor="#14E8D4" />
-          </linearGradient>
-        </defs>
-      )}
+      <defs>
+        <linearGradient
+          id="autoflow-mark-gradient"
+          x1="10"
+          y1="8"
+          x2="54"
+          y2="56"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop offset="0" stopColor="#2DD4BF" />
+          <stop offset="0.5" stopColor="#14B8A6" />
+          <stop offset="1" stopColor="#0D9488" />
+        </linearGradient>
 
-      {/* Left leg */}
-      <line
-        x1="2"  y1="36"
-        x2="19" y2="3"
-        stroke={stroke}
-        strokeWidth="3.4"
-        strokeLinecap="round"
-      />
+        <filter
+          id="autoflow-mark-glow"
+          x="-50%"
+          y="-50%"
+          width="200%"
+          height="200%"
+        >
+          <feGaussianBlur stdDeviation="2.5" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
 
-      {/* Crossbar */}
-      <line
-        x1="10" y1="23"
-        x2="30" y2="23"
-        stroke={stroke}
-        strokeWidth="3.0"
-        strokeLinecap="round"
-      />
-
-      {/*
-       * Right leg → extension → arrowhead tip.
-       * Single continuous path:
-       *   apex (19,3) → foot (33,34) → arrow tip (40,27)
-       *
-       * Then the two arrowhead feathers back from (40,27):
-       *   up-feather  : (40,27) → (33,21)
-       *   down-feather: (40,27) → (37,35)
-       */}
+      {/* Main flowing A — left leg */}
       <path
-        d="M 19,3 L 33,34 L 40,27"
-        stroke={stroke}
-        strokeWidth="3.4"
+        className="autoflow-mark-path"
+        d="
+          M9 48
+          L27 10
+          C28 8 31 8 32 11
+          L47 42
+        "
+        stroke="url(#autoflow-mark-gradient)"
+        strokeWidth="6"
         strokeLinecap="round"
         strokeLinejoin="round"
-        fill="none"
+        filter="url(#autoflow-mark-glow)"
       />
-      {/* Arrowhead feathers — slightly thinner so they read as the tip */}
+
+      {/* Right flowing leg */}
       <path
-        d="M 33,21 L 40,27 L 37,35"
-        stroke={stroke}
-        strokeWidth="2.6"
+        className="autoflow-mark-path"
+        d="
+          M32 11
+          L55 49
+        "
+        stroke="url(#autoflow-mark-gradient)"
+        strokeWidth="6"
         strokeLinecap="round"
         strokeLinejoin="round"
-        fill="none"
+        filter="url(#autoflow-mark-glow)"
+      />
+
+      {/* A cross-flow */}
+      <path
+        className="autoflow-mark-path"
+        d="
+          M20 34
+          C27 32 35 32 42 34
+        "
+        stroke="url(#autoflow-mark-gradient)"
+        strokeWidth="5"
+        strokeLinecap="round"
+      />
+
+      {/* Forward arrow */}
+      <path
+        className="autoflow-mark-arrow"
+        d="
+          M39 27
+          L52 34
+          L39 41
+        "
+        stroke="url(#autoflow-mark-gradient)"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
+  );
+}
+
+/* ─── Hero Flow Visual — animated rings behind phone ────────────────── */
+function HeroFlowVisual() {
+  return (
+    <div className="hero-flow-visual" aria-hidden="true">
+      <svg viewBox="0 0 700 620" preserveAspectRatio="none">
+        <defs>
+          <linearGradient
+            id="hero-flow-gradient"
+            x1="0"
+            y1="0"
+            x2="1"
+            y2="1"
+          >
+            <stop offset="0%" stopColor="#0D9488" stopOpacity="0" />
+            <stop offset="35%" stopColor="#14B8A6" stopOpacity="0.9" />
+            <stop offset="65%" stopColor="#2DD4BF" stopOpacity="0.75" />
+            <stop offset="100%" stopColor="#14B8A6" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        <path
+          className="flow-ring flow-ring-1"
+          d="
+            M80 360
+            C120 150 350 70 570 180
+            C700 245 680 470 500 550
+            C330 625 120 540 80 360
+          "
+        />
+
+        <path
+          className="flow-ring flow-ring-2"
+          d="
+            M130 390
+            C180 190 360 120 540 205
+            C650 260 630 430 485 505
+            C330 580 170 520 130 390
+          "
+        />
+
+        <path
+          className="flow-ring flow-ring-3"
+          d="
+            M180 410
+            C220 245 380 175 510 235
+            C590 275 575 400 465 465
+          "
+        />
+      </svg>
+    </div>
   );
 }
 
@@ -200,7 +257,8 @@ function PhoneMockup() {
 
   useEffect(() => {
     if (reduced) { setStep(4); setSelectedService(0); setSelectedDate(0); setSelectedTime("3:00 PM"); return; }
-    const delays = [2400, 2000, 1800, 2200, 3200];
+    // Slowed timings so the booking flow is visible longer than the confirmation state
+    const delays = [4200, 3000, 3000, 2500, 1800];
     const d = delays[step] ?? 2000;
     const timer = setTimeout(() => {
       if (step === 0) setSelectedService(0);
@@ -253,21 +311,6 @@ function PhoneMockup() {
     },
   ];
 
-  /*
-   * Layout: a 3-column grid
-   *   col 1 (flex): phone body
-   *   col 2 (fixed 200px): sidebar cards
-   *   col 3 (fixed 160px): annotation — occupies the top of this column;
-   *                         the column is tall enough that the annotation
-   *                         sits clearly above the card group.
-   *
-   * The annotation column is to the RIGHT of the cards column.
-   * A curved dashed arrow exits the annotation text and curves
-   * down-left, pointing toward the phone.
-   *
-   * On narrow screens the entire PhoneMockup is hidden via CSS
-   * (.hero-phone display:none at < 900px) so no collision at mobile.
-   */
   return (
     <div style={{
       position: "relative",
@@ -275,171 +318,176 @@ function PhoneMockup() {
       alignItems: "flex-start",
       gap: 20,
     }}>
-      {/* Ambient glow — behind phone */}
-      <div aria-hidden="true" style={{
-        position: "absolute",
-        top: "30%", left: 80,
-        width: 300, height: 380, borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(20,184,166,0.20) 0%, transparent 68%)",
-        filter: "blur(44px)", zIndex: 0, pointerEvents: "none",
-      }} />
+      {/* ── Hero flow visual rings — behind phone ── */}
+      <div style={{ position: "relative" }}>
+        <HeroFlowVisual />
 
-      {/* ── Phone ── */}
-      <div style={{
-        position: "relative", zIndex: 1,
-        width: 248,
-        background: "#0d1117",
-        borderRadius: 38,
-        padding: "10px 8px 8px",
-        boxShadow: "0 32px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.07), inset 0 1px 0 rgba(255,255,255,0.05)",
-        flexShrink: 0,
-      }}>
-        {/* Notch */}
-        <div style={{ width: 72, height: 5, background: "#222", borderRadius: 3, margin: "0 auto 8px" }} />
+        {/* Ambient glow — behind phone */}
+        <div aria-hidden="true" style={{
+          position: "absolute",
+          top: "30%", left: 80,
+          width: 300, height: 380, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(20,184,166,0.20) 0%, transparent 68%)",
+          filter: "blur(44px)", zIndex: 0, pointerEvents: "none",
+        }} />
 
-        {/* Header */}
+        {/* ── Phone ── */}
         <div style={{
-          background: "#111820", borderRadius: "24px 24px 0 0",
-          padding: "12px 14px 10px",
-          display: "flex", alignItems: "center", gap: 10,
-          borderBottom: "1px solid rgba(20,184,166,0.12)",
+          position: "relative", zIndex: 2,
+          width: 248,
+          background: "#0d1117",
+          borderRadius: 38,
+          padding: "10px 8px 8px",
+          boxShadow: "0 32px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.07), inset 0 1px 0 rgba(255,255,255,0.05)",
+          flexShrink: 0,
         }}>
+          {/* Notch */}
+          <div style={{ width: 72, height: 5, background: "#222", borderRadius: 3, margin: "0 auto 8px" }} />
+
+          {/* Header */}
           <div style={{
-            width: 34, height: 34, borderRadius: 17,
-            background: "linear-gradient(135deg, #0c1a24, #142030)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            flexShrink: 0,
-            boxShadow: "0 4px 12px rgba(13,148,136,0.4)",
-            border: "1px solid rgba(20,184,166,0.25)",
+            background: "#111820", borderRadius: "24px 24px 0 0",
+            padding: "12px 14px 10px",
+            display: "flex", alignItems: "center", gap: 10,
+            borderBottom: "1px solid rgba(20,184,166,0.12)",
           }}>
-            <FlowALogo size={22} />
-          </div>
-          <div>
-            <div style={{ color: "white", fontWeight: 700, fontSize: 13, letterSpacing: -0.2 }}>GlowCuts Salon</div>
-            <div style={{ color: "#14B8A6", fontSize: 10, fontWeight: 500 }}>Book an appointment</div>
-          </div>
-        </div>
-
-        {/* Body */}
-        <div style={{
-          background: "#F8FAFC",
-          minHeight: 310,
-          padding: "12px 12px 14px",
-          borderRadius: "0 0 30px 30px",
-          overflow: "hidden",
-          transition: "all 0.3s ease",
-        }}>
-          {confirmed ? (
-            <div style={{ textAlign: "center", padding: "30px 8px" }}>
-              <div style={{
-                width: 52, height: 52, borderRadius: 26,
-                background: "linear-gradient(135deg, #0D9488, #14B8A6)",
-                margin: "0 auto 14px",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                boxShadow: "0 8px 24px rgba(13,148,136,0.35)",
-              }}>
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </div>
-              <div style={{ color: "#0D9488", fontWeight: 800, fontSize: 15, marginBottom: 4 }}>Booking Confirmed!</div>
-              <div style={{ color: "#64748B", fontSize: 11, lineHeight: 1.5 }}>
-                Mon Sep 22 · 3:00 PM<br />
-                Confirmation sent to your phone
-              </div>
+            <div style={{
+              width: 34, height: 34, borderRadius: 17,
+              background: "linear-gradient(135deg, #0c1a24, #142030)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+              boxShadow: "0 4px 12px rgba(13,148,136,0.4)",
+              border: "1px solid rgba(20,184,166,0.25)",
+            }}>
+              <AutoFlowMark size={22} animated={false} />
             </div>
-          ) : (
-            <>
-              {/* Services */}
-              <div style={{ marginBottom: 10 }}>
-                <div style={{ color: "#64748B", fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>① Select a service</div>
-                {services.map((s, i) => (
-                  <div key={i} style={{
-                    display: "flex", alignItems: "center", justifyContent: "space-between",
-                    padding: "7px 10px", borderRadius: 8, marginBottom: 4,
-                    background: selectedService === i ? "rgba(13,148,136,0.08)" : "#F1F5F9",
-                    border: `1px solid ${selectedService === i ? "rgba(13,148,136,0.3)" : "transparent"}`,
-                    transition: "all 0.25s ease", cursor: "default",
-                  }}>
-                    <div>
-                      <div style={{ color: "#1E293B", fontSize: 11, fontWeight: 600 }}>{s.name}</div>
-                      <div style={{ color: "#94A3B8", fontSize: 9 }}>{s.duration}</div>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ color: "#1E293B", fontSize: 11, fontWeight: 700 }}>{s.price}</span>
-                      <div style={{
-                        width: 14, height: 14, borderRadius: 7,
-                        border: `2px solid ${selectedService === i ? "#0D9488" : "#CBD5E1"}`,
-                        background: selectedService === i ? "#0D9488" : "transparent",
-                        transition: "all 0.25s ease",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                      }}>
-                        {selectedService === i && (
-                          <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-                            <polyline points="1.5 4 3 5.5 6.5 2" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-                          </svg>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div>
+              <div style={{ color: "white", fontWeight: 700, fontSize: 13, letterSpacing: -0.2 }}>GlowCuts Salon</div>
+              <div style={{ color: "#14B8A6", fontSize: 10, fontWeight: 500 }}>Book an appointment</div>
+            </div>
+          </div>
 
-              {/* Dates */}
-              {selectedService !== null && (
-                <div style={{ marginBottom: 10 }}>
-                  <div style={{ color: "#64748B", fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>② Choose a date</div>
-                  <div style={{ display: "flex", gap: 5 }}>
-                    {dates.map((d, i) => (
-                      <div key={i} style={{
-                        flex: 1, textAlign: "center", padding: "6px 4px", borderRadius: 8,
-                        background: selectedDate === i ? "#0D9488" : "#F1F5F9",
-                        cursor: "default", transition: "all 0.25s ease",
-                      }}>
-                        <div style={{ color: selectedDate === i ? "white" : "#64748B", fontSize: 9, fontWeight: 600 }}>{d.label}</div>
-                        <div style={{ color: selectedDate === i ? "rgba(255,255,255,0.8)" : "#94A3B8", fontSize: 8 }}>{d.sub}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Times */}
-              {selectedDate !== null && (
-                <div style={{ marginBottom: 10 }}>
-                  <div style={{ color: "#64748B", fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>③ Select a time</div>
-                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                    {times.map((t, i) => (
-                      <div key={i} style={{
-                        padding: "5px 8px", borderRadius: 6, fontSize: 10, fontWeight: 600,
-                        background: selectedTime === t ? "#0D9488" : "#F1F5F9",
-                        color: selectedTime === t ? "white" : "#475569",
-                        transition: "all 0.25s ease", cursor: "default",
-                      }}>{t}</div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Confirm button */}
-              {selectedTime && (
+          {/* Body */}
+          <div style={{
+            background: "#F8FAFC",
+            minHeight: 310,
+            padding: "12px 12px 14px",
+            borderRadius: "0 0 30px 30px",
+            overflow: "hidden",
+            transition: "all 0.3s ease",
+          }}>
+            {confirmed ? (
+              <div style={{ textAlign: "center", padding: "30px 8px" }}>
                 <div style={{
+                  width: 52, height: 52, borderRadius: 26,
                   background: "linear-gradient(135deg, #0D9488, #14B8A6)",
-                  borderRadius: 8, padding: "8px 12px",
-                  textAlign: "center", color: "white",
-                  fontSize: 11, fontWeight: 700,
-                  marginTop: 4,
-                  boxShadow: "0 4px 14px rgba(13,148,136,0.4)",
+                  margin: "0 auto 14px",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  boxShadow: "0 8px 24px rgba(13,148,136,0.35)",
                 }}>
-                  Confirm Booking →
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
                 </div>
-              )}
-            </>
-          )}
+                <div style={{ color: "#0D9488", fontWeight: 800, fontSize: 15, marginBottom: 4 }}>Booking Confirmed!</div>
+                <div style={{ color: "#64748B", fontSize: 11, lineHeight: 1.5 }}>
+                  Mon Sep 22 · 3:00 PM<br />
+                  Confirmation sent to your phone
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Services */}
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ color: "#64748B", fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>① Select a service</div>
+                  {services.map((s, i) => (
+                    <div key={i} style={{
+                      display: "flex", alignItems: "center", justifyContent: "space-between",
+                      padding: "7px 10px", borderRadius: 8, marginBottom: 4,
+                      background: selectedService === i ? "rgba(13,148,136,0.08)" : "#F1F5F9",
+                      border: `1px solid ${selectedService === i ? "rgba(13,148,136,0.3)" : "transparent"}`,
+                      transition: "all 0.25s ease", cursor: "default",
+                    }}>
+                      <div>
+                        <div style={{ color: "#1E293B", fontSize: 11, fontWeight: 600 }}>{s.name}</div>
+                        <div style={{ color: "#94A3B8", fontSize: 9 }}>{s.duration}</div>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ color: "#1E293B", fontSize: 11, fontWeight: 700 }}>{s.price}</span>
+                        <div style={{
+                          width: 14, height: 14, borderRadius: 7,
+                          border: `2px solid ${selectedService === i ? "#0D9488" : "#CBD5E1"}`,
+                          background: selectedService === i ? "#0D9488" : "transparent",
+                          transition: "all 0.25s ease",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                        }}>
+                          {selectedService === i && (
+                            <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                              <polyline points="1.5 4 3 5.5 6.5 2" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+                            </svg>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Dates */}
+                {selectedService !== null && (
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ color: "#64748B", fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>② Choose a date</div>
+                    <div style={{ display: "flex", gap: 5 }}>
+                      {dates.map((d, i) => (
+                        <div key={i} style={{
+                          flex: 1, textAlign: "center", padding: "6px 4px", borderRadius: 8,
+                          background: selectedDate === i ? "#0D9488" : "#F1F5F9",
+                          cursor: "default", transition: "all 0.25s ease",
+                        }}>
+                          <div style={{ color: selectedDate === i ? "white" : "#64748B", fontSize: 9, fontWeight: 600 }}>{d.label}</div>
+                          <div style={{ color: selectedDate === i ? "rgba(255,255,255,0.8)" : "#94A3B8", fontSize: 8 }}>{d.sub}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Times */}
+                {selectedDate !== null && (
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ color: "#64748B", fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>③ Select a time</div>
+                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                      {times.map((t, i) => (
+                        <div key={i} style={{
+                          padding: "5px 8px", borderRadius: 6, fontSize: 10, fontWeight: 600,
+                          background: selectedTime === t ? "#0D9488" : "#F1F5F9",
+                          color: selectedTime === t ? "white" : "#475569",
+                          transition: "all 0.25s ease", cursor: "default",
+                        }}>{t}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Confirm button */}
+                {selectedTime && (
+                  <div style={{
+                    background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+                    borderRadius: 8, padding: "8px 12px",
+                    textAlign: "center", color: "white",
+                    fontSize: 11, fontWeight: 700,
+                    marginTop: 4,
+                    boxShadow: "0 4px 14px rgba(13,148,136,0.4)",
+                  }}>
+                    Confirm Booking →
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* ── Right column: cards + annotation ── */}
+      {/* ── Right column: annotation (top) + cards (below) ── */}
       <div style={{
         display: "flex",
         flexDirection: "column",
@@ -450,65 +498,37 @@ function PhoneMockup() {
       }}>
 
         {/*
-         * Annotation block — sits at the TOP of this column, above the
-         * cards. It has its own clear vertical space (~120px) before the
-         * first card begins.
-         *
-         * The annotation text is in the top-right area.
-         * The curved dashed arrow exits from the bottom-left of the
-         * annotation SVG, curves down and to the LEFT, with the
-         * arrowhead pointing toward the phone body.
+         * Annotation — clear space ABOVE the cards.
+         * Text top-right, curved dashed arrow exits bottom-left toward phone.
          */}
         <div
+          className="hero-annotation"
           aria-hidden="true"
-          style={{
-            marginBottom: 28,
-            paddingLeft: 10,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end",   /* push text to the right */
-            width: 190,
-          }}
         >
-          {/* Annotation text */}
-          <div style={{
-            fontFamily: "'Segoe Script', 'Brush Script MT', 'Comic Sans MS', cursive",
-            color: "#14B8A6",
-            fontSize: 13,
-            lineHeight: 1.5,
-            textAlign: "right",
-            opacity: 0.9,
-            fontStyle: "italic",
-            marginBottom: 2,
-          }}>
-            It just works<br />in the background.
+          <div className="hero-annotation-text">
+            It just works
+            <br />
+            in the background.
           </div>
 
-          {/*
-           * Curved arrow: starts near (110,4) — under the text, right side —
-           * curves down-left to tip at (8,72) — pointing toward the phone.
-           * ViewBox 120 × 80.
-           */}
           <svg
-            width="120"
-            height="80"
-            viewBox="0 0 120 80"
-            fill="none"
-            style={{ display: "block", marginTop: -2 }}
+            width="150"
+            height="100"
+            viewBox="0 0 150 100"
           >
             <path
-              d="M 108,6 C 90,20 60,30 20,68"
-              stroke="#14B8A6"
-              strokeWidth="1.5"
+              d="M140 8 C112 15 95 32 78 50 C60 69 40 83 12 89"
               fill="none"
-              strokeDasharray="4 3"
+              stroke="#14B8A6"
+              strokeWidth="2"
+              strokeDasharray="5 5"
               strokeLinecap="round"
             />
-            {/* Arrowhead at tip (20,68) pointing down-left */}
             <path
-              d="M 20,68 L 10,60 M 20,68 L 27,58"
+              d="M12 89 L24 84 M12 89 L18 78"
+              fill="none"
               stroke="#14B8A6"
-              strokeWidth="1.5"
+              strokeWidth="2"
               strokeLinecap="round"
             />
           </svg>
@@ -616,6 +636,7 @@ const GLOBAL_CSS = `
   a { color: inherit; }
   button { cursor: pointer; font: inherit; }
   input[type=range]::-webkit-slider-thumb { cursor: pointer; }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
@@ -623,6 +644,99 @@ const GLOBAL_CSS = `
       transition-duration: 0.01ms !important;
     }
   }
+
+  /* ── AutoFlowMark animations ── */
+  .autoflow-mark {
+    display: block;
+    overflow: visible;
+  }
+  .autoflow-mark-path,
+  .autoflow-mark-arrow {
+    transform-origin: center;
+  }
+  .autoflow-mark-animated .autoflow-mark-arrow {
+    animation: autoflow-arrow-flow 5s ease-in-out infinite;
+  }
+  .autoflow-mark-animated .autoflow-mark-path {
+    animation: autoflow-flow-glow 5s ease-in-out infinite;
+  }
+  @keyframes autoflow-arrow-flow {
+    0%, 72%, 100% { opacity: 0.85; transform: translateX(0); }
+    80%  { opacity: 1; transform: translateX(3px); }
+    88%  { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes autoflow-flow-glow {
+    0%, 72%, 100% { filter: brightness(1); }
+    82%  { filter: brightness(1.7); }
+    90%  { filter: brightness(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .autoflow-mark-animated .autoflow-mark-arrow,
+    .autoflow-mark-animated .autoflow-mark-path {
+      animation: none;
+    }
+  }
+
+  /* ── Hero flow visual rings ── */
+  .hero-flow-visual {
+    position: absolute;
+    inset: -70px -130px -80px -170px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.85;
+  }
+  .hero-flow-visual svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .flow-ring {
+    fill: none;
+    stroke: url(#hero-flow-gradient);
+    stroke-width: 3;
+    stroke-linecap: round;
+    opacity: 0.45;
+  }
+  .flow-ring-1 { stroke-width: 4; opacity: 0.7; }
+  .flow-ring-2 { opacity: 0.4; }
+  .flow-ring-3 { opacity: 0.25; }
+  @media (prefers-reduced-motion: no-preference) {
+    .flow-ring-1 { animation: flow-ring-drift 8s ease-in-out infinite; }
+    .flow-ring-2 { animation: flow-ring-drift 10s ease-in-out infinite reverse; }
+    .flow-ring-3 { animation: flow-ring-drift 12s ease-in-out infinite; }
+  }
+  @keyframes flow-ring-drift {
+    0%, 100% { transform: translateX(0) translateY(0); }
+    50%       { transform: translateX(18px) translateY(-8px); }
+  }
+
+  /* ── Hero annotation ── */
+  .hero-annotation {
+    margin-bottom: 28px;
+    padding-left: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    width: 190px;
+    pointer-events: none;
+  }
+  .hero-annotation-text {
+    color: #2dd4bf;
+    font-family: 'Comic Sans MS', 'Segoe Print', cursive;
+    font-size: 14px;
+    line-height: 1.25;
+    font-style: italic;
+    transform: rotate(-4deg);
+    text-align: center;
+    text-shadow: 0 0 12px rgba(20,184,166,0.25);
+    margin-bottom: 2px;
+  }
+  .hero-annotation svg {
+    display: block;
+    margin-left: 5px;
+    margin-top: 4px;
+  }
+
   .nav-link { color: rgba(255,255,255,0.65); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
   .nav-link:hover { color: white; }
   .cta-primary {
@@ -720,15 +834,42 @@ export default function App() {
           height: 64,
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          {/* Logo: Flow-A mark + wordmark */}
-          <a href="#" aria-label="AutoFlow home" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
-            <FlowALogo size={36} />
+          {/* Logo: AutoFlowMark + wordmark (no square container) */}
+          <a
+            href="#"
+            aria-label="AutoFlow home"
+            style={{
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            <AutoFlowMark size={46} />
+
             <div>
-              <div style={{ color: "white", fontWeight: 800, fontSize: 17, letterSpacing: -0.5, lineHeight: 1.1 }}>
+              <div
+                style={{
+                  color: "white",
+                  fontWeight: 850,
+                  fontSize: 22,
+                  letterSpacing: -1,
+                  lineHeight: 1,
+                }}
+              >
                 Auto<span style={{ color: "#14B8A6" }}>Flow</span>
               </div>
-              <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 9, letterSpacing: 2.5, fontWeight: 500, textTransform: "uppercase" }}>
-                Book · Automate · Grow
+
+              <div
+                style={{
+                  color: "rgba(255,255,255,0.32)",
+                  fontSize: 8,
+                  fontWeight: 700,
+                  letterSpacing: 2.5,
+                  marginTop: 5,
+                }}
+              >
+                BOOK · AUTOMATE · GROW
               </div>
             </div>
           </a>
@@ -855,7 +996,7 @@ export default function App() {
             </FadeIn>
           </div>
 
-          {/* Right — phone */}
+          {/* Right — phone with flow rings */}
           <div className="hero-phone" style={{ flex: "0 0 auto" }}>
             <FadeIn delay={180}>
               <PhoneMockup />
@@ -977,7 +1118,7 @@ export default function App() {
                           boxShadow: s.isLogo ? "0 8px 28px rgba(13,148,136,0.4)" : "none",
                         }}>
                           {s.isLogo
-                            ? <FlowALogo size={30} white={true} />
+                            ? <AutoFlowMark size={30} animated={false} />
                             : s.icon
                           }
                         </div>
@@ -1293,7 +1434,7 @@ export default function App() {
           <div className="footer-grid" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 48, gap: 40, flexWrap: "wrap" }}>
             <div>
               <a href="#" aria-label="AutoFlow home" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                <FlowALogo size={28} />
+                <AutoFlowMark size={32} animated={false} />
                 <span style={{ color: "white", fontWeight: 800, fontSize: 16 }}>Auto<span style={{ color: "#14B8A6" }}>Flow</span></span>
               </a>
               <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, letterSpacing: 2, textTransform: "uppercase" }}>
