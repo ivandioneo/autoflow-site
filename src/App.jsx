@@ -713,10 +713,10 @@ export default function AutoFlowLanding() {
                 </div>
                 <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.7 }}>
                   AutoFlow is built as a multi-tenant platform where each business account
-                  operates in its own isolated context. Access controls are enforced
-                  server-side, so your booking data and customer details are scoped to
-                  your account only. We take a security-first approach to how the platform
-                  is architected and operated.
+                  operates in its own isolated context. Server-side access controls are
+                  designed to keep booking data and customer details appropriately scoped
+                  to the relevant account. We take a security-first approach to how the
+                  platform is architected and operated.
                 </div>
               </div>
             </div>
