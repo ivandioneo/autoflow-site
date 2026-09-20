@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const DASHBOARD_URL = "https://dashboard.autoflow.ivanit.work";
 
@@ -48,6 +48,32 @@ function FadeIn({ children, delay = 0, style = {} }) {
     >
       {children}
     </div>
+  );
+}
+
+/* ─── Flow-A Logo SVG (triangle / forward-arrow mark) ───────────────── */
+function FlowALogo({ size = 34 }) {
+  const id = `flowA-${size}`;
+  return (
+    <svg width={size} height={size} viewBox="0 0 34 34" fill="none" aria-hidden="true">
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#0D9488" />
+          <stop offset="100%" stopColor="#14B8A6" />
+        </linearGradient>
+      </defs>
+      {/* Teal rounded-square background */}
+      <rect width="34" height="34" rx="8" fill={`url(#${id})`} />
+      {/* Forward-arrow / Flow-A triangle mark */}
+      <path
+        d="M9 25 L17 9 L25 25"
+        stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none"
+      />
+      <path
+        d="M12 20 L22 20"
+        stroke="white" strokeWidth="2.4" strokeLinecap="round"
+      />
+    </svg>
   );
 }
 
@@ -317,69 +343,109 @@ function PhoneMockup() {
           </div>
         ))}
       </div>
+
+      {/* FIX 2 — Handwritten annotation: "It just works in the background." */}
+      <div aria-hidden="true" style={{
+        position: "absolute",
+        top: 20,
+        right: -220,
+        width: 160,
+        pointerEvents: "none",
+        zIndex: 3,
+      }}>
+        {/* Curved arrow SVG */}
+        <svg width="80" height="60" viewBox="0 0 80 60" fill="none" style={{ display: "block", marginLeft: 40 }}>
+          <path
+            d="M70 8 C60 8, 20 10, 10 48"
+            stroke="#14B8A6" strokeWidth="1.6" fill="none"
+            strokeDasharray="4 3"
+            strokeLinecap="round"
+          />
+          <path d="M10 48 L7 40 M10 48 L17 44" stroke="#14B8A6" strokeWidth="1.6" strokeLinecap="round" />
+        </svg>
+        <div style={{
+          fontFamily: "'Segoe Script', 'Brush Script MT', 'Comic Sans MS', cursive",
+          color: "#14B8A6",
+          fontSize: 13,
+          lineHeight: 1.35,
+          textAlign: "center",
+          marginTop: -8,
+          opacity: 0.92,
+          fontStyle: "italic",
+        }}>
+          It just works<br />in the background.
+        </div>
+      </div>
     </div>
   );
 }
 
-/* ─── Savings Calculator (single slider matching reference) ─────────── */
+/* ─── Savings Calculator ─────────────────────────────────────────────── */
 function SavingsCalculator() {
   const [apptPerMonth, setApptPerMonth] = useState(50);
-
-  // Illustrative: ~15% no-show rate, AED 80 avg booking
-  const avgPrice = 80;
-  const noShowRate = 0.15;
-  const recovered = Math.round(apptPerMonth * noShowRate * avgPrice * 0.7); // 70% recovery estimate
 
   return (
     <div style={{
       background: "rgba(255,255,255,0.03)",
       backdropFilter: "blur(20px)",
       borderRadius: 20,
-      padding: "32px 36px",
+      padding: "28px 32px",
       border: "1px solid rgba(20,184,166,0.12)",
-      maxWidth: 480,
+      maxWidth: 680,
       width: "100%",
     }}>
-      <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, fontWeight: 500, marginBottom: 20 }}>
-        Estimate your monthly time savings
-      </div>
-
-      <div style={{ marginBottom: 28 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-          <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, fontWeight: 500 }}>Appointments per month</span>
-          <span style={{ color: "white", fontSize: 20, fontWeight: 800 }}>{apptPerMonth}</span>
+      {/* FIX 5 — Horizontal layout: slider area left, button right */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 28,
+        flexWrap: "wrap",
+      }}>
+        {/* Left: label + slider */}
+        <div style={{ flex: "1 1 260px" }}>
+          <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, fontWeight: 500, marginBottom: 16 }}>
+            Estimate your monthly time savings
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+            <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, fontWeight: 500 }}>Appointments per month</span>
+            <span style={{ color: "white", fontSize: 20, fontWeight: 800 }}>{apptPerMonth}</span>
+          </div>
+          <input
+            type="range" min={10} max={200} step={5} value={apptPerMonth}
+            onChange={e => setApptPerMonth(Number(e.target.value))}
+            aria-label="Appointments per month"
+            style={{ width: "100%", accentColor: "#14B8A6", cursor: "pointer", height: 4 }}
+          />
         </div>
-        <input
-          type="range" min={10} max={200} step={5} value={apptPerMonth}
-          onChange={e => setApptPerMonth(Number(e.target.value))}
-          aria-label="Appointments per month"
-          style={{ width: "100%", accentColor: "#14B8A6", cursor: "pointer", height: 4 }}
-        />
-      </div>
 
-      <a
-        href={DASHBOARD_URL}
-        style={{
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-          background: "linear-gradient(135deg, #0D9488, #14B8A6)",
-          color: "white", padding: "14px 24px", borderRadius: 12,
-          textDecoration: "none", fontWeight: 700, fontSize: 15,
-          boxShadow: "0 6px 24px rgba(13,148,136,0.35)",
-          transition: "box-shadow 0.2s ease, transform 0.15s ease",
-        }}
-        onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 10px 36px rgba(13,148,136,0.5)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-        onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 6px 24px rgba(13,148,136,0.35)"; e.currentTarget.style.transform = ""; }}
-      >
-        Estimate Your Savings →
-      </a>
-      <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, textAlign: "center", marginTop: 10 }}>
-        It takes less than 30 seconds.
+        {/* Right: CTA button */}
+        <div style={{ flex: "0 0 auto", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+          <a
+            href={DASHBOARD_URL}
+            style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+              background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+              color: "white", padding: "14px 22px", borderRadius: 12,
+              textDecoration: "none", fontWeight: 700, fontSize: 15,
+              boxShadow: "0 6px 24px rgba(13,148,136,0.35)",
+              transition: "box-shadow 0.2s ease, transform 0.15s ease",
+              whiteSpace: "nowrap",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 10px 36px rgba(13,148,136,0.5)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 6px 24px rgba(13,148,136,0.35)"; e.currentTarget.style.transform = ""; }}
+          >
+            Estimate Your Savings →
+          </a>
+          <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, textAlign: "center" }}>
+            It takes less than 30 seconds.
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-/* ─── Global styles injected once ──────────────────────────────────── */
+/* ─── Global styles ──────────────────────────────────────────────────── */
 const GLOBAL_CSS = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
@@ -426,6 +492,7 @@ const GLOBAL_CSS = `
     .pricing-card { max-width: 360px !important; width: 100% !important; }
     .footer-grid { flex-direction: column !important; gap: 32px !important; }
     .nav-links { display: none !important; }
+    .calc-inner { flex-direction: column !important; }
   }
   @media (max-width: 600px) {
     .hero-headline { font-size: clamp(2rem, 8vw, 3.5rem) !important; }
@@ -490,19 +557,9 @@ export default function App() {
           height: 64,
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          {/* Logo */}
+          {/* FIX 7 — Flow-A logo in nav */}
           <a href="#" aria-label="AutoFlow home" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
-            <svg width="34" height="34" viewBox="0 0 34 34" fill="none" aria-hidden="true">
-              <defs>
-                <linearGradient id="lg" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stopColor="#0D9488" />
-                  <stop offset="100%" stopColor="#14B8A6" />
-                </linearGradient>
-              </defs>
-              <rect width="34" height="34" rx="9" fill="url(#lg)" />
-              <path d="M8 24 L14 10 L17 18 L20 14 L26 24" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-              <circle cx="17" cy="18" r="2.5" fill="white" />
-            </svg>
+            <FlowALogo size={34} />
             <div>
               <div style={{ color: "white", fontWeight: 800, fontSize: 17, letterSpacing: -0.5, lineHeight: 1.1 }}>
                 Auto<span style={{ color: "#14B8A6" }}>Flow</span>
@@ -595,27 +652,51 @@ export default function App() {
               </div>
             </FadeIn>
 
+            {/* FIX 1 — Teal SVG line icons replacing emoji */}
             <FadeIn delay={260}>
               <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
-                {[
-                  { icon: "⚡", title: "Save time", desc: "Automate routine tasks" },
-                  { icon: "👥", title: "Get more bookings", desc: "Make it easy for customers" },
-                  { icon: "📈", title: "Focus on growth", desc: "Let AutoFlow do the rest" },
-                ].map((f, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontSize: 20 }} role="img" aria-hidden="true">{f.icon}</span>
-                    <div>
-                      <div style={{ color: "white", fontWeight: 700, fontSize: 13 }}>{f.title}</div>
-                      <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>{f.desc}</div>
-                    </div>
+                {/* Lightning bolt — Save time */}
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                  </svg>
+                  <div>
+                    <div style={{ color: "white", fontWeight: 700, fontSize: 13 }}>Save time</div>
+                    <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>Automate routine tasks</div>
                   </div>
-                ))}
+                </div>
+                {/* People — Get more bookings */}
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                  <div>
+                    <div style={{ color: "white", fontWeight: 700, fontSize: 13 }}>Get more bookings</div>
+                    <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>Make it easy for customers</div>
+                  </div>
+                </div>
+                {/* Bar chart — Focus on growth */}
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                    <line x1="2" y1="20" x2="22" y2="20" />
+                  </svg>
+                  <div>
+                    <div style={{ color: "white", fontWeight: 700, fontSize: 13 }}>Focus on growth</div>
+                    <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>Let AutoFlow do the rest</div>
+                  </div>
+                </div>
               </div>
             </FadeIn>
           </div>
 
           {/* Right — phone */}
-          <div className="hero-phone" style={{ flex: "0 0 auto", paddingRight: 180 }}>
+          <div className="hero-phone" style={{ flex: "0 0 auto", paddingRight: 220 }}>
             <FadeIn delay={180}>
               <PhoneMockup />
             </FadeIn>
@@ -645,53 +726,121 @@ export default function App() {
             </div>
           </FadeIn>
 
-          <div className="how-steps" style={{ display: "flex", alignItems: "flex-start", gap: 0 }}>
-            {[
-              { num: "01", icon: "📄", title: "Create", desc: "Set up your booking page in minutes." },
-              { num: "02", icon: "🔗", title: "Share", desc: "Publish the link on your website, social media, or QR code." },
-              { num: "03", icon: "📅", title: "Customers book", desc: "They choose a service, date, and time." },
-              { num: "04", icon: null, title: "AutoFlow takes over", desc: "Confirmations and reminders go out automatically.", isLogo: true },
-            ].map((s, i, arr) => (
-              <div key={i} style={{ flex: 1, display: "flex", alignItems: "flex-start" }}>
-                <FadeIn delay={i * 100} style={{ width: "100%" }}>
-                  <div style={{ textAlign: "center", padding: "0 12px" }}>
-                    {/* Node */}
-                    <div style={{ position: "relative", display: "flex", justifyContent: "center", marginBottom: 20 }}>
-                      <div style={{
-                        width: 64, height: 64, borderRadius: 32,
-                        background: s.isLogo
-                          ? "linear-gradient(135deg, #0D9488, #14B8A6)"
-                          : "rgba(20,184,166,0.1)",
-                        border: `2px solid ${s.isLogo ? "transparent" : "rgba(20,184,166,0.3)"}`,
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        position: "relative", zIndex: 1,
-                        boxShadow: s.isLogo ? "0 8px 28px rgba(13,148,136,0.4)" : "none",
-                      }}>
-                        {s.isLogo
-                          ? <svg width="28" height="28" viewBox="0 0 34 34" fill="none" aria-hidden="true">
-                              <path d="M8 24 L14 10 L17 18 L20 14 L26 24" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                              <circle cx="17" cy="18" r="2.5" fill="white" />
-                            </svg>
-                          : <span style={{ fontSize: 24 }} role="img" aria-hidden="true">{s.icon}</span>
-                        }
+          {/* FIX 3 — Steps with curved SVG wave connector and step numbers above */}
+          <div style={{ position: "relative" }}>
+            {/* Curved SVG connector spanning all 4 steps */}
+            <svg
+              className="step-connector"
+              aria-hidden="true"
+              viewBox="0 0 900 60"
+              preserveAspectRatio="none"
+              style={{
+                position: "absolute",
+                top: 28,
+                left: "12.5%",
+                width: "75%",
+                height: 60,
+                zIndex: 0,
+                pointerEvents: "none",
+                overflow: "visible",
+              }}
+            >
+              <path
+                d="M0 30 C80 10, 160 50, 300 30 C440 10, 520 50, 600 30 C680 10, 760 50, 900 30"
+                stroke="rgba(20,184,166,0.45)"
+                strokeWidth="2"
+                fill="none"
+                strokeDasharray="6 4"
+              />
+            </svg>
+
+            <div className="how-steps" style={{ display: "flex", alignItems: "flex-start", gap: 0, position: "relative", zIndex: 1 }}>
+              {[
+                {
+                  num: "01",
+                  title: "Create",
+                  desc: "Set up your booking page in minutes.",
+                  icon: (
+                    // Document icon
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <line x1="16" y1="13" x2="8" y2="13" />
+                      <line x1="16" y1="17" x2="8" y2="17" />
+                      <polyline points="10 9 9 9 8 9" />
+                    </svg>
+                  ),
+                },
+                {
+                  num: "02",
+                  title: "Share",
+                  desc: "Publish the link on your website, social media, or QR code.",
+                  icon: (
+                    // Link icon
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                    </svg>
+                  ),
+                },
+                {
+                  num: "03",
+                  title: "Customers book",
+                  desc: "They choose a service, date, and time.",
+                  icon: (
+                    // Calendar icon
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                      <line x1="16" y1="2" x2="16" y2="6" />
+                      <line x1="8" y1="2" x2="8" y2="6" />
+                      <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                  ),
+                },
+                {
+                  num: "04",
+                  title: "AutoFlow takes over",
+                  desc: "Confirmations and reminders go out automatically.",
+                  isLogo: true,
+                },
+              ].map((s, i) => (
+                <div key={i} style={{ flex: 1, display: "flex", alignItems: "flex-start" }}>
+                  <FadeIn delay={i * 100} style={{ width: "100%" }}>
+                    <div style={{ textAlign: "center", padding: "0 12px" }}>
+                      {/* Step number above the node */}
+                      <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, fontWeight: 700, letterSpacing: 1, marginBottom: 8 }}>
+                        {s.num}
                       </div>
-                      {/* Connector line */}
-                      {i < arr.length - 1 && (
-                        <div className="step-connector" style={{
-                          position: "absolute", top: "50%", left: "calc(50% + 32px)",
-                          width: "calc(100% - 32px)", height: 2,
-                          background: "linear-gradient(90deg, rgba(20,184,166,0.5), rgba(20,184,166,0.15))",
-                          transform: "translateY(-50%)",
-                        }} />
-                      )}
+                      {/* Node circle */}
+                      <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
+                        <div style={{
+                          width: 64, height: 64, borderRadius: 32,
+                          background: s.isLogo
+                            ? "linear-gradient(135deg, #0D9488, #14B8A6)"
+                            : "rgba(20,184,166,0.1)",
+                          border: `2px solid ${s.isLogo ? "transparent" : "rgba(20,184,166,0.35)"}`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          boxShadow: s.isLogo ? "0 8px 28px rgba(13,148,136,0.4)" : "none",
+                        }}>
+                          {/* FIX 7 — Flow-A logo in final workflow node */}
+                          {s.isLogo
+                            ? (
+                              <svg width="28" height="28" viewBox="0 0 34 34" fill="none" aria-hidden="true">
+                                <path d="M9 25 L17 9 L25 25" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                                <path d="M12 20 L22 20" stroke="white" strokeWidth="2.4" strokeLinecap="round" />
+                              </svg>
+                            )
+                            : s.icon
+                          }
+                        </div>
+                      </div>
+                      <div style={{ color: "white", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{s.title}</div>
+                      <div style={{ color: "rgba(255,255,255,0.45)", fontSize: 13, lineHeight: 1.6, maxWidth: 160, margin: "0 auto" }}>{s.desc}</div>
                     </div>
-                    <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, fontWeight: 700, marginBottom: 8, letterSpacing: 1 }}>{s.num}</div>
-                    <div style={{ color: "white", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{s.title}</div>
-                    <div style={{ color: "rgba(255,255,255,0.45)", fontSize: 13, lineHeight: 1.6, maxWidth: 160, margin: "0 auto" }}>{s.desc}</div>
-                  </div>
-                </FadeIn>
-              </div>
-            ))}
+                  </FadeIn>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -715,15 +864,69 @@ export default function App() {
           </FadeIn>
 
           <div style={{ flex: 1 }}>
+            {/* FIX 4 — Teal stroke SVG icons replacing emoji */}
             <div className="industry-grid" style={{
               display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12,
             }}>
               {[
-                { icon: "✂️", title: "Beauty & Salon", desc: "Hair, nails, spa and more" },
-                { icon: "🏥", title: "Health & Wellness", desc: "Clinics, dental, therapy" },
-                { icon: "🎓", title: "Education", desc: "Tutoring, training, workshops" },
-                { icon: "🏋️", title: "Fitness & Sports", desc: "Gyms, personal training" },
-                { icon: "💼", title: "Professional Services", desc: "Consultations, coaching, and more" },
+                {
+                  title: "Beauty & Salon",
+                  desc: "Hair, nails, spa and more",
+                  icon: (
+                    // Scissors
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <circle cx="6" cy="6" r="3" />
+                      <circle cx="6" cy="18" r="3" />
+                      <line x1="20" y1="4" x2="8.12" y2="15.88" />
+                      <line x1="14.47" y1="14.48" x2="20" y2="20" />
+                      <line x1="8.12" y1="8.12" x2="12" y2="12" />
+                    </svg>
+                  ),
+                },
+                {
+                  title: "Health & Wellness",
+                  desc: "Clinics, dental, therapy",
+                  icon: (
+                    // Cross/plus
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M9 3H15V9H21V15H15V21H9V15H3V9H9V3Z" />
+                    </svg>
+                  ),
+                },
+                {
+                  title: "Education",
+                  desc: "Tutoring, training, workshops",
+                  icon: (
+                    // Graduation cap
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                      <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" />
+                    </svg>
+                  ),
+                },
+                {
+                  title: "Fitness & Sports",
+                  desc: "Gyms, personal training",
+                  icon: (
+                    // Dumbbell
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M6 5v14M18 5v14" />
+                      <path d="M2 9v6M22 9v6" />
+                      <line x1="6" y1="12" x2="18" y2="12" />
+                    </svg>
+                  ),
+                },
+                {
+                  title: "Professional Services",
+                  desc: "Consultations, coaching, and more",
+                  icon: (
+                    // Briefcase
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                    </svg>
+                  ),
+                },
               ].map((ind, i) => (
                 <FadeIn key={i} delay={i * 60}>
                   <div style={{
@@ -737,7 +940,7 @@ export default function App() {
                     onMouseEnter={e => { e.currentTarget.style.background = "rgba(20,184,166,0.06)"; e.currentTarget.style.borderColor = "rgba(20,184,166,0.25)"; }}
                     onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.borderColor = "rgba(20,184,166,0.1)"; }}
                   >
-                    <div style={{ fontSize: 28, marginBottom: 10 }} role="img" aria-hidden="true">{ind.icon}</div>
+                    <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>{ind.icon}</div>
                     <div style={{ color: "white", fontWeight: 700, fontSize: 13, marginBottom: 6 }}>{ind.title}</div>
                     <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, lineHeight: 1.5 }}>{ind.desc}</div>
                   </div>
@@ -762,8 +965,12 @@ export default function App() {
                   background: "rgba(20,184,166,0.1)",
                   border: "1px solid rgba(20,184,166,0.2)",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 24,
-                }} role="img" aria-label="Chart">📊</div>
+                }}>
+                  {/* Chart line icon */}
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-label="Chart">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                  </svg>
+                </div>
                 <h2 style={{
                   fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)",
                   fontWeight: 900, color: "white", letterSpacing: -0.8, lineHeight: 1.1,
@@ -908,8 +1115,11 @@ export default function App() {
                   background: "rgba(20,184,166,0.1)",
                   border: "1px solid rgba(20,184,166,0.2)",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 26,
-                }} role="img" aria-label="Security">🔒</div>
+                }}>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-label="Security">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                </div>
                 <div>
                   <div style={{ color: "#14B8A6", fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>
                     SECURITY &amp; YOUR DATA
@@ -940,14 +1150,10 @@ export default function App() {
       <footer style={{ padding: "60px 24px 40px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
         <div style={{ maxWidth: 1160, margin: "0 auto" }}>
           <div className="footer-grid" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 48, gap: 40, flexWrap: "wrap" }}>
-            {/* Brand */}
+            {/* FIX 6 + 7 — Footer Flow-A logo with local <defs> */}
             <div>
               <a href="#" aria-label="AutoFlow home" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                <svg width="28" height="28" viewBox="0 0 34 34" fill="none" aria-hidden="true">
-                  <rect width="34" height="34" rx="9" fill="url(#lg)" />
-                  <path d="M8 24 L14 10 L17 18 L20 14 L26 24" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                  <circle cx="17" cy="18" r="2.5" fill="white" />
-                </svg>
+                <FlowALogo size={28} />
                 <span style={{ color: "white", fontWeight: 800, fontSize: 16 }}>Auto<span style={{ color: "#14B8A6" }}>Flow</span></span>
               </a>
               <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, letterSpacing: 2, textTransform: "uppercase" }}>
