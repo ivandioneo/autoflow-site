@@ -2,12 +2,7 @@ import { useState, useEffect, useRef } from "react";
 
 const DASHBOARD_URL = "https://dashboard.autoflow.ivanit.work";
 
-function scrollToQuote() {
-  const el = document.getElementById("quote");
-  if (el) el.scrollIntoView({ behavior: "smooth" });
-}
-
-// ─── Savings Calculator (the wow factor) ───
+// ─── Savings Calculator ───
 function SavingsCalculator() {
   const [bookingsPerWeek, setBookingsPerWeek] = useState(40);
   const [avgPrice, setAvgPrice] = useState(150);
@@ -82,6 +77,21 @@ function SavingsCalculator() {
         <span style={{ color: "#F59E0B", fontSize: 22, fontWeight: 800 }}>{savedPerYear.toLocaleString()} AED</span>
         <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}> saved per year</span>
       </div>
+
+      <div style={{ marginTop: 24, textAlign: "center" }}>
+        <a
+          href={DASHBOARD_URL}
+          style={{
+            display: "inline-block",
+            background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+            color: "white", padding: "13px 28px", borderRadius: 12,
+            textDecoration: "none", fontWeight: 700, fontSize: 14,
+            boxShadow: "0 6px 24px rgba(13,148,136,0.35)",
+          }}
+        >
+          Create Your Business Page
+        </a>
+      </div>
     </div>
   );
 }
@@ -91,10 +101,10 @@ function PhoneMockup() {
   const [step, setStep] = useState(0);
   const msgs = [
     { dir: "in", text: "Hi, I'd like to book a haircut for Thursday 3pm", t: "10:32 AM" },
-    { dir: "out", text: "✅ Booked! Thursday at 3:00 PM. We'll remind you!", t: "10:32 AM" },
-    { dir: "out", text: "⏰ Reminder: Haircut tomorrow 3 PM. Reply YES to confirm.", t: "Wed 6:00 PM", slow: true },
+    { dir: "out", text: "\u2705 Booked! Thursday at 3:00 PM. We'll remind you!", t: "10:32 AM" },
+    { dir: "out", text: "\u23f0 Reminder: Haircut tomorrow 3 PM. Reply YES to confirm.", t: "Wed 6:00 PM", slow: true },
     { dir: "in", text: "YES", t: "Wed 6:12 PM" },
-    { dir: "out", text: "You're confirmed! See you tomorrow 💈", t: "Wed 6:12 PM" },
+    { dir: "out", text: "You're confirmed! See you tomorrow \ud83d\udc88", t: "Wed 6:12 PM" },
   ];
 
   useEffect(() => {
@@ -130,10 +140,10 @@ function PhoneMockup() {
           <div style={{
             width: 30, height: 30, borderRadius: 15, background: "#25D366",
             display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15,
-          }}>💈</div>
+          }}>⦈</div>
           <div>
             <div style={{ color: "white", fontWeight: 700, fontSize: 13 }}>GlowCuts Salon</div>
-            <div style={{ color: "#25D366", fontSize: 10 }}>● online</div>
+            <div style={{ color: "#25D366", fontSize: 10 }}>\u25cf online</div>
           </div>
         </div>
         <div style={{
@@ -228,7 +238,7 @@ function FadeIn({ children, style = {} }) {
 }
 
 // ─── Pricing Card ───
-function PricingCard({ tier, price, desc, features, highlight, badge, onCta, ctaLabel }) {
+function PricingCard({ tier, price, desc, features, highlight, badge, ctaLabel }) {
   const [hover, setHover] = useState(false);
   return (
     <div
@@ -273,100 +283,39 @@ function PricingCard({ tier, price, desc, features, highlight, badge, onCta, cta
               background: highlight ? "rgba(16,185,129,0.15)" : "rgba(13,148,136,0.1)",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 10, color: "#10B981", flexShrink: 0,
-            }}>✓</div>
+            }}>\u2713</div>
             <span>{f}</span>
           </div>
         ))}
       </div>
-      <button
-        onClick={onCta}
+      <a
+        href={DASHBOARD_URL}
         style={{
-          marginTop: "auto", padding: "13px 20px", borderRadius: 12, border: "none",
+          marginTop: "auto", padding: "13px 20px", borderRadius: 12,
           background: highlight
             ? "linear-gradient(135deg, #F59E0B, #F97316)"
             : "#0D9488",
-          color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer",
-          transition: "transform 0.2s",
+          color: "white", fontWeight: 700, fontSize: 14,
+          textDecoration: "none", textAlign: "center", display: "block",
           transform: hover ? "scale(1.02)" : "scale(1)",
-        }}>
+          transition: "transform 0.2s",
+        }}
+      >
         {ctaLabel}
-      </button>
+      </a>
     </div>
   );
 }
 
 // ─── Main Page ───
 export default function AutoFlowLanding() {
-  const [form, setForm] = useState({ name: "", business: "", email: "", whatsapp: "", type: "", message: "" });
-  const [errors, setErrors] = useState({});
-  const [submitted, setSubmitted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", h);
+    window.addEventListener("scroll", h, { passive: true });
     return () => window.removeEventListener("scroll", h);
   }, []);
-
-  const sanitize = (str) => str.replace(/<[^>]*>/g, "").replace(/[<>"'`]/g, "").trim();
-  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const isValidWhatsApp = (num) => {
-    const digits = num.replace(/[\s\-\+\(\)]/g, "");
-    return /^\d{7,15}$/.test(digits);
-  };
-  const isValidName = (name) => /^[a-zA-Z\s\-'.]{2,50}$/.test(name);
-
-  const lastSubmitRef = useRef(0);
-
-  const handleInputChange = (key, value) => {
-    let processed = value;
-    if (key === "email") processed = value.toLowerCase().trim();
-    if (key === "whatsapp") processed = value.replace(/[^0-9+\-\s()]/g, "");
-    if (key === "name" || key === "business") processed = value.replace(/[^a-zA-Z\s\-'.]/g, "");
-    if (key === "message") processed = value.slice(0, 500);
-    setForm(prev => ({ ...prev, [key]: processed }));
-    if (errors[key]) setErrors(prev => ({ ...prev, [key]: null }));
-  };
-
-  const validate = () => {
-    const e = {};
-    if (!form.name || !isValidName(form.name)) e.name = "Enter a valid name (letters only, 2-50 chars)";
-    if (!form.business || form.business.trim().length < 2) e.business = "Enter a business name";
-    if (!form.email || !isValidEmail(form.email)) e.email = "Enter a valid email address";
-    if (!form.whatsapp || !isValidWhatsApp(form.whatsapp)) e.whatsapp = "Enter a valid phone number (7-15 digits)";
-    if (!form.type) e.type = "Select a business type";
-    if (form.message && form.message.length > 500) e.message = "Message too long (max 500 characters)";
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
-  const handleSubmit = async () => {
-    const now = Date.now();
-    if (now - lastSubmitRef.current < 10000) return;
-    if (!validate()) return;
-    setSubmitting(true);
-    lastSubmitRef.current = now;
-    try {
-      const sanitizedForm = {
-        name: sanitize(form.name),
-        business: sanitize(form.business),
-        email: form.email.toLowerCase().trim(),
-        whatsapp: form.whatsapp.replace(/[^0-9+\-\s()]/g, ""),
-        type: form.type,
-        message: sanitize(form.message).slice(0, 500),
-      };
-      await fetch('https://automate.ivanit.work/api/v1/webhooks/1UIlGrv4FI4uRYsYdfWc5', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sanitizedForm)
-      });
-      setSubmitted(true);
-    } catch (err) {
-      setErrors({ submit: "Something went wrong. Please try again." });
-    }
-    setSubmitting(false);
-  };
 
   return (
     <div style={{ fontFamily: "'Inter', system-ui, sans-serif", color: "#334155", background: "#F0F4F8", overflowX: "hidden" }}>
@@ -391,466 +340,469 @@ export default function AutoFlowLanding() {
           0%, 100% { transform: translateY(0px); }
           50% { transform: translateY(-12px); }
         }
-        input:focus, textarea:focus { border-color: #0D9488 !important; box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
+        input[type=range]:focus { outline: 2px solid #14B8A6; outline-offset: 2px; }
         a:focus-visible, button:focus-visible { outline: 2px solid #14B8A6; outline-offset: 2px; }
         @media (prefers-reduced-motion: reduce) {
-          *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+          *, *::before, *::after {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
+            scroll-behavior: auto !important;
+          }
         }
         .nav-link:hover { color: white !important; }
         .login-link:hover { border-color: rgba(255,255,255,0.4) !important; color: white !important; }
+        .cta-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+        .cta-secondary:hover { background: rgba(255,255,255,0.1) !important; }
       `}</style>
 
+      {/* ─── SKIP LINK ─── */}
+      <a
+        href="#main-content"
+        style={{
+          position: "absolute", left: "-9999px", top: "auto", width: 1, height: 1, overflow: "hidden",
+        }}
+        onFocus={e => { e.target.style.cssText = "position:fixed;top:8px;left:8px;width:auto;height:auto;overflow:visible;background:#0D9488;color:white;padding:8px 16px;border-radius:8px;font-weight:700;z-index:9999;"; }}
+        onBlur={e => { e.target.style.cssText = "position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;"; }}
+      >
+        Skip to main content
+      </a>
+
       {/* ─── NAV ─── */}
-      <nav style={{
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: scrolled ? "12px 32px" : "18px 32px",
-        background: scrolled ? "rgba(15,23,42,0.95)" : "transparent",
-        backdropFilter: scrolled ? "blur(20px)" : "none",
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        transition: "all 0.3s ease",
-        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "none",
-      }}>
+      <nav
+        role="navigation"
+        aria-label="Main navigation"
+        style={{
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          padding: scrolled ? "12px 32px" : "18px 32px",
+          background: scrolled ? "rgba(15,23,42,0.95)" : "transparent",
+          backdropFilter: scrolled ? "blur(20px)" : "none",
+          position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+          transition: "all 0.3s ease",
+          borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "none",
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 10,
-            background: "linear-gradient(135deg, #0D9488, #14B8A6)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "white", fontWeight: 900, fontSize: 17,
-            boxShadow: "0 4px 12px rgba(13,148,136,0.3)",
-          }}>A</div>
+          <div
+            aria-hidden="true"
+            style={{
+              width: 36, height: 36, borderRadius: 10,
+              background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "white", fontWeight: 900, fontSize: 17,
+              boxShadow: "0 4px 12px rgba(13,148,136,0.3)",
+            }}
+          >A</div>
           <span style={{ fontWeight: 900, fontSize: 19, color: "white", letterSpacing: -0.5 }}>AutoFlow</span>
         </div>
         <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
           <a href="#calc" className="nav-link" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>Calculator</a>
           <a href="#how" className="nav-link" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>How it works</a>
           <a href="#pricing" className="nav-link" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>Pricing</a>
-          <a href={DASHBOARD_URL} className="login-link" style={{
-            color: "rgba(255,255,255,0.75)", textDecoration: "none", fontWeight: 600, fontSize: 13,
-            padding: "8px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)",
-            transition: "all 0.2s",
-          }}>Log in</a>
-          <a href="#quote" style={{
-            background: "linear-gradient(135deg, #F59E0B, #F97316)",
-            color: "white", padding: "9px 20px", borderRadius: 10,
-            textDecoration: "none", fontWeight: 700, fontSize: 13,
-            boxShadow: "0 4px 16px rgba(245,158,11,0.3)",
-          }}>Get a Quote</a>
+          <a
+            href={DASHBOARD_URL}
+            className="login-link"
+            style={{
+              color: "rgba(255,255,255,0.75)", textDecoration: "none", fontWeight: 600, fontSize: 13,
+              padding: "8px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)",
+              transition: "all 0.2s",
+            }}
+          >
+            Log in
+          </a>
+          <a
+            href={DASHBOARD_URL}
+            className="cta-primary"
+            style={{
+              background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+              color: "white", padding: "9px 20px", borderRadius: 10,
+              textDecoration: "none", fontWeight: 700, fontSize: 13,
+              boxShadow: "0 4px 16px rgba(13,148,136,0.3)",
+              transition: "opacity 0.2s, transform 0.2s",
+            }}
+          >
+            Create Your Business Page
+          </a>
         </div>
       </nav>
 
       {/* ─── HERO ─── */}
-      <section style={{
-        background: "linear-gradient(135deg, #0F172A 0%, #1E293B 40%, #0F172A 100%)",
-        backgroundSize: "200% 200%",
-        animation: "gradientShift 12s ease infinite",
-        padding: "120px 32px 80px", position: "relative", overflow: "hidden",
-      }}>
-        <div style={{
-          position: "absolute", top: -100, right: -100, width: 400, height: 400,
-          borderRadius: "50%", background: "radial-gradient(circle, rgba(13,148,136,0.12) 0%, transparent 70%)",
-          filter: "blur(60px)",
-        }} />
-        <div style={{
-          position: "absolute", bottom: -80, left: -80, width: 300, height: 300,
-          borderRadius: "50%", background: "radial-gradient(circle, rgba(245,158,11,0.08) 0%, transparent 70%)",
-          filter: "blur(50px)",
-        }} />
+      <main id="main-content">
+        <section
+          aria-label="Hero"
+          style={{
+            background: "linear-gradient(135deg, #0F172A 0%, #1E293B 40%, #0F172A 100%)",
+            backgroundSize: "200% 200%",
+            animation: "gradientShift 12s ease infinite",
+            padding: "120px 32px 80px", position: "relative", overflow: "hidden",
+          }}
+        >
+          <div style={{
+            position: "absolute", top: -100, right: -100, width: 400, height: 400,
+            borderRadius: "50%", background: "radial-gradient(circle, rgba(13,148,136,0.12) 0%, transparent 70%)",
+            filter: "blur(60px)", pointerEvents: "none", aria: "hidden",
+          }} />
+          <div style={{
+            position: "absolute", bottom: -80, left: -80, width: 300, height: 300,
+            borderRadius: "50%", background: "radial-gradient(circle, rgba(245,158,11,0.08) 0%, transparent 70%)",
+            filter: "blur(50px)", pointerEvents: "none",
+          }} />
 
-        <div style={{
-          maxWidth: 1140, margin: "0 auto", display: "flex", flexWrap: "wrap",
-          alignItems: "center", justifyContent: "center", gap: 56, position: "relative",
-        }}>
-          <div style={{ flex: "1 1 420px", maxWidth: 540 }}>
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)",
-              padding: "6px 16px", borderRadius: 24, marginBottom: 20,
-            }}>
-              <div style={{ width: 6, height: 6, borderRadius: 3, background: "#F59E0B", animation: "dotPulse 2s infinite" }} />
-              <span style={{ color: "#F59E0B", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                Automation built for UAE businesses
-              </span>
-            </div>
+          <div style={{
+            maxWidth: 1140, margin: "0 auto", display: "flex", flexWrap: "wrap",
+            alignItems: "center", justifyContent: "center", gap: 56, position: "relative",
+          }}>
+            <div style={{ flex: "1 1 420px", maxWidth: 540 }}>
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)",
+                padding: "6px 16px", borderRadius: 24, marginBottom: 20,
+              }}>
+                <div
+                  aria-hidden="true"
+                  style={{ width: 6, height: 6, borderRadius: 3, background: "#F59E0B", animation: "dotPulse 2s infinite" }}
+                />
+                <span style={{ color: "#F59E0B", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                  Automation built for UAE businesses
+                </span>
+              </div>
 
-            <h1 style={{
-              fontSize: 52, fontWeight: 900, color: "white", lineHeight: 1.08,
-              letterSpacing: -1.5, marginBottom: 20,
-            }}>
-              Put your business on{" "}
-              <span style={{
-                background: "linear-gradient(135deg, #14B8A6, #F59E0B)",
-                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-              }}>autopilot.</span>
-            </h1>
-            <p style={{
-              fontSize: 17, color: "rgba(255,255,255,0.5)", lineHeight: 1.7,
-              marginBottom: 32, maxWidth: 440,
-            }}>
-              Automated reminders, follow-ups, and booking confirmations that run on their own — so you stop chasing customers and start reclaiming your time. Built for salons, clinics, tutors, and travel agencies in the UAE.
-            </p>
-            <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 36 }}>
-              <a href="#quote" style={{
-                background: "linear-gradient(135deg, #0D9488, #14B8A6)",
-                color: "white", padding: "16px 32px", borderRadius: 14,
-                textDecoration: "none", fontWeight: 800, fontSize: 16,
-                boxShadow: "0 8px 32px rgba(13,148,136,0.35)",
-                transition: "transform 0.2s", display: "inline-block",
-              }}>Request a Free Quote</a>
-              <a href="#calc" style={{
-                background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-                color: "white", padding: "16px 28px", borderRadius: 14,
-                textDecoration: "none", fontWeight: 600, fontSize: 15,
-              }}>Calculate Your Savings ↓</a>
-            </div>
-            <div style={{ display: "flex", gap: 20, fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
-              <span>✦ No setup fees</span>
-              <span>✦ Works with WhatsApp</span>
-              <span>✦ Cancel anytime</span>
-            </div>
-          </div>
-          <div style={{ flex: "0 0 auto", animation: "float 6s ease-in-out infinite" }}>
-            <PhoneMockup />
-          </div>
-        </div>
-      </section>
-
-      {/* ─── SAVINGS CALCULATOR ─── */}
-      <section id="calc" style={{
-        background: "linear-gradient(180deg, #0F172A 0%, #1E293B 100%)",
-        padding: "72px 32px 80px",
-      }}>
-        <FadeIn>
-          <div style={{ maxWidth: 1140, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: 48, alignItems: "center", justifyContent: "center" }}>
-            <div style={{ flex: "1 1 340px", maxWidth: 440 }}>
-              <h2 style={{ fontSize: 34, fontWeight: 900, color: "white", lineHeight: 1.15, letterSpacing: -1, marginBottom: 16 }}>
-                See exactly how much you're leaving on the table
-              </h2>
-              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 15, lineHeight: 1.7, marginBottom: 24 }}>
-                The average appointment business loses 15–30% of revenue to no-shows. Drag the sliders to see your numbers — then let us fix them.
+              <h1 style={{
+                fontSize: 52, fontWeight: 900, color: "white", lineHeight: 1.08,
+                letterSpacing: -1.5, marginBottom: 20,
+              }}>
+                Put your business on{" "}
+                <span style={{
+                  background: "linear-gradient(135deg, #14B8A6, #F59E0B)",
+                  WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                }}>autopilot.</span>
+              </h1>
+              <p style={{
+                fontSize: 17, color: "rgba(255,255,255,0.5)", lineHeight: 1.7,
+                marginBottom: 32, maxWidth: 440,
+              }}>
+                Create your booking page, publish it, and let customers book themselves — while AutoFlow handles reminders, confirmations, and follow-ups automatically. Built for salons, clinics, tutors, and travel agencies in the UAE.
               </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 36 }}>
+                <a
+                  href={DASHBOARD_URL}
+                  className="cta-primary"
+                  style={{
+                    background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+                    color: "white", padding: "16px 32px", borderRadius: 14,
+                    textDecoration: "none", fontWeight: 800, fontSize: 16,
+                    boxShadow: "0 8px 32px rgba(13,148,136,0.35)",
+                    transition: "opacity 0.2s, transform 0.2s", display: "inline-block",
+                  }}
+                >
+                  Create Your Business Page
+                </a>
+                <a
+                  href="#calc"
+                  className="cta-secondary"
+                  style={{
+                    background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+                    color: "white", padding: "16px 28px", borderRadius: 14,
+                    textDecoration: "none", fontWeight: 600, fontSize: 15,
+                    transition: "background 0.2s",
+                  }}
+                >
+                  Calculate Your Savings ↓
+                </a>
+              </div>
+              <div style={{ display: "flex", gap: 20, fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
+                <span>\u2746 No setup fees</span>
+                <span>\u2746 Works with WhatsApp</span>
+                <span>\u2746 Cancel anytime</span>
+              </div>
+            </div>
+            <div style={{ flex: "0 0 auto", animation: "float 6s ease-in-out infinite" }}>
+              <PhoneMockup />
+            </div>
+          </div>
+        </section>
+
+        {/* ─── SAVINGS CALCULATOR ─── */}
+        <section
+          id="calc"
+          aria-label="Savings calculator"
+          style={{
+            background: "linear-gradient(180deg, #0F172A 0%, #1E293B 100%)",
+            padding: "72px 32px 80px",
+          }}
+        >
+          <FadeIn>
+            <div style={{ maxWidth: 1140, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: 48, alignItems: "center", justifyContent: "center" }}>
+              <div style={{ flex: "1 1 340px", maxWidth: 440 }}>
+                <h2 style={{ fontSize: 34, fontWeight: 900, color: "white", lineHeight: 1.15, letterSpacing: -1, marginBottom: 16 }}>
+                  See exactly how much you're leaving on the table
+                </h2>
+                <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 15, lineHeight: 1.7, marginBottom: 24 }}>
+                  The average appointment business loses 15\u201330% of revenue to no-shows. Drag the sliders to see your numbers \u2014 then let us fix them.
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  {[
+                    { icon: "\ud83d\udcc9", text: "Every no-show = an empty slot you can't fill" },
+                    { icon: "\u23f0", text: "Staff calling to confirm = hours wasted weekly" },
+                    { icon: "\u2705", text: "Automated reminders cut no-shows by 30% on average" },
+                  ].map((p, i) => (
+                    <div key={i} style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                      <span aria-hidden="true" style={{ fontSize: 20 }}>{p.icon}</span>
+                      <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 14 }}>{p.text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <SavingsCalculator />
+            </div>
+          </FadeIn>
+        </section>
+
+        {/* ─── STATS ─── */}
+        <section aria-label="Key statistics" style={{ background: "white", padding: "48px 32px" }}>
+          <div style={{
+            maxWidth: 900, margin: "0 auto", display: "flex", flexWrap: "wrap",
+            justifyContent: "center", gap: 48,
+          }}>
+            {[
+              { n: 30, s: "%", label: "Average no-show reduction" },
+              { n: 5, s: " min", label: "Setup time" },
+              { n: 24, s: "/7", label: "Runs while you sleep" },
+              { n: 0, s: "", label: "Messages you send manually" },
+            ].map((s, i) => (
+              <div key={i} style={{ textAlign: "center", minWidth: 160 }}>
+                <div style={{ fontSize: 42, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>
+                  {s.n === 0 ? "0" : <Counter target={s.n} />}{s.s}
+                </div>
+                <div style={{ fontSize: 13, color: "#94A3B8", marginTop: 4, fontWeight: 500 }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ─── HOW IT WORKS ─── */}
+        <section id="how" aria-label="How it works" style={{ padding: "80px 32px", background: "#F8FAFC" }}>
+          <FadeIn>
+            <div style={{ maxWidth: 900, margin: "0 auto" }}>
+              <div style={{ textAlign: "center", marginBottom: 48 }}>
+                <h2 style={{ fontSize: 34, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>How it works</h2>
+                <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>
+                  From booking page to confirmed customer \u2014 fully automated
+                </p>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center" }}>
                 {[
-                  { icon: "📉", text: "Every no-show = an empty slot you can't fill" },
-                  { icon: "⏰", text: "Staff calling to confirm = hours wasted weekly" },
-                  { icon: "✅", text: "Automated reminders cut no-shows by 30% on average" },
-                ].map((p, i) => (
-                  <div key={i} style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                    <span style={{ fontSize: 20 }}>{p.icon}</span>
-                    <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 14 }}>{p.text}</span>
+                  { icon: "\ud83d\udcc4", title: "Create your page", desc: "Set up your business booking page in minutes. Add your services, availability, and branding.", color: "#0D9488" },
+                  { icon: "\ud83d\udd17", title: "Share your link", desc: "Publish your booking page. Share it on Instagram, WhatsApp, or anywhere customers find you.", color: "#F59E0B" },
+                  { icon: "\ud83d\udcac", title: "Customers book", desc: "They pick a time, fill in their details, and confirm. No back-and-forth messages needed.", color: "#8B5CF6" },
+                  { icon: "\u26a1", title: "AutoFlow takes over", desc: "Reminders, confirmations, and follow-ups go out automatically. You just show up.", color: "#EF4444" },
+                ].map((s, i) => (
+                  <div key={i} style={{
+                    flex: "1 1 200px", maxWidth: 210, textAlign: "center", padding: "28px 16px",
+                    background: "white", borderRadius: 18, border: "1px solid #E2E8F0",
+                    position: "relative",
+                  }}>
+                    <div style={{
+                      position: "absolute", top: -1, left: "50%", transform: "translateX(-50%)",
+                      width: 40, height: 3, borderRadius: 2, background: s.color,
+                    }} />
+                    <div
+                      aria-hidden="true"
+                      style={{
+                        width: 52, height: 52, borderRadius: 16, margin: "8px auto 14px",
+                        background: `${s.color}12`, display: "flex", alignItems: "center",
+                        justifyContent: "center", fontSize: 24,
+                      }}
+                    >{s.icon}</div>
+                    <div style={{ fontWeight: 800, fontSize: 15, color: "#0F172A", marginBottom: 6 }}>{s.title}</div>
+                    <div style={{ fontSize: 12.5, color: "#64748B", lineHeight: 1.5 }}>{s.desc}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ textAlign: "center", marginTop: 40 }}>
+                <a
+                  href={DASHBOARD_URL}
+                  style={{
+                    display: "inline-block",
+                    background: "#0D9488", color: "white",
+                    padding: "14px 32px", borderRadius: 12,
+                    textDecoration: "none", fontWeight: 700, fontSize: 15,
+                    boxShadow: "0 6px 24px rgba(13,148,136,0.25)",
+                  }}
+                >
+                  Create Your Business Page
+                </a>
+              </div>
+            </div>
+          </FadeIn>
+        </section>
+
+        {/* ─── USE CASES ─── */}
+        <section aria-label="Who it's for" style={{ padding: "72px 32px", background: "white" }}>
+          <FadeIn>
+            <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+              <h2 style={{ fontSize: 30, fontWeight: 900, color: "#0F172A", textAlign: "center", marginBottom: 12, letterSpacing: -0.5 }}>
+                Built for businesses like yours
+              </h2>
+              <p style={{ color: "#94A3B8", textAlign: "center", fontSize: 15, marginBottom: 40 }}>
+                If people book time with you, we make sure they show up
+              </p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
+                {[
+                  { icon: "\ud83d\udc87", title: "Salons", stat: "28%", desc: "average no-show rate in UAE salons. Reminders cut that to under 10%." },
+                  { icon: "\ud83c\udfe5", title: "Clinics", stat: "4 hrs", desc: "per week staff spend calling patients to confirm. Zero with automation." },
+                  { icon: "\ud83d\udcda", title: "Tutors", stat: "3x", desc: "more rebookings when students get a follow-up after their session." },
+                  { icon: "\ud83d\udc85", title: "Spas", stat: "AED 600+", desc: "average revenue recovered per month from prevented no-shows." },
+                  { icon: "\u2708\ufe0f", title: "Travel", stat: "92%", desc: "of travelers appreciate pre-trip reminders (visa, docs, check-in)." },
+                ].map((c, i) => (
+                  <div key={i} style={{
+                    background: "#F8FAFC", borderRadius: 18, padding: "24px 20px",
+                    flex: "1 1 170px", maxWidth: 190, border: "1px solid #E2E8F0",
+                    textAlign: "center",
+                  }}>
+                    <div aria-hidden="true" style={{ fontSize: 32, marginBottom: 8 }}>{c.icon}</div>
+                    <div style={{ fontWeight: 800, fontSize: 15, color: "#0F172A", marginBottom: 6 }}>{c.title}</div>
+                    <div style={{ fontSize: 24, fontWeight: 900, color: "#0D9488", marginBottom: 6 }}>{c.stat}</div>
+                    <div style={{ fontSize: 12, color: "#64748B", lineHeight: 1.5 }}>{c.desc}</div>
                   </div>
                 ))}
               </div>
             </div>
-            <SavingsCalculator />
-          </div>
-        </FadeIn>
-      </section>
+          </FadeIn>
+        </section>
 
-      {/* ─── STATS ─── */}
-      <section style={{ background: "white", padding: "48px 32px" }}>
-        <div style={{
-          maxWidth: 900, margin: "0 auto", display: "flex", flexWrap: "wrap",
-          justifyContent: "center", gap: 48,
-        }}>
-          {[
-            { n: 30, s: "%", label: "Average no-show reduction" },
-            { n: 5, s: " min", label: "Setup time" },
-            { n: 24, s: "/7", label: "Runs while you sleep" },
-            { n: 0, s: "", label: "Messages you send manually" },
-          ].map((s, i) => (
-            <div key={i} style={{ textAlign: "center", minWidth: 160 }}>
-              <div style={{ fontSize: 42, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>
-                {s.n === 0 ? "0" : <Counter target={s.n} />}{s.s}
+        {/* ─── PRICING ─── */}
+        <section id="pricing" aria-label="Pricing" style={{ padding: "80px 32px", background: "#F8FAFC" }}>
+          <FadeIn>
+            <div style={{ maxWidth: 1060, margin: "0 auto" }}>
+              <div style={{ textAlign: "center", marginBottom: 44 }}>
+                <h2 style={{ fontSize: 34, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>Simple, honest pricing</h2>
+                <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>Start free. Upgrade when the ROI is obvious.</p>
               </div>
-              <div style={{ fontSize: 13, color: "#94A3B8", marginTop: 4, fontWeight: 500 }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ─── HOW IT WORKS ─── */}
-      <section id="how" style={{ padding: "80px 32px", background: "#F8FAFC" }}>
-        <FadeIn>
-          <div style={{ maxWidth: 900, margin: "0 auto" }}>
-            <div style={{ textAlign: "center", marginBottom: 48 }}>
-              <h2 style={{ fontSize: 34, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>How it works</h2>
-              <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>
-                From booking to confirmation — fully automated
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center", alignItems: "stretch" }}>
+                <PricingCard
+                  tier="Starter" price="Free" desc="Try it with basic reminders"
+                  ctaLabel="Start Free"
+                  features={["1 active automation", "Up to 50 reminders/month", "WhatsApp or SMS", "Basic dashboard"]}
+                />
+                <PricingCard
+                  tier="Professional" price="AED 149" desc="For businesses that can't afford no-shows"
+                  highlight badge="Most Popular"
+                  ctaLabel="Get Started"
+                  features={["5 active automations", "Unlimited reminders", "WhatsApp + SMS", "No-show tracking dashboard", "Follow-up sequences", "Priority support"]}
+                />
+                <PricingCard
+                  tier="Business" price="AED 349" desc="Full automation suite, custom workflows"
+                  ctaLabel="Get Started"
+                  features={["Unlimited automations", "Custom workflow builds", "Multi-location support", "Lead capture + CRM sync", "Dedicated account manager", "Monthly performance report"]}
+                />
+              </div>
+              <p style={{ textAlign: "center", color: "#94A3B8", fontSize: 13, marginTop: 28 }}>
+                Already a customer?{" "}
+                <a href={DASHBOARD_URL} style={{ color: "#0D9488", fontWeight: 700, textDecoration: "none" }}>Log in to your dashboard \u2192</a>
               </p>
             </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center" }}>
-              {[
-                { icon: "📅", title: "Customer books", desc: "Via your form, phone, Instagram, or walk-in. We connect to however you take bookings.", color: "#0D9488" },
-                { icon: "⚡", title: "Flow triggers", desc: "Our automation engine picks it up instantly — no delay, no manual entry needed.", color: "#F59E0B" },
-                { icon: "💬", title: "Reminders go out", desc: "WhatsApp or SMS, 24h and 2h before. Customer confirms or reschedules right in the chat.", color: "#8B5CF6" },
-                { icon: "📊", title: "Everything logged", desc: "Dashboard shows confirmed, pending, no-shows. You see the full picture at a glance.", color: "#EF4444" },
-              ].map((s, i) => (
-                <div key={i} style={{
-                  flex: "1 1 200px", maxWidth: 210, textAlign: "center", padding: "28px 16px",
-                  background: "white", borderRadius: 18, border: "1px solid #E2E8F0",
-                  position: "relative",
-                }}>
-                  <div style={{
-                    position: "absolute", top: -1, left: "50%", transform: "translateX(-50%)",
-                    width: 40, height: 3, borderRadius: 2, background: s.color,
-                  }} />
-                  <div style={{
-                    width: 52, height: 52, borderRadius: 16, margin: "8px auto 14px",
-                    background: `${s.color}12`, display: "flex", alignItems: "center",
-                    justifyContent: "center", fontSize: 24,
-                  }}>{s.icon}</div>
-                  <div style={{ fontWeight: 800, fontSize: 15, color: "#0F172A", marginBottom: 6 }}>{s.title}</div>
-                  <div style={{ fontSize: 12.5, color: "#64748B", lineHeight: 1.5 }}>{s.desc}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </FadeIn>
-      </section>
+          </FadeIn>
+        </section>
 
-      {/* ─── USE CASES ─── */}
-      <section style={{ padding: "72px 32px", background: "white" }}>
-        <FadeIn>
-          <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-            <h2 style={{ fontSize: 30, fontWeight: 900, color: "#0F172A", textAlign: "center", marginBottom: 12, letterSpacing: -0.5 }}>
-              Built for businesses like yours
-            </h2>
-            <p style={{ color: "#94A3B8", textAlign: "center", fontSize: 15, marginBottom: 40 }}>
-              If people book time with you, we make sure they show up
-            </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
-              {[
-                { icon: "💇", title: "Salons", stat: "28%", desc: "average no-show rate in UAE salons. Reminders cut that to under 10%." },
-                { icon: "🏥", title: "Clinics", stat: "4 hrs", desc: "per week staff spend calling patients to confirm. Zero with automation." },
-                { icon: "📚", title: "Tutors", stat: "3x", desc: "more rebookings when students get a follow-up after their session." },
-                { icon: "💅", title: "Spas", stat: "AED 600+", desc: "average revenue recovered per month from prevented no-shows." },
-                { icon: "✈️", title: "Travel", stat: "92%", desc: "of travelers appreciate pre-trip reminders (visa, docs, check-in)." },
-              ].map((c, i) => (
-                <div key={i} style={{
-                  background: "#F8FAFC", borderRadius: 18, padding: "24px 20px",
-                  flex: "1 1 170px", maxWidth: 190, border: "1px solid #E2E8F0",
-                  textAlign: "center",
-                }}>
-                  <div style={{ fontSize: 32, marginBottom: 8 }}>{c.icon}</div>
-                  <div style={{ fontWeight: 800, fontSize: 15, color: "#0F172A", marginBottom: 6 }}>{c.title}</div>
-                  <div style={{ fontSize: 24, fontWeight: 900, color: "#0D9488", marginBottom: 6 }}>{c.stat}</div>
-                  <div style={{ fontSize: 12, color: "#64748B", lineHeight: 1.5 }}>{c.desc}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </FadeIn>
-      </section>
-
-      {/* ─── PRICING ─── */}
-      <section id="pricing" style={{ padding: "80px 32px", background: "#F8FAFC" }}>
-        <FadeIn>
-          <div style={{ maxWidth: 1060, margin: "0 auto" }}>
-            <div style={{ textAlign: "center", marginBottom: 44 }}>
-              <h2 style={{ fontSize: 34, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>Simple, honest pricing</h2>
-              <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>Start free. Upgrade when the ROI is obvious.</p>
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center", alignItems: "stretch" }}>
-              <PricingCard tier="Starter" price="Free" desc="Try it with basic reminders"
-                ctaLabel="Start Free" onCta={scrollToQuote}
-                features={["1 active automation", "Up to 50 reminders/month", "WhatsApp or SMS", "Basic dashboard"]} />
-              <PricingCard tier="Professional" price="AED 149" desc="For businesses that can't afford no-shows" highlight badge="Most Popular"
-                ctaLabel="Get Started" onCta={scrollToQuote}
-                features={["5 active automations", "Unlimited reminders", "WhatsApp + SMS", "No-show tracking dashboard", "Follow-up sequences", "Priority support"]} />
-              <PricingCard tier="Business" price="AED 349" desc="Full automation suite, custom workflows"
-                ctaLabel="Get Started" onCta={scrollToQuote}
-                features={["Unlimited automations", "Custom workflow builds", "Multi-location support", "Lead capture + CRM sync", "Dedicated account manager", "Monthly performance report"]} />
-            </div>
-            <p style={{ textAlign: "center", color: "#94A3B8", fontSize: 13, marginTop: 28 }}>
-              Already a customer? <a href={DASHBOARD_URL} style={{ color: "#0D9488", fontWeight: 700, textDecoration: "none" }}>Log in to your dashboard →</a>
-            </p>
-          </div>
-        </FadeIn>
-      </section>
-
-      {/* ─── SECURITY ─── */}
-      <section style={{ padding: "48px 32px" }}>
-        <FadeIn>
-          <div style={{
-            maxWidth: 800, margin: "0 auto",
-            background: "linear-gradient(135deg, #0F172A, #1E293B)", borderRadius: 20,
-            padding: "36px 32px", display: "flex", flexWrap: "wrap", gap: 24, alignItems: "center",
-            border: "1px solid rgba(255,255,255,0.06)",
-          }}>
+        {/* ─── SECURITY ─── */}
+        <section aria-label="Security" style={{ padding: "48px 32px" }}>
+          <FadeIn>
             <div style={{
-              width: 64, height: 64, borderRadius: 18,
-              background: "rgba(13,148,136,0.15)", display: "flex",
-              alignItems: "center", justifyContent: "center", fontSize: 30, flexShrink: 0,
-            }}>🔒</div>
-            <div style={{ flex: 1, minWidth: 280 }}>
-              <div style={{ fontWeight: 800, fontSize: 18, color: "white", marginBottom: 6 }}>
-                Built security-first, from the ground up
-              </div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.7 }}>
-                Every account is fully isolated — one business can never see another's data,
-                credentials, or automations. Access is enforced at the server, not just hidden
-                in the interface. We run continuous security monitoring and intrusion detection
-                across our own infrastructure, so your customers' details stay yours alone.
+              maxWidth: 800, margin: "0 auto",
+              background: "linear-gradient(135deg, #0F172A, #1E293B)", borderRadius: 20,
+              padding: "36px 32px", display: "flex", flexWrap: "wrap", gap: 24, alignItems: "center",
+              border: "1px solid rgba(255,255,255,0.06)",
+            }}>
+              <div style={{
+                width: 64, height: 64, borderRadius: 18,
+                background: "rgba(13,148,136,0.15)", display: "flex",
+                alignItems: "center", justifyContent: "center", fontSize: 30, flexShrink: 0,
+              }} aria-hidden="true">\ud83d\udd12</div>
+              <div style={{ flex: 1, minWidth: 280 }}>
+                <div style={{ fontWeight: 800, fontSize: 18, color: "white", marginBottom: 6 }}>
+                  Built security-first, from the ground up
+                </div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.7 }}>
+                  Every account is fully isolated \u2014 one business can never see another's data,
+                  credentials, or automations. Access is enforced at the server, not just hidden
+                  in the interface. We run continuous security monitoring and intrusion detection
+                  across our own infrastructure, so your customers' details stay yours alone.
+                </div>
               </div>
             </div>
-          </div>
-        </FadeIn>
-      </section>
+          </FadeIn>
+        </section>
 
-      {/* ─── QUOTE FORM ─── */}
-      <section id="quote" style={{ padding: "80px 32px", background: "white" }}>
-        <FadeIn>
-          <div style={{ maxWidth: 560, margin: "0 auto" }}>
-            <div style={{ textAlign: "center", marginBottom: 36 }}>
-              <h2 style={{ fontSize: 34, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>
-                Get your free automation plan
+        {/* ─── FINAL CTA ─── */}
+        <section
+          aria-label="Get started"
+          style={{
+            padding: "80px 32px",
+            background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
+            textAlign: "center",
+          }}
+        >
+          <FadeIn>
+            <div style={{ maxWidth: 560, margin: "0 auto" }}>
+              <h2 style={{ fontSize: 36, fontWeight: 900, color: "white", letterSpacing: -1, marginBottom: 14 }}>
+                Ready to put your bookings on autopilot?
               </h2>
-              <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>
-                Tell us about your business — we'll design your first flow and set it up for free.
+              <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 15, lineHeight: 1.7, marginBottom: 32 }}>
+                Create your free business page in minutes. No credit card required.
               </p>
+              <a
+                href={DASHBOARD_URL}
+                style={{
+                  display: "inline-block",
+                  background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+                  color: "white", padding: "18px 40px", borderRadius: 14,
+                  textDecoration: "none", fontWeight: 800, fontSize: 17,
+                  boxShadow: "0 8px 40px rgba(13,148,136,0.4)",
+                }}
+              >
+                Create Your Business Page
+              </a>
+              <div style={{ marginTop: 20, display: "flex", gap: 24, justifyContent: "center", fontSize: 13, color: "rgba(255,255,255,0.3)" }}>
+                <span>\u2746 Free to start</span>
+                <span>\u2746 No credit card</span>
+                <span>\u2746 Cancel anytime</span>
+              </div>
             </div>
-            {submitted ? (
-              <div style={{
-                background: "#F0FDF4", borderRadius: 20, padding: "56px 32px",
-                textAlign: "center", border: "1px solid #BBF7D0",
-              }}>
-                <div style={{ fontSize: 56, marginBottom: 16 }}>🎉</div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: "#0F172A", marginBottom: 8 }}>
-                  You're in!
-                </div>
-                <div style={{ color: "#64748B", fontSize: 14, lineHeight: 1.6 }}>
-                  We'll reach out on WhatsApp within 24 hours with your custom automation plan. No payment needed to start.
-                </div>
-              </div>
-            ) : (
-              <div style={{
-                background: "#F8FAFC", borderRadius: 20, padding: "36px 28px",
-                border: "1px solid #E2E8F0",
-              }}>
-                {errors.submit && (
-                  <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, padding: "10px 14px", marginBottom: 14, color: "#DC2626", fontSize: 13 }}>
-                    {errors.submit}
-                  </div>
-                )}
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginBottom: 14 }}>
-                  {[
-                    { key: "name", label: "Your name", ph: "Ahmed", w: "1 1 48%", type: "text", maxLen: 50 },
-                    { key: "business", label: "Business name", ph: "GlowCuts Salon", w: "1 1 48%", type: "text", maxLen: 50 },
-                    { key: "email", label: "Email", ph: "ahmed@glowcuts.ae", w: "1 1 48%", type: "email", maxLen: 100 },
-                    { key: "whatsapp", label: "WhatsApp", ph: "+971 50 123 4567", w: "1 1 48%", type: "tel", maxLen: 20 },
-                  ].map(f => (
-                    <div key={f.key} style={{ flex: f.w }}>
-                      <label style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
-                        {f.label}
-                      </label>
-                      <input
-                        type={f.type}
-                        placeholder={f.ph}
-                        value={form[f.key]}
-                        maxLength={f.maxLen}
-                        onChange={e => handleInputChange(f.key, e.target.value)}
-                        style={{
-                          width: "100%", padding: "12px 14px", borderRadius: 10,
-                          border: errors[f.key] ? "1px solid #EF4444" : "1px solid #E2E8F0",
-                          fontSize: 14, outline: "none",
-                          fontFamily: "inherit", background: "white", transition: "all 0.2s",
-                        }}
-                      />
-                      {errors[f.key] && (
-                        <p style={{ color: "#EF4444", fontSize: 11, marginTop: 4 }}>{errors[f.key]}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <div style={{ marginBottom: 14 }}>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
-                    Business type
-                  </label>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                    {["Salon", "Clinic", "Tutor", "Spa", "Travel", "Other"].map(t => (
-                      <button
-                        key={t}
-                        onClick={() => { setForm(prev => ({ ...prev, type: t })); if (errors.type) setErrors(prev => ({ ...prev, type: null })); }}
-                        style={{
-                          padding: "8px 16px", borderRadius: 10, fontSize: 13, fontWeight: 600,
-                          border: form.type === t ? "2px solid #0D9488" : errors.type ? "1px solid #EF4444" : "1px solid #E2E8F0",
-                          background: form.type === t ? "rgba(13,148,136,0.08)" : "white",
-                          color: form.type === t ? "#0D9488" : "#64748B",
-                          cursor: "pointer", transition: "all 0.2s",
-                        }}
-                      >{t}</button>
-                    ))}
-                  </div>
-                  {errors.type && (
-                    <p style={{ color: "#EF4444", fontSize: 11, marginTop: 4 }}>{errors.type}</p>
-                  )}
-                </div>
-                <div style={{ marginBottom: 18 }}>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
-                    What do you need automated?
-                  </label>
-                  <textarea
-                    placeholder="e.g. appointment reminders, follow-ups, booking confirmations..."
-                    value={form.message} rows={3}
-                    maxLength={500}
-                    onChange={e => handleInputChange("message", e.target.value)}
-                    style={{
-                      width: "100%", padding: "12px 14px", borderRadius: 10,
-                      border: "1px solid #E2E8F0", fontSize: 14, outline: "none",
-                      fontFamily: "inherit", resize: "vertical", background: "white",
-                      transition: "all 0.2s",
-                    }}
-                  />
-                  <p style={{ textAlign: "right", fontSize: 11, color: "#94A3B8", marginTop: 2 }}>
-                    {form.message.length}/500
-                  </p>
-                </div>
-                <button
-                  onClick={handleSubmit}
-                  disabled={submitting}
-                  style={{
-                    width: "100%", padding: "16px", borderRadius: 14, border: "none",
-                    background: submitting ? "#94A3B8" : "linear-gradient(135deg, #0D9488, #14B8A6)",
-                    color: "white", fontWeight: 800, fontSize: 16,
-                    cursor: submitting ? "not-allowed" : "pointer",
-                    boxShadow: submitting ? "none" : "0 8px 32px rgba(13,148,136,0.3)",
-                    transition: "all 0.2s",
-                  }}
-                >
-                  {submitting ? "Submitting..." : "Submit — It's Free"}
-                </button>
-                <p style={{ textAlign: "center", fontSize: 12, color: "#94A3B8", marginTop: 10 }}>
-                  No payment required. We'll design your automation and show you how it works first.
-                </p>
-              </div>
-            )}
-          </div>
-        </FadeIn>
-      </section>
+          </FadeIn>
+        </section>
+      </main>
 
       {/* ─── FOOTER ─── */}
-      <footer style={{
-        background: "#0F172A", padding: "48px 32px", textAlign: "center",
-        borderTop: "1px solid rgba(255,255,255,0.05)",
-      }}>
+      <footer
+        role="contentinfo"
+        style={{
+          background: "#0F172A", padding: "48px 32px", textAlign: "center",
+          borderTop: "1px solid rgba(255,255,255,0.05)",
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 16 }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: 8,
-            background: "linear-gradient(135deg, #0D9488, #14B8A6)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "white", fontWeight: 900, fontSize: 15,
-          }}>A</div>
+          <div
+            aria-hidden="true"
+            style={{
+              width: 32, height: 32, borderRadius: 8,
+              background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "white", fontWeight: 900, fontSize: 15,
+            }}
+          >A</div>
           <span style={{ fontWeight: 900, fontSize: 17, color: "white" }}>AutoFlow</span>
         </div>
-        <div style={{ display: "flex", justifyContent: "center", gap: 20, marginBottom: 16 }}>
+        <nav aria-label="Footer navigation" style={{ display: "flex", justifyContent: "center", gap: 20, marginBottom: 16 }}>
+          <a href="#calc" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Calculator</a>
           <a href="#pricing" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Pricing</a>
-          <a href="#quote" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Get a Quote</a>
+          <a href="#how" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>How it works</a>
           <a href={DASHBOARD_URL} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Log in</a>
-        </div>
+        </nav>
         <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, marginBottom: 6 }}>
           Automation services for businesses in the UAE
         </div>
-        <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 12 }}>© 2026 AutoFlow. All rights reserved.</div>
+        <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 12 }}>\u00a9 2026 AutoFlow. All rights reserved.</div>
       </footer>
     </div>
   );
