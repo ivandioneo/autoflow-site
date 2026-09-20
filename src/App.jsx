@@ -9,8 +9,6 @@ function SavingsCalculator() {
   const [noShowRate, setNoShowRate] = useState(20);
 
   const lostPerMonth = Math.round(bookingsPerWeek * 4 * (noShowRate / 100) * avgPrice);
-  const savedPerMonth = Math.round(lostPerMonth * 0.3);
-  const savedPerYear = savedPerMonth * 12;
 
   return (
     <div style={{
@@ -19,10 +17,10 @@ function SavingsCalculator() {
       maxWidth: 520, width: "100%",
     }}>
       <h3 style={{ color: "white", fontSize: 22, fontWeight: 800, marginBottom: 4, letterSpacing: -0.5 }}>
-        How much are no-shows costing you?
+        How much could no-shows be costing you?
       </h3>
       <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, marginBottom: 28 }}>
-        Drag the sliders — watch the money you're losing
+        Enter your numbers to see an illustrative estimate based on your inputs.
       </p>
 
       {[
@@ -48,34 +46,24 @@ function SavingsCalculator() {
 
       <div style={{
         marginTop: 8, borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 24,
-        display: "flex", gap: 12,
       }}>
         <div style={{
-          flex: 1, background: "rgba(239,68,68,0.1)", borderRadius: 14, padding: "18px 16px",
-          border: "1px solid rgba(239,68,68,0.15)",
+          background: "rgba(239,68,68,0.1)", borderRadius: 14, padding: "18px 16px",
+          border: "1px solid rgba(239,68,68,0.15)", marginBottom: 12,
         }}>
-          <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>You're losing</div>
+          <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Estimated monthly cost of no-shows</div>
           <div style={{ color: "#EF4444", fontSize: 28, fontWeight: 800, marginTop: 4 }}>
             {lostPerMonth.toLocaleString()} <span style={{ fontSize: 14, fontWeight: 600 }}>AED/mo</span>
           </div>
         </div>
         <div style={{
-          flex: 1, background: "rgba(16,185,129,0.1)", borderRadius: 14, padding: "18px 16px",
-          border: "1px solid rgba(16,185,129,0.15)",
+          background: "rgba(16,185,129,0.08)", borderRadius: 14, padding: "14px 16px",
+          border: "1px solid rgba(16,185,129,0.12)", textAlign: "center",
         }}>
-          <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>We save you</div>
-          <div style={{ color: "#10B981", fontSize: 28, fontWeight: 800, marginTop: 4 }}>
-            {savedPerMonth.toLocaleString()} <span style={{ fontSize: 14, fontWeight: 600 }}>AED/mo</span>
-          </div>
+          <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 13 }}>
+            Potential savings — even reducing no-shows partially can meaningfully recover this revenue
+          </span>
         </div>
-      </div>
-      <div style={{
-        marginTop: 12, background: "rgba(245,158,11,0.08)", borderRadius: 14, padding: "14px 16px",
-        border: "1px solid rgba(245,158,11,0.12)", textAlign: "center",
-      }}>
-        <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}>That's </span>
-        <span style={{ color: "#F59E0B", fontSize: 22, fontWeight: 800 }}>{savedPerYear.toLocaleString()} AED</span>
-        <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}> saved per year</span>
       </div>
 
       <div style={{ marginTop: 24, textAlign: "center" }}>
@@ -119,12 +107,15 @@ function PhoneMockup() {
 
   return (
     <div style={{ position: "relative" }}>
-      <div style={{
-        position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
-        width: 320, height: 420, borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(13,148,136,0.25) 0%, transparent 70%)",
-        filter: "blur(40px)", zIndex: 0,
-      }} />
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+          width: 320, height: 420, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(13,148,136,0.25) 0%, transparent 70%)",
+          filter: "blur(40px)", zIndex: 0,
+        }}
+      />
       <div style={{
         position: "relative", zIndex: 1,
         width: 260, background: "#111", borderRadius: 32, padding: "6px",
@@ -138,12 +129,12 @@ function PhoneMockup() {
           padding: "14px 14px 10px", display: "flex", alignItems: "center", gap: 10,
         }}>
           <div style={{
-            width: 30, height: 30, borderRadius: 15, background: "#25D366",
+            width: 30, height: 30, borderRadius: 15, background: "#0D9488",
             display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15,
           }}>⦈</div>
           <div>
             <div style={{ color: "white", fontWeight: 700, fontSize: 13 }}>GlowCuts Salon</div>
-            <div style={{ color: "#25D366", fontSize: 10 }}>\u25cf online</div>
+            <div style={{ color: "#14B8A6", fontSize: 10 }}>\u25cf booking open</div>
           </div>
         </div>
         <div style={{
@@ -238,7 +229,7 @@ function FadeIn({ children, style = {} }) {
 }
 
 // ─── Pricing Card ───
-function PricingCard({ tier, price, desc, features, highlight, badge, ctaLabel }) {
+function PricingCard({ tier, tagline, desc, features, highlight, badge, ctaLabel }) {
   const [hover, setHover] = useState(false);
   return (
     <div
@@ -267,11 +258,8 @@ function PricingCard({ tier, price, desc, features, highlight, badge, ctaLabel }
         }}>{badge}</div>
       )}
       <div style={{ fontSize: 20, fontWeight: 800, color: highlight ? "white" : "#0F172A" }}>{tier}</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: highlight ? "rgba(255,255,255,0.8)" : "#334155" }}>{tagline}</div>
       <div style={{ fontSize: 13, color: highlight ? "rgba(255,255,255,0.5)" : "#64748B", lineHeight: 1.5 }}>{desc}</div>
-      <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-        <span style={{ fontSize: 40, fontWeight: 900, color: highlight ? "white" : "#0F172A", letterSpacing: -1 }}>{price}</span>
-        {price !== "Free" && <span style={{ fontSize: 14, color: highlight ? "rgba(255,255,255,0.4)" : "#94A3B8" }}>/month</span>}
-      </div>
       <div style={{
         borderTop: `1px solid ${highlight ? "rgba(255,255,255,0.08)" : "#F1F5F9"}`,
         paddingTop: 18, display: "flex", flexDirection: "column", gap: 11,
@@ -437,16 +425,22 @@ export default function AutoFlowLanding() {
             padding: "120px 32px 80px", position: "relative", overflow: "hidden",
           }}
         >
-          <div style={{
-            position: "absolute", top: -100, right: -100, width: 400, height: 400,
-            borderRadius: "50%", background: "radial-gradient(circle, rgba(13,148,136,0.12) 0%, transparent 70%)",
-            filter: "blur(60px)", pointerEvents: "none", aria: "hidden",
-          }} />
-          <div style={{
-            position: "absolute", bottom: -80, left: -80, width: 300, height: 300,
-            borderRadius: "50%", background: "radial-gradient(circle, rgba(245,158,11,0.08) 0%, transparent 70%)",
-            filter: "blur(50px)", pointerEvents: "none",
-          }} />
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute", top: -100, right: -100, width: 400, height: 400,
+              borderRadius: "50%", background: "radial-gradient(circle, rgba(13,148,136,0.12) 0%, transparent 70%)",
+              filter: "blur(60px)", pointerEvents: "none",
+            }}
+          />
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute", bottom: -80, left: -80, width: 300, height: 300,
+              borderRadius: "50%", background: "radial-gradient(circle, rgba(245,158,11,0.08) 0%, transparent 70%)",
+              filter: "blur(50px)", pointerEvents: "none",
+            }}
+          />
 
           <div style={{
             maxWidth: 1140, margin: "0 auto", display: "flex", flexWrap: "wrap",
@@ -455,15 +449,15 @@ export default function AutoFlowLanding() {
             <div style={{ flex: "1 1 420px", maxWidth: 540 }}>
               <div style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
-                background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)",
+                background: "rgba(13,148,136,0.1)", border: "1px solid rgba(13,148,136,0.2)",
                 padding: "6px 16px", borderRadius: 24, marginBottom: 20,
               }}>
                 <div
                   aria-hidden="true"
-                  style={{ width: 6, height: 6, borderRadius: 3, background: "#F59E0B", animation: "dotPulse 2s infinite" }}
+                  style={{ width: 6, height: 6, borderRadius: 3, background: "#14B8A6", animation: "dotPulse 2s infinite" }}
                 />
-                <span style={{ color: "#F59E0B", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                  Automation built for UAE businesses
+                <span style={{ color: "#14B8A6", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                  Booking automation for UAE businesses
                 </span>
               </div>
 
@@ -481,7 +475,7 @@ export default function AutoFlowLanding() {
                 fontSize: 17, color: "rgba(255,255,255,0.5)", lineHeight: 1.7,
                 marginBottom: 32, maxWidth: 440,
               }}>
-                Create your booking page, publish it, and let customers book themselves — while AutoFlow handles reminders, confirmations, and follow-ups automatically. Built for salons, clinics, tutors, and travel agencies in the UAE.
+                Create your booking page, publish it, and let customers book themselves — while AutoFlow sends confirmations and reminders automatically. Built for salons, clinics, tutors, and travel agencies in the UAE.
               </p>
               <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 36 }}>
                 <a
@@ -507,13 +501,8 @@ export default function AutoFlowLanding() {
                     transition: "background 0.2s",
                   }}
                 >
-                  Calculate Your Savings ↓
+                  Estimate Your Savings ↓
                 </a>
-              </div>
-              <div style={{ display: "flex", gap: 20, fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
-                <span>\u2746 No setup fees</span>
-                <span>\u2746 Works with WhatsApp</span>
-                <span>\u2746 Cancel anytime</span>
               </div>
             </div>
             <div style={{ flex: "0 0 auto", animation: "float 6s ease-in-out infinite" }}>
@@ -535,16 +524,16 @@ export default function AutoFlowLanding() {
             <div style={{ maxWidth: 1140, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: 48, alignItems: "center", justifyContent: "center" }}>
               <div style={{ flex: "1 1 340px", maxWidth: 440 }}>
                 <h2 style={{ fontSize: 34, fontWeight: 900, color: "white", lineHeight: 1.15, letterSpacing: -1, marginBottom: 16 }}>
-                  See exactly how much you're leaving on the table
+                  See what no-shows could be costing you
                 </h2>
                 <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 15, lineHeight: 1.7, marginBottom: 24 }}>
-                  The average appointment business loses 15\u201330% of revenue to no-shows. Drag the sliders to see your numbers \u2014 then let us fix them.
+                  Use the calculator to estimate the revenue impact of no-shows based on your own numbers. The more appointments you run, the more a reduction in no-shows can matter.
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   {[
-                    { icon: "\ud83d\udcc9", text: "Every no-show = an empty slot you can't fill" },
-                    { icon: "\u23f0", text: "Staff calling to confirm = hours wasted weekly" },
-                    { icon: "\u2705", text: "Automated reminders cut no-shows by 30% on average" },
+                    { icon: "\ud83d\udcc9", text: "Every no-show is an empty slot you can't fill" },
+                    { icon: "\u23f0", text: "Manual confirmation calls take time away from your business" },
+                    { icon: "\u2705", text: "Automated reminders let customers confirm without back-and-forth" },
                   ].map((p, i) => (
                     <div key={i} style={{ display: "flex", gap: 12, alignItems: "center" }}>
                       <span aria-hidden="true" style={{ fontSize: 20 }}>{p.icon}</span>
@@ -556,28 +545,6 @@ export default function AutoFlowLanding() {
               <SavingsCalculator />
             </div>
           </FadeIn>
-        </section>
-
-        {/* ─── STATS ─── */}
-        <section aria-label="Key statistics" style={{ background: "white", padding: "48px 32px" }}>
-          <div style={{
-            maxWidth: 900, margin: "0 auto", display: "flex", flexWrap: "wrap",
-            justifyContent: "center", gap: 48,
-          }}>
-            {[
-              { n: 30, s: "%", label: "Average no-show reduction" },
-              { n: 5, s: " min", label: "Setup time" },
-              { n: 24, s: "/7", label: "Runs while you sleep" },
-              { n: 0, s: "", label: "Messages you send manually" },
-            ].map((s, i) => (
-              <div key={i} style={{ textAlign: "center", minWidth: 160 }}>
-                <div style={{ fontSize: 42, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>
-                  {s.n === 0 ? "0" : <Counter target={s.n} />}{s.s}
-                </div>
-                <div style={{ fontSize: 13, color: "#94A3B8", marginTop: 4, fontWeight: 500 }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
         </section>
 
         {/* ─── HOW IT WORKS ─── */}
@@ -593,9 +560,9 @@ export default function AutoFlowLanding() {
               <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center" }}>
                 {[
                   { icon: "\ud83d\udcc4", title: "Create your page", desc: "Set up your business booking page in minutes. Add your services, availability, and branding.", color: "#0D9488" },
-                  { icon: "\ud83d\udd17", title: "Share your link", desc: "Publish your booking page. Share it on Instagram, WhatsApp, or anywhere customers find you.", color: "#F59E0B" },
+                  { icon: "\ud83d\udd17", title: "Share your link", desc: "Publish your booking page and share it wherever your customers find you.", color: "#F59E0B" },
                   { icon: "\ud83d\udcac", title: "Customers book", desc: "They pick a time, fill in their details, and confirm. No back-and-forth messages needed.", color: "#8B5CF6" },
-                  { icon: "\u26a1", title: "AutoFlow takes over", desc: "Reminders, confirmations, and follow-ups go out automatically. You just show up.", color: "#EF4444" },
+                  { icon: "\u26a1", title: "AutoFlow takes over", desc: "Confirmations and reminders go out automatically. You just show up.", color: "#EF4444" },
                 ].map((s, i) => (
                   <div key={i} style={{
                     flex: "1 1 200px", maxWidth: 210, textAlign: "center", padding: "28px 16px",
@@ -645,15 +612,15 @@ export default function AutoFlowLanding() {
                 Built for businesses like yours
               </h2>
               <p style={{ color: "#94A3B8", textAlign: "center", fontSize: 15, marginBottom: 40 }}>
-                If people book time with you, we make sure they show up
+                If people book time with you, AutoFlow helps keep those bookings on track
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
                 {[
-                  { icon: "\ud83d\udc87", title: "Salons", stat: "28%", desc: "average no-show rate in UAE salons. Reminders cut that to under 10%." },
-                  { icon: "\ud83c\udfe5", title: "Clinics", stat: "4 hrs", desc: "per week staff spend calling patients to confirm. Zero with automation." },
-                  { icon: "\ud83d\udcda", title: "Tutors", stat: "3x", desc: "more rebookings when students get a follow-up after their session." },
-                  { icon: "\ud83d\udc85", title: "Spas", stat: "AED 600+", desc: "average revenue recovered per month from prevented no-shows." },
-                  { icon: "\u2708\ufe0f", title: "Travel", stat: "92%", desc: "of travelers appreciate pre-trip reminders (visa, docs, check-in)." },
+                  { icon: "\ud83d\udc87", title: "Salons", desc: "Automated booking confirmations and reminders so your chair stays full." },
+                  { icon: "\ud83c\udfe5", title: "Clinics", desc: "Reduce manual follow-up calls with automated patient reminders." },
+                  { icon: "\ud83d\udcda", title: "Tutors", desc: "Keep sessions on schedule with automatic booking confirmations." },
+                  { icon: "\ud83d\udc85", title: "Spas", desc: "Let customers self-book and receive reminders without manual effort." },
+                  { icon: "\u2708\ufe0f", title: "Travel", desc: "Send automated pre-trip reminders and booking confirmations." },
                 ].map((c, i) => (
                   <div key={i} style={{
                     background: "#F8FAFC", borderRadius: 18, padding: "24px 20px",
@@ -661,8 +628,7 @@ export default function AutoFlowLanding() {
                     textAlign: "center",
                   }}>
                     <div aria-hidden="true" style={{ fontSize: 32, marginBottom: 8 }}>{c.icon}</div>
-                    <div style={{ fontWeight: 800, fontSize: 15, color: "#0F172A", marginBottom: 6 }}>{c.title}</div>
-                    <div style={{ fontSize: 24, fontWeight: 900, color: "#0D9488", marginBottom: 6 }}>{c.stat}</div>
+                    <div style={{ fontWeight: 800, fontSize: 15, color: "#0F172A", marginBottom: 8 }}>{c.title}</div>
                     <div style={{ fontSize: 12, color: "#64748B", lineHeight: 1.5 }}>{c.desc}</div>
                   </div>
                 ))}
@@ -677,24 +643,46 @@ export default function AutoFlowLanding() {
             <div style={{ maxWidth: 1060, margin: "0 auto" }}>
               <div style={{ textAlign: "center", marginBottom: 44 }}>
                 <h2 style={{ fontSize: 34, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>Simple, honest pricing</h2>
-                <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>Start free. Upgrade when the ROI is obvious.</p>
+                <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>Plans for every stage — start free and grow from there.</p>
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center", alignItems: "stretch" }}>
                 <PricingCard
-                  tier="Starter" price="Free" desc="Try it with basic reminders"
-                  ctaLabel="Start Free"
-                  features={["1 active automation", "Up to 50 reminders/month", "WhatsApp or SMS", "Basic dashboard"]}
+                  tier="Starter"
+                  tagline="Free to get started"
+                  desc="Create your booking page and start accepting bookings with automated confirmations."
+                  ctaLabel="Get Started Free"
+                  features={[
+                    "Business booking page",
+                    "Automated booking confirmations",
+                    "Basic reminder automation",
+                    "AutoFlow dashboard access",
+                  ]}
                 />
                 <PricingCard
-                  tier="Professional" price="AED 149" desc="For businesses that can't afford no-shows"
-                  highlight badge="Most Popular"
+                  tier="Professional"
+                  tagline="For growing businesses"
+                  desc="More automation capacity and controls for businesses with a regular booking volume."
+                  highlight badge="Popular"
                   ctaLabel="Get Started"
-                  features={["5 active automations", "Unlimited reminders", "WhatsApp + SMS", "No-show tracking dashboard", "Follow-up sequences", "Priority support"]}
+                  features={[
+                    "Everything in Starter",
+                    "Higher automation capacity",
+                    "Customisable reminder sequences",
+                    "Booking analytics",
+                    "Priority support",
+                  ]}
                 />
                 <PricingCard
-                  tier="Business" price="AED 349" desc="Full automation suite, custom workflows"
+                  tier="Business"
+                  tagline="For larger operations"
+                  desc="Expanded automation and support for businesses running higher booking volumes."
                   ctaLabel="Get Started"
-                  features={["Unlimited automations", "Custom workflow builds", "Multi-location support", "Lead capture + CRM sync", "Dedicated account manager", "Monthly performance report"]}
+                  features={[
+                    "Everything in Professional",
+                    "Increased automation limits",
+                    "Advanced workflow configuration",
+                    "Dedicated onboarding support",
+                  ]}
                 />
               </div>
               <p style={{ textAlign: "center", color: "#94A3B8", fontSize: 13, marginTop: 28 }}>
@@ -706,7 +694,7 @@ export default function AutoFlowLanding() {
         </section>
 
         {/* ─── SECURITY ─── */}
-        <section aria-label="Security" style={{ padding: "48px 32px" }}>
+        <section aria-label="Security and data" style={{ padding: "48px 32px" }}>
           <FadeIn>
             <div style={{
               maxWidth: 800, margin: "0 auto",
@@ -721,13 +709,14 @@ export default function AutoFlowLanding() {
               }} aria-hidden="true">\ud83d\udd12</div>
               <div style={{ flex: 1, minWidth: 280 }}>
                 <div style={{ fontWeight: 800, fontSize: 18, color: "white", marginBottom: 6 }}>
-                  Built security-first, from the ground up
+                  Designed with data separation in mind
                 </div>
                 <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.7 }}>
-                  Every account is fully isolated \u2014 one business can never see another's data,
-                  credentials, or automations. Access is enforced at the server, not just hidden
-                  in the interface. We run continuous security monitoring and intrusion detection
-                  across our own infrastructure, so your customers' details stay yours alone.
+                  AutoFlow is built as a multi-tenant platform where each business account
+                  operates in its own isolated context. Access controls are enforced
+                  server-side, so your booking data and customer details are scoped to
+                  your account only. We take a security-first approach to how the platform
+                  is architected and operated.
                 </div>
               </div>
             </div>
@@ -749,7 +738,7 @@ export default function AutoFlowLanding() {
                 Ready to put your bookings on autopilot?
               </h2>
               <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 15, lineHeight: 1.7, marginBottom: 32 }}>
-                Create your free business page in minutes. No credit card required.
+                Create your business page and start accepting bookings with automated confirmations and reminders.
               </p>
               <a
                 href={DASHBOARD_URL}
@@ -763,11 +752,6 @@ export default function AutoFlowLanding() {
               >
                 Create Your Business Page
               </a>
-              <div style={{ marginTop: 20, display: "flex", gap: 24, justifyContent: "center", fontSize: 13, color: "rgba(255,255,255,0.3)" }}>
-                <span>\u2746 Free to start</span>
-                <span>\u2746 No credit card</span>
-                <span>\u2746 Cancel anytime</span>
-              </div>
             </div>
           </FadeIn>
         </section>
@@ -800,7 +784,7 @@ export default function AutoFlowLanding() {
           <a href={DASHBOARD_URL} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Log in</a>
         </nav>
         <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, marginBottom: 6 }}>
-          Automation services for businesses in the UAE
+          Booking automation for businesses in the UAE
         </div>
         <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 12 }}>\u00a9 2026 AutoFlow. All rights reserved.</div>
       </footer>
