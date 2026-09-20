@@ -1,949 +1,982 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 const DASHBOARD_URL = "https://dashboard.autoflow.ivanit.work";
 
-// ─── Savings Calculator ───
-function SavingsCalculator() {
-  const [bookingsPerWeek, setBookingsPerWeek] = useState(40);
-  const [avgPrice, setAvgPrice] = useState(150);
-  const [noShowRate, setNoShowRate] = useState(20);
+/* ─── Reduced-motion helper ─────────────────────────────────────────── */
+function useReducedMotion() {
+  const [reduced, setReduced] = useState(
+    () => typeof window !== "undefined"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : false
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handler = (e) => setReduced(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return reduced;
+}
 
-  const lostPerMonth = Math.round(bookingsPerWeek * 4 * (noShowRate / 100) * avgPrice);
+/* ─── Fade-in on scroll ─────────────────────────────────────────────── */
+function FadeIn({ children, delay = 0, style = {} }) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+  const reduced = useReducedMotion();
+
+  useEffect(() => {
+    if (reduced) { setVisible(true); return; }
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      { threshold: 0.12 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [reduced]);
 
   return (
-    <div style={{
-      background: "rgba(255,255,255,0.03)", backdropFilter: "blur(20px)",
-      borderRadius: 24, padding: "40px 32px", border: "1px solid rgba(255,255,255,0.08)",
-      maxWidth: 520, width: "100%",
-    }}>
-      <h3 style={{ color: "white", fontSize: 22, fontWeight: 800, marginBottom: 4, letterSpacing: -0.5 }}>
-        How much could no-shows be costing you?
-      </h3>
-      <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, marginBottom: 28 }}>
-        Enter your numbers to see an illustrative estimate based on your inputs.
-      </p>
-
-      {[
-        { label: "Bookings per week", value: bookingsPerWeek, set: setBookingsPerWeek, min: 5, max: 100, unit: "" },
-        { label: "Average booking price", value: avgPrice, set: setAvgPrice, min: 30, max: 500, unit: " AED" },
-        { label: "Your no-show rate", value: noShowRate, set: setNoShowRate, min: 5, max: 50, unit: "%" },
-      ].map((s, i) => (
-        <div key={i} style={{ marginBottom: 22 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-            <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, fontWeight: 500 }}>{s.label}</span>
-            <span style={{ color: "#F59E0B", fontSize: 15, fontWeight: 800 }}>
-              {s.unit === " AED" ? `${s.value} AED` : `${s.value}${s.unit}`}
-            </span>
-          </div>
-          <input
-            type="range" min={s.min} max={s.max} value={s.value}
-            onChange={e => s.set(Number(e.target.value))}
-            aria-label={s.label}
-            style={{ width: "100%", accentColor: "#F59E0B", cursor: "pointer" }}
-          />
-        </div>
-      ))}
-
-      <div style={{
-        marginTop: 8, borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 24,
-      }}>
-        <div style={{
-          background: "rgba(239,68,68,0.1)", borderRadius: 14, padding: "18px 16px",
-          border: "1px solid rgba(239,68,68,0.15)", marginBottom: 12,
-        }}>
-          <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Estimated monthly cost of no-shows</div>
-          <div style={{ color: "#EF4444", fontSize: 28, fontWeight: 800, marginTop: 4 }}>
-            {lostPerMonth.toLocaleString()} <span style={{ fontSize: 14, fontWeight: 600 }}>AED/mo</span>
-          </div>
-        </div>
-        <div style={{
-          background: "rgba(16,185,129,0.08)", borderRadius: 14, padding: "14px 16px",
-          border: "1px solid rgba(16,185,129,0.12)", textAlign: "center",
-        }}>
-          <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 13 }}>
-            Potential savings — even reducing no-shows partially can meaningfully recover this revenue
-          </span>
-        </div>
-      </div>
-
-      <div style={{ marginTop: 24, textAlign: "center" }}>
-        <a
-          href={DASHBOARD_URL}
-          style={{
-            display: "inline-block",
-            background: "linear-gradient(135deg, #0D9488, #14B8A6)",
-            color: "white", padding: "13px 28px", borderRadius: 12,
-            textDecoration: "none", fontWeight: 700, fontSize: 14,
-            boxShadow: "0 6px 24px rgba(13,148,136,0.35)",
-          }}
-        >
-          Create Your Business Page
-        </a>
-      </div>
+    <div
+      ref={ref}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: reduced ? "none" : (visible ? "translateY(0)" : "translateY(24px)"),
+        transition: reduced ? "none" : `opacity 0.55s ease ${delay}ms, transform 0.55s ease ${delay}ms`,
+        ...style,
+      }}
+    >
+      {children}
     </div>
   );
 }
 
-// ─── Animated Phone — Booking Page UI ───
+/* ─── Animated counting number ──────────────────────────────────────── */
+function Counter({ target, suffix = "", duration = 1400 }) {
+  const [val, setVal] = useState(0);
+  const ref = useRef(null);
+  const reduced = useReducedMotion();
+
+  useEffect(() => {
+    if (reduced) { setVal(target); return; }
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      observer.disconnect();
+      let start = null;
+      function step(ts) {
+        if (!start) start = ts;
+        const progress = Math.min((ts - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - progress, 3);
+        setVal(Math.round(ease * target));
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }, { threshold: 0.5 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target, duration, reduced]);
+
+  return <span ref={ref}>{val.toLocaleString()}{suffix}</span>;
+}
+
+/* ─── Phone Mockup ──────────────────────────────────────────────────── */
 function PhoneMockup() {
-  // Steps: 0=services, 1=date, 2=time, 3=confirm, 4=confirmed
   const [step, setStep] = useState(0);
   const [selectedService, setSelectedService] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
+  const reduced = useReducedMotion();
 
-  const STEPS_COUNT = 5;
+  const services = [
+    { name: "Haircut", duration: "30 min", price: "AED 60" },
+    { name: "Haircut + Beard", duration: "45 min", price: "AED 80" },
+    { name: "Full Grooming", duration: "60 min", price: "AED 120" },
+  ];
+  const dates = [
+    { label: "Today", sub: "Sep 20" },
+    { label: "Tomorrow", sub: "Sep 21" },
+    { label: "Mon", sub: "Sep 22" },
+  ];
+  const times = ["2:00 PM", "2:30 PM", "3:00 PM", "3:30 PM"];
 
   useEffect(() => {
-    // Auto-advance through the booking flow
-    const delays = [
-      2200, // step 0→1: service selected
-      2000, // step 1→2: date selected
-      1800, // step 2→3: time selected
-      2000, // step 3→4: confirmed
-      3500, // step 4→0: reset
-    ];
+    if (reduced) { setStep(4); setSelectedService(0); setSelectedDate(0); setSelectedTime("3:00 PM"); return; }
+    const delays = [2400, 2000, 1800, 2200, 3200];
     const d = delays[step] ?? 2000;
     const timer = setTimeout(() => {
-      if (step === 0) setSelectedService("Haircut & Style");
-      if (step === 1) setSelectedDate("Thu 25 Sep");
+      if (step === 0) setSelectedService(0);
+      if (step === 1) setSelectedDate(2);
       if (step === 2) setSelectedTime("3:00 PM");
       if (step === 4) {
         setSelectedService(null);
         setSelectedDate(null);
         setSelectedTime(null);
       }
-      setStep(s => (s + 1) % STEPS_COUNT);
+      setStep(s => (s + 1) % 5);
     }, d);
     return () => clearTimeout(timer);
-  }, [step]);
+  }, [step, reduced]);
 
-  const services = ["Haircut & Style", "Colour Treatment", "Blow-dry"];
-  const dates = ["Tue 23 Sep", "Wed 24 Sep", "Thu 25 Sep", "Fri 26 Sep"];
-  const times = ["10:00 AM", "11:30 AM", "3:00 PM", "4:30 PM"];
+  const confirmed = step === 4;
 
   return (
-    <div style={{ position: "relative" }}>
-      {/* Ambient glow behind phone */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
-          width: 320, height: 420, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(13,148,136,0.25) 0%, transparent 70%)",
-          filter: "blur(40px)", zIndex: 0,
-        }}
-      />
+    <div style={{ position: "relative", display: "flex", justifyContent: "center" }}>
+      {/* Ambient glow */}
+      <div aria-hidden="true" style={{
+        position: "absolute", top: "50%", left: "50%",
+        transform: "translate(-50%,-50%)",
+        width: 340, height: 460, borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(20,184,166,0.22) 0%, transparent 68%)",
+        filter: "blur(48px)", zIndex: 0, pointerEvents: "none",
+      }} />
 
-      {/* Phone frame */}
+      {/* Phone */}
       <div style={{
         position: "relative", zIndex: 1,
-        width: 260, background: "#111", borderRadius: 32, padding: "6px",
-        boxShadow: "0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)",
+        width: 248,
+        background: "#0d1117",
+        borderRadius: 38,
+        padding: "10px 8px 8px",
+        boxShadow: "0 32px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.07), inset 0 1px 0 rgba(255,255,255,0.05)",
       }}>
         {/* Notch */}
-        <div style={{
-          width: 80, height: 6, background: "#333", borderRadius: 3,
-          margin: "6px auto 0",
-        }} />
+        <div style={{ width: 72, height: 5, background: "#222", borderRadius: 3, margin: "0 auto 8px" }} />
 
-        {/* Booking page header */}
+        {/* Header */}
         <div style={{
-          padding: "14px 14px 10px", display: "flex", alignItems: "center", gap: 10,
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          background: "#111820", borderRadius: "24px 24px 0 0",
+          padding: "12px 14px 10px",
+          display: "flex", alignItems: "center", gap: 10,
+          borderBottom: "1px solid rgba(20,184,166,0.12)",
         }}>
-          <div
-            aria-hidden="true"
-            style={{
-              width: 30, height: 30, borderRadius: 15, background: "#0D9488",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: "white", fontWeight: 900, fontSize: 14, letterSpacing: -0.5,
-            }}
-          >A</div>
+          <div style={{
+            width: 34, height: 34, borderRadius: 17,
+            background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: "white", fontWeight: 900, fontSize: 15, flexShrink: 0,
+            boxShadow: "0 4px 12px rgba(13,148,136,0.4)",
+          }}>A</div>
           <div>
-            <div style={{ color: "white", fontWeight: 700, fontSize: 13 }}>GlowCuts Salon</div>
-            <div style={{ color: "#14B8A6", fontSize: 10 }}>● booking open</div>
+            <div style={{ color: "white", fontWeight: 700, fontSize: 13, letterSpacing: -0.2 }}>GlowCuts Salon</div>
+            <div style={{ color: "#14B8A6", fontSize: 10, fontWeight: 500 }}>Book an appointment</div>
           </div>
         </div>
 
-        {/* Booking page body */}
+        {/* Body */}
         <div style={{
           background: "#F8FAFC",
-          minHeight: 290,
-          padding: "12px 10px 14px",
-          borderBottomLeftRadius: 26,
-          borderBottomRightRadius: 26,
-          display: "flex",
-          flexDirection: "column",
-          gap: 0,
+          minHeight: 310,
+          padding: "12px 12px 14px",
+          borderRadius: "0 0 30px 30px",
           overflow: "hidden",
+          transition: "all 0.3s ease",
         }}>
-
-          {/* ── Step 0 & 1: Service Selection ── */}
-          {(step === 0 || step === 1) && (
-            <div style={{ animation: "stepIn 0.35s cubic-bezier(0.34,1.2,0.64,1)" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                Book an appointment
-              </div>
-              <div style={{ fontSize: 10, fontWeight: 600, color: "#334155", marginBottom: 6 }}>Select a service</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                {services.map(svc => (
-                  <div
-                    key={svc}
-                    style={{
-                      padding: "7px 10px",
-                      borderRadius: 8,
-                      border: `1.5px solid ${(step === 1 && selectedService === svc) ? "#0D9488" : "#E2E8F0"}`,
-                      background: (step === 1 && selectedService === svc) ? "rgba(13,148,136,0.07)" : "white",
-                      fontSize: 11,
-                      fontWeight: (step === 1 && selectedService === svc) ? 700 : 500,
-                      color: (step === 1 && selectedService === svc) ? "#0D9488" : "#475569",
-                      display: "flex", alignItems: "center", justifyContent: "space-between",
-                      transition: "all 0.25s ease",
-                      animation: step === 1 && selectedService === svc ? "selectPop 0.25s ease" : "none",
-                    }}
-                  >
-                    <span>{svc}</span>
-                    {step === 1 && selectedService === svc && (
-                      <span style={{ fontSize: 10, color: "#0D9488" }}>✓</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ── Step 2: Date Selection ── */}
-          {step === 2 && (
-            <div style={{ animation: "stepIn 0.35s cubic-bezier(0.34,1.2,0.64,1)" }}>
-              <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8", marginBottom: 6 }}>
-                Haircut &amp; Style
-              </div>
-              <div style={{ fontSize: 10, fontWeight: 600, color: "#334155", marginBottom: 7 }}>Select a date</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5 }}>
-                {dates.map(d => (
-                  <div
-                    key={d}
-                    style={{
-                      padding: "7px 6px",
-                      borderRadius: 8,
-                      border: `1.5px solid ${selectedDate === d ? "#0D9488" : "#E2E8F0"}`,
-                      background: selectedDate === d ? "rgba(13,148,136,0.07)" : "white",
-                      fontSize: 10.5,
-                      fontWeight: selectedDate === d ? 700 : 500,
-                      color: selectedDate === d ? "#0D9488" : "#475569",
-                      textAlign: "center",
-                      animation: selectedDate === d ? "selectPop 0.25s ease" : "none",
-                    }}
-                  >
-                    {d}
-                  </div>
-                ))}
-              </div>
-              {selectedDate && (
-                <div style={{ marginTop: 8, fontSize: 10, color: "#0D9488", fontWeight: 600, textAlign: "center" }}>
-                  {selectedDate} selected ✓
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── Step 3: Time Slot Selection ── */}
-          {step === 3 && (
-            <div style={{ animation: "stepIn 0.35s cubic-bezier(0.34,1.2,0.64,1)" }}>
-              <div style={{ fontSize: 10, fontWeight: 600, color: "#94A3B8", marginBottom: 2 }}>
-                Haircut &amp; Style · Thu 25 Sep
-              </div>
-              <div style={{ fontSize: 10, fontWeight: 600, color: "#334155", marginBottom: 7, marginTop: 4 }}>
-                Available times
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5 }}>
-                {times.map(t => (
-                  <div
-                    key={t}
-                    style={{
-                      padding: "7px 4px",
-                      borderRadius: 8,
-                      border: `1.5px solid ${selectedTime === t ? "#0D9488" : "#E2E8F0"}`,
-                      background: selectedTime === t ? "rgba(13,148,136,0.07)" : "white",
-                      fontSize: 11,
-                      fontWeight: selectedTime === t ? 700 : 500,
-                      color: selectedTime === t ? "#0D9488" : "#475569",
-                      textAlign: "center",
-                      animation: selectedTime === t ? "selectPop 0.25s ease" : "none",
-                    }}
-                  >
-                    {t}
-                  </div>
-                ))}
-              </div>
-              {selectedTime && (
-                <div style={{ marginTop: 10 }}>
-                  <div style={{
-                    background: "#0D9488", color: "white", borderRadius: 8,
-                    padding: "8px 0", fontSize: 11, fontWeight: 700,
-                    textAlign: "center", letterSpacing: 0.2,
-                  }}>
-                    Confirm Booking
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── Step 4: Confirmed ── */}
-          {step === 4 && (
-            <div style={{
-              display: "flex", flexDirection: "column", alignItems: "center",
-              justifyContent: "center", flex: 1, padding: "20px 8px",
-              animation: "stepIn 0.4s cubic-bezier(0.34,1.56,0.64,1)",
-            }}>
+          {confirmed ? (
+            <div style={{ textAlign: "center", padding: "30px 8px" }}>
               <div style={{
-                width: 44, height: 44, borderRadius: "50%",
-                background: "rgba(13,148,136,0.12)", display: "flex",
-                alignItems: "center", justifyContent: "center",
-                fontSize: 22, marginBottom: 10,
-              }}>✓</div>
-              <div style={{ fontSize: 13, fontWeight: 800, color: "#0F172A", marginBottom: 4 }}>
-                Booking confirmed
-              </div>
-              <div style={{ fontSize: 10, color: "#64748B", textAlign: "center", lineHeight: 1.5 }}>
-                Haircut &amp; Style<br />
-                Thu 25 Sep · 3:00 PM<br />
-                GlowCuts Salon
-              </div>
-              <div style={{
-                marginTop: 10, fontSize: 10, color: "#14B8A6", fontWeight: 600,
-                background: "rgba(13,148,136,0.07)", borderRadius: 6,
-                padding: "5px 10px", border: "1px solid rgba(13,148,136,0.15)",
+                width: 52, height: 52, borderRadius: 26,
+                background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+                margin: "0 auto 14px",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                boxShadow: "0 8px 24px rgba(13,148,136,0.35)",
               }}>
-                Confirmation sent automatically
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </div>
+              <div style={{ color: "#0D9488", fontWeight: 800, fontSize: 15, marginBottom: 4 }}>Booking Confirmed!</div>
+              <div style={{ color: "#64748B", fontSize: 11, lineHeight: 1.5 }}>
+                Mon Sep 22 · 3:00 PM<br />
+                Confirmation sent to your phone
               </div>
             </div>
+          ) : (
+            <>
+              {/* Services */}
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ color: "#64748B", fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>① Select a service</div>
+                {services.map((s, i) => (
+                  <div key={i} style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "7px 10px", borderRadius: 8, marginBottom: 4,
+                    background: selectedService === i ? "rgba(13,148,136,0.08)" : "#F1F5F9",
+                    border: `1px solid ${selectedService === i ? "rgba(13,148,136,0.3)" : "transparent"}`,
+                    transition: "all 0.25s ease", cursor: "default",
+                  }}>
+                    <div>
+                      <div style={{ color: "#1E293B", fontSize: 11, fontWeight: 600 }}>{s.name}</div>
+                      <div style={{ color: "#94A3B8", fontSize: 9 }}>{s.duration}</div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ color: "#1E293B", fontSize: 11, fontWeight: 700 }}>{s.price}</span>
+                      <div style={{
+                        width: 14, height: 14, borderRadius: 7,
+                        border: `2px solid ${selectedService === i ? "#0D9488" : "#CBD5E1"}`,
+                        background: selectedService === i ? "#0D9488" : "transparent",
+                        transition: "all 0.25s ease",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}>
+                        {selectedService === i && (
+                          <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                            <polyline points="1.5 4 3 5.5 6.5 2" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+                          </svg>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Dates */}
+              {selectedService !== null && (
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ color: "#64748B", fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>② Choose a date</div>
+                  <div style={{ display: "flex", gap: 5 }}>
+                    {dates.map((d, i) => (
+                      <div key={i} style={{
+                        flex: 1, textAlign: "center", padding: "6px 4px", borderRadius: 8,
+                        background: selectedDate === i ? "#0D9488" : "#F1F5F9",
+                        cursor: "default", transition: "all 0.25s ease",
+                      }}>
+                        <div style={{ color: selectedDate === i ? "white" : "#64748B", fontSize: 9, fontWeight: 600 }}>{d.label}</div>
+                        <div style={{ color: selectedDate === i ? "rgba(255,255,255,0.8)" : "#94A3B8", fontSize: 8 }}>{d.sub}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Times */}
+              {selectedDate !== null && (
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ color: "#64748B", fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>③ Select a time</div>
+                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                    {times.map((t, i) => (
+                      <div key={i} style={{
+                        padding: "5px 8px", borderRadius: 6, fontSize: 10, fontWeight: 600,
+                        background: selectedTime === t ? "#0D9488" : "#F1F5F9",
+                        color: selectedTime === t ? "white" : "#475569",
+                        transition: "all 0.25s ease", cursor: "default",
+                      }}>{t}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Confirm button */}
+              {selectedTime && (
+                <div style={{
+                  background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+                  borderRadius: 8, padding: "8px 12px",
+                  textAlign: "center", color: "white",
+                  fontSize: 11, fontWeight: 700,
+                  marginTop: 4,
+                  boxShadow: "0 4px 14px rgba(13,148,136,0.4)",
+                }}>
+                  Confirm Booking →
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
-    </div>
-  );
-}
 
-// ─── Animated Counter ───
-function Counter({ target, suffix = "", prefix = "" }) {
-  const [val, setVal] = useState(0);
-  const ref = useRef(null);
-  const started = useRef(false);
-
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && !started.current) {
-        started.current = true;
-        const dur = 1600;
-        const start = performance.now();
-        const tick = (now) => {
-          const p = Math.min((now - start) / dur, 1);
-          const ease = 1 - Math.pow(1 - p, 3);
-          setVal(Math.round(ease * target));
-          if (p < 1) requestAnimationFrame(tick);
-        };
-        requestAnimationFrame(tick);
-      }
-    }, { threshold: 0.5 });
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, [target]);
-
-  return <span ref={ref}>{prefix}{val.toLocaleString()}{suffix}</span>;
-}
-
-// ─── Fade In Section ───
-function FadeIn({ children, style = {} }) {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) { setVisible(true); obs.disconnect(); }
-    }, { threshold: 0.15 });
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, []);
-
-  return (
-    <div ref={ref} style={{
-      ...style,
-      opacity: visible ? 1 : 0,
-      transform: visible ? "translateY(0)" : "translateY(30px)",
-      transition: "opacity 0.7s ease, transform 0.7s ease",
-    }}>
-      {children}
-    </div>
-  );
-}
-
-// ─── Pricing Card ───
-function PricingCard({ tier, tagline, desc, features, highlight, badge, ctaLabel }) {
-  const [hover, setHover] = useState(false);
-  return (
-    <div
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      style={{
-        background: highlight
-          ? "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)"
-          : "white",
-        borderRadius: 20, padding: "36px 26px", flex: "1 1 260px", maxWidth: 320,
-        border: highlight ? "1px solid rgba(245,158,11,0.3)" : "1px solid #E2E8F0",
-        boxShadow: highlight
-          ? hover ? "0 20px 60px rgba(245,158,11,0.2)" : "0 12px 40px rgba(15,23,42,0.3)"
-          : hover ? "0 12px 32px rgba(0,0,0,0.08)" : "0 2px 8px rgba(0,0,0,0.04)",
-        display: "flex", flexDirection: "column", gap: 16,
-        transform: hover ? "translateY(-6px)" : "translateY(0)",
-        transition: "all 0.3s ease",
-        cursor: "default",
-      }}
-    >
-      {badge && (
-        <div style={{
-          background: "linear-gradient(135deg, #F59E0B, #F97316)",
-          color: "white", fontWeight: 800, fontSize: 10, padding: "5px 14px",
-          borderRadius: 20, alignSelf: "flex-start", textTransform: "uppercase", letterSpacing: 1,
-        }}>{badge}</div>
-      )}
-      <div style={{ fontSize: 20, fontWeight: 800, color: highlight ? "white" : "#0F172A" }}>{tier}</div>
-      <div style={{ fontSize: 15, fontWeight: 700, color: highlight ? "rgba(255,255,255,0.8)" : "#334155" }}>{tagline}</div>
-      <div style={{ fontSize: 13, color: highlight ? "rgba(255,255,255,0.5)" : "#64748B", lineHeight: 1.5 }}>{desc}</div>
+      {/* Floating sidebar cards */}
       <div style={{
-        borderTop: `1px solid ${highlight ? "rgba(255,255,255,0.08)" : "#F1F5F9"}`,
-        paddingTop: 18, display: "flex", flexDirection: "column", gap: 11,
+        position: "absolute", right: -160, top: 60,
+        display: "flex", flexDirection: "column", gap: 10,
+        zIndex: 2,
       }}>
-        {features.map((f, i) => (
-          <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 13, color: highlight ? "rgba(255,255,255,0.8)" : "#475569" }}>
+        {[
+          { icon: "✓", color: "#10B981", label: "Booking confirmed", sub: "Customer receives instant confirmation" },
+          { icon: "🔔", color: "#F59E0B", label: "Automatic reminders", sub: "We handle the follow-ups" },
+          { icon: "📈", color: "#14B8A6", label: "You get more customers", sub: "Less no-shows, more revenue" },
+        ].map((c, i) => (
+          <div key={i} style={{
+            background: "rgba(13,20,30,0.85)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(20,184,166,0.15)",
+            borderRadius: 12,
+            padding: "10px 14px",
+            width: 180,
+            display: "flex", alignItems: "flex-start", gap: 10,
+            boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+          }}>
             <div style={{
-              width: 18, height: 18, borderRadius: 6,
-              background: highlight ? "rgba(16,185,129,0.15)" : "rgba(13,148,136,0.1)",
+              width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+              background: `${c.color}22`,
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 10, color: "#10B981", flexShrink: 0,
-            }}>✓</div>
-            <span>{f}</span>
+              fontSize: 13,
+            }}>{c.icon}</div>
+            <div>
+              <div style={{ color: "white", fontSize: 11, fontWeight: 700, marginBottom: 2 }}>{c.label}</div>
+              <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 9, lineHeight: 1.4 }}>{c.sub}</div>
+            </div>
           </div>
         ))}
       </div>
-      <a
-        href={DASHBOARD_URL}
-        style={{
-          marginTop: "auto", padding: "13px 20px", borderRadius: 12,
-          background: highlight
-            ? "linear-gradient(135deg, #F59E0B, #F97316)"
-            : "#0D9488",
-          color: "white", fontWeight: 700, fontSize: 14,
-          textDecoration: "none", textAlign: "center", display: "block",
-          transform: hover ? "scale(1.02)" : "scale(1)",
-          transition: "transform 0.2s",
-        }}
-      >
-        {ctaLabel}
-      </a>
     </div>
   );
 }
 
-// ─── Main Page ───
-export default function AutoFlowLanding() {
+/* ─── Savings Calculator (single slider matching reference) ─────────── */
+function SavingsCalculator() {
+  const [apptPerMonth, setApptPerMonth] = useState(50);
+
+  // Illustrative: ~15% no-show rate, AED 80 avg booking
+  const avgPrice = 80;
+  const noShowRate = 0.15;
+  const recovered = Math.round(apptPerMonth * noShowRate * avgPrice * 0.7); // 70% recovery estimate
+
+  return (
+    <div style={{
+      background: "rgba(255,255,255,0.03)",
+      backdropFilter: "blur(20px)",
+      borderRadius: 20,
+      padding: "32px 36px",
+      border: "1px solid rgba(20,184,166,0.12)",
+      maxWidth: 480,
+      width: "100%",
+    }}>
+      <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, fontWeight: 500, marginBottom: 20 }}>
+        Estimate your monthly time savings
+      </div>
+
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+          <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, fontWeight: 500 }}>Appointments per month</span>
+          <span style={{ color: "white", fontSize: 20, fontWeight: 800 }}>{apptPerMonth}</span>
+        </div>
+        <input
+          type="range" min={10} max={200} step={5} value={apptPerMonth}
+          onChange={e => setApptPerMonth(Number(e.target.value))}
+          aria-label="Appointments per month"
+          style={{ width: "100%", accentColor: "#14B8A6", cursor: "pointer", height: 4 }}
+        />
+      </div>
+
+      <a
+        href={DASHBOARD_URL}
+        style={{
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+          background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+          color: "white", padding: "14px 24px", borderRadius: 12,
+          textDecoration: "none", fontWeight: 700, fontSize: 15,
+          boxShadow: "0 6px 24px rgba(13,148,136,0.35)",
+          transition: "box-shadow 0.2s ease, transform 0.15s ease",
+        }}
+        onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 10px 36px rgba(13,148,136,0.5)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+        onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 6px 24px rgba(13,148,136,0.35)"; e.currentTarget.style.transform = ""; }}
+      >
+        Estimate Your Savings →
+      </a>
+      <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, textAlign: "center", marginTop: 10 }}>
+        It takes less than 30 seconds.
+      </div>
+    </div>
+  );
+}
+
+/* ─── Global styles injected once ──────────────────────────────────── */
+const GLOBAL_CSS = `
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #060d14; color: #e2e8f0; line-height: 1.6; }
+  a { color: inherit; }
+  button { cursor: pointer; font: inherit; }
+  input[type=range]::-webkit-slider-thumb { cursor: pointer; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  .nav-link { color: rgba(255,255,255,0.65); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+  .nav-link:hover { color: white; }
+  .cta-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, #0D9488, #14B8A6);
+    color: white; padding: 12px 22px; border-radius: 10px;
+    text-decoration: none; font-weight: 700; font-size: 14px;
+    box-shadow: 0 4px 20px rgba(13,148,136,0.35);
+    transition: box-shadow 0.2s, transform 0.15s;
+    white-space: nowrap;
+  }
+  .cta-primary:hover { box-shadow: 0 8px 32px rgba(13,148,136,0.5); transform: translateY(-1px); }
+  .cta-secondary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+    color: white; padding: 12px 22px; border-radius: 10px;
+    text-decoration: none; font-weight: 600; font-size: 14px;
+    transition: background 0.2s, border-color 0.2s;
+    white-space: nowrap;
+  }
+  .cta-secondary:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+  @media (max-width: 900px) {
+    .hero-grid { flex-direction: column !important; }
+    .hero-phone { display: none !important; }
+    .how-steps { flex-direction: column !important; gap: 32px !important; }
+    .step-connector { display: none !important; }
+    .industry-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .calc-grid { flex-direction: column !important; }
+    .pricing-grid { flex-direction: column !important; align-items: center !important; }
+    .pricing-card { max-width: 360px !important; width: 100% !important; }
+    .footer-grid { flex-direction: column !important; gap: 32px !important; }
+    .nav-links { display: none !important; }
+  }
+  @media (max-width: 600px) {
+    .hero-headline { font-size: clamp(2rem, 8vw, 3.5rem) !important; }
+    .section-title { font-size: clamp(1.6rem, 6vw, 2.5rem) !important; }
+    .industry-grid { grid-template-columns: 1fr 1fr !important; }
+  }
+`;
+
+/* ─── App ────────────────────────────────────────────────────────────── */
+export default function App() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const h = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", h, { passive: true });
-    return () => window.removeEventListener("scroll", h);
+    const el = document.getElementById("autoflow-global-styles");
+    if (!el) {
+      const style = document.createElement("style");
+      style.id = "autoflow-global-styles";
+      style.textContent = GLOBAL_CSS;
+      document.head.appendChild(style);
+    }
+    const link = document.getElementById("autoflow-font");
+    if (!link) {
+      const l = document.createElement("link");
+      l.id = "autoflow-font";
+      l.rel = "stylesheet";
+      l.href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap";
+      document.head.appendChild(l);
+    }
   }, []);
 
+  useEffect(() => {
+    const handler = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+
+  const navLinks = [
+    { label: "How it works", href: "#how-it-works" },
+    { label: "Pricing", href: "#pricing" },
+    { label: "Calculator", href: "#calculator" },
+    { label: "Use cases", href: "#industries" },
+  ];
+
+  const BG = "#060d14";
+  const SECTION_ALT = "#081018";
+
   return (
-    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", color: "#334155", background: "#F0F4F8", overflowX: "hidden" }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
-        @keyframes stepIn {
-          from { opacity: 0; transform: translateY(10px) scale(0.98); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes selectPop {
-          0%   { transform: scale(1); }
-          50%  { transform: scale(1.04); }
-          100% { transform: scale(1); }
-        }
-        @keyframes dotPulse {
-          0%, 80% { opacity: 0.3; transform: scale(0.8); }
-          40% { opacity: 1; transform: scale(1.2); }
-        }
-        @keyframes gradientShift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-12px); }
-        }
-        input[type=range]:focus { outline: 2px solid #14B8A6; outline-offset: 2px; }
-        a:focus-visible, button:focus-visible { outline: 2px solid #14B8A6; outline-offset: 2px; }
-        @media (prefers-reduced-motion: reduce) {
-          *, *::before, *::after {
-            animation-duration: 0.001ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: 0.001ms !important;
-            scroll-behavior: auto !important;
-          }
-        }
-        .nav-link:hover { color: white !important; }
-        .login-link:hover { border-color: rgba(255,255,255,0.4) !important; color: white !important; }
-        .cta-primary:hover { opacity: 0.9; transform: translateY(-1px); }
-        .cta-secondary:hover { background: rgba(255,255,255,0.1) !important; }
-      `}</style>
+    <div style={{ background: BG, minHeight: "100vh", overflowX: "hidden" }}>
 
-      {/* ─── SKIP LINK ─── */}
-      <a
-        href="#main-content"
-        style={{
-          position: "absolute", left: "-9999px", top: "auto", width: 1, height: 1, overflow: "hidden",
-        }}
-        onFocus={e => { e.target.style.cssText = "position:fixed;top:8px;left:8px;width:auto;height:auto;overflow:visible;background:#0D9488;color:white;padding:8px 16px;border-radius:8px;font-weight:700;z-index:9999;"; }}
-        onBlur={e => { e.target.style.cssText = "position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;"; }}
-      >
-        Skip to main content
-      </a>
-
-      {/* ─── NAV ─── */}
-      <nav
-        role="navigation"
-        aria-label="Main navigation"
-        style={{
-          display: "flex", justifyContent: "space-between", alignItems: "center",
-          padding: scrolled ? "12px 32px" : "18px 32px",
-          background: scrolled ? "rgba(15,23,42,0.95)" : "transparent",
-          backdropFilter: scrolled ? "blur(20px)" : "none",
-          position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-          transition: "all 0.3s ease",
-          borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "none",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div
-            aria-hidden="true"
-            style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: "linear-gradient(135deg, #0D9488, #14B8A6)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: "white", fontWeight: 900, fontSize: 17,
-              boxShadow: "0 4px 12px rgba(13,148,136,0.3)",
-            }}
-          >A</div>
-          <span style={{ fontWeight: 900, fontSize: 19, color: "white", letterSpacing: -0.5 }}>AutoFlow</span>
-        </div>
-        <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
-          <a href="#calc" className="nav-link" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>Calculator</a>
-          <a href="#how" className="nav-link" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>How it works</a>
-          <a href="#pricing" className="nav-link" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>Pricing</a>
-          <a
-            href={DASHBOARD_URL}
-            className="login-link"
-            style={{
-              color: "rgba(255,255,255,0.75)", textDecoration: "none", fontWeight: 600, fontSize: 13,
-              padding: "8px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)",
-              transition: "all 0.2s",
-            }}
-          >
-            Log in
+      {/* ── Nav ── */}
+      <header style={{
+        position: "sticky", top: 0, zIndex: 100,
+        borderBottom: scrolled ? "1px solid rgba(20,184,166,0.1)" : "1px solid transparent",
+        background: scrolled ? "rgba(6,13,20,0.92)" : "transparent",
+        backdropFilter: scrolled ? "blur(20px)" : "none",
+        transition: "all 0.3s ease",
+      }}>
+        <nav style={{
+          maxWidth: 1160, margin: "0 auto",
+          padding: "0 24px",
+          height: 64,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+          {/* Logo */}
+          <a href="#" aria-label="AutoFlow home" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
+            <svg width="34" height="34" viewBox="0 0 34 34" fill="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="lg" x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#0D9488" />
+                  <stop offset="100%" stopColor="#14B8A6" />
+                </linearGradient>
+              </defs>
+              <rect width="34" height="34" rx="9" fill="url(#lg)" />
+              <path d="M8 24 L14 10 L17 18 L20 14 L26 24" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              <circle cx="17" cy="18" r="2.5" fill="white" />
+            </svg>
+            <div>
+              <div style={{ color: "white", fontWeight: 800, fontSize: 17, letterSpacing: -0.5, lineHeight: 1.1 }}>
+                Auto<span style={{ color: "#14B8A6" }}>Flow</span>
+              </div>
+              <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 9, letterSpacing: 2.5, fontWeight: 500, textTransform: "uppercase" }}>
+                Book · Automate · Grow
+              </div>
+            </div>
           </a>
-          <a
-            href={DASHBOARD_URL}
-            className="cta-primary"
-            style={{
-              background: "linear-gradient(135deg, #0D9488, #14B8A6)",
-              color: "white", padding: "9px 20px", borderRadius: 10,
-              textDecoration: "none", fontWeight: 700, fontSize: 13,
-              boxShadow: "0 4px 16px rgba(13,148,136,0.3)",
-              transition: "opacity 0.2s, transform 0.2s",
-            }}
-          >
-            Create Your Business Page
-          </a>
-        </div>
-      </nav>
 
-      {/* ─── HERO ─── */}
-      <main id="main-content">
-        <section
-          aria-label="Hero"
-          style={{
-            background: "linear-gradient(135deg, #0F172A 0%, #1E293B 40%, #0F172A 100%)",
-            backgroundSize: "200% 200%",
-            animation: "gradientShift 12s ease infinite",
-            padding: "120px 32px 80px", position: "relative", overflow: "hidden",
-          }}
-        >
-          <div
-            aria-hidden="true"
-            style={{
-              position: "absolute", top: -100, right: -100, width: 400, height: 400,
-              borderRadius: "50%", background: "radial-gradient(circle, rgba(13,148,136,0.12) 0%, transparent 70%)",
-              filter: "blur(60px)", pointerEvents: "none",
-            }}
-          />
-          <div
-            aria-hidden="true"
-            style={{
-              position: "absolute", bottom: -80, left: -80, width: 300, height: 300,
-              borderRadius: "50%", background: "radial-gradient(circle, rgba(245,158,11,0.08) 0%, transparent 70%)",
-              filter: "blur(50px)", pointerEvents: "none",
-            }}
-          />
+          {/* Nav links */}
+          <div className="nav-links" style={{ display: "flex", alignItems: "center", gap: 32 }}>
+            {navLinks.map(l => (
+              <a key={l.href} href={l.href} className="nav-link">{l.label}</a>
+            ))}
+          </div>
 
-          <div style={{
-            maxWidth: 1140, margin: "0 auto", display: "flex", flexWrap: "wrap",
-            alignItems: "center", justifyContent: "center", gap: 56, position: "relative",
-          }}>
-            <div style={{ flex: "1 1 420px", maxWidth: 540 }}>
+          {/* Right side */}
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <a href={DASHBOARD_URL} className="nav-link" style={{ fontSize: 14 }}>Log in</a>
+            <a href={DASHBOARD_URL} className="cta-primary" style={{ padding: "10px 18px", fontSize: 13 }}>
+              Create Your Business Page →
+            </a>
+          </div>
+        </nav>
+      </header>
+
+      {/* ── Hero ── */}
+      <section style={{
+        maxWidth: 1160, margin: "0 auto",
+        padding: "72px 24px 80px",
+        position: "relative",
+      }}>
+        {/* Background glow */}
+        <div aria-hidden="true" style={{
+          position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
+          width: 700, height: 500,
+          background: "radial-gradient(ellipse at 50% 0%, rgba(13,148,136,0.14) 0%, transparent 65%)",
+          pointerEvents: "none",
+        }} />
+
+        <div className="hero-grid" style={{ display: "flex", alignItems: "center", gap: 60 }}>
+          {/* Left */}
+          <div style={{ flex: "1 1 480px", position: "relative", zIndex: 1 }}>
+            <FadeIn>
               <div style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
-                background: "rgba(13,148,136,0.1)", border: "1px solid rgba(13,148,136,0.2)",
-                padding: "6px 16px", borderRadius: 24, marginBottom: 20,
+                background: "rgba(20,184,166,0.1)", border: "1px solid rgba(20,184,166,0.2)",
+                color: "#14B8A6", padding: "6px 14px", borderRadius: 20,
+                fontSize: 12, fontWeight: 600, letterSpacing: 1.2, textTransform: "uppercase",
+                marginBottom: 28,
               }}>
-                <div
-                  aria-hidden="true"
-                  style={{ width: 6, height: 6, borderRadius: 3, background: "#14B8A6", animation: "dotPulse 2s infinite" }}
-                />
-                <span style={{ color: "#14B8A6", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                  Booking automation for UAE businesses
-                </span>
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#14B8A6", display: "inline-block" }} />
+                Booking automation for UAE businesses
               </div>
+            </FadeIn>
 
-              <h1 style={{
-                fontSize: 52, fontWeight: 900, color: "white", lineHeight: 1.08,
-                letterSpacing: -1.5, marginBottom: 20,
+            <FadeIn delay={80}>
+              <h1 className="hero-headline" style={{
+                fontSize: "clamp(2.6rem, 5vw, 4rem)",
+                fontWeight: 900, lineHeight: 1.05, letterSpacing: -1.5,
+                color: "white", marginBottom: 24,
               }}>
-                Put your business on{" "}
-                <span style={{
-                  background: "linear-gradient(135deg, #14B8A6, #F59E0B)",
-                  WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                }}>autopilot.</span>
+                Turn bookings<br />
+                into a <span style={{ color: "#14B8A6" }}>flow.</span>
               </h1>
+            </FadeIn>
+
+            <FadeIn delay={140}>
               <p style={{
-                fontSize: 17, color: "rgba(255,255,255,0.5)", lineHeight: 1.7,
-                marginBottom: 32, maxWidth: 440,
+                color: "rgba(255,255,255,0.55)", fontSize: 17, lineHeight: 1.7,
+                maxWidth: 440, marginBottom: 36,
               }}>
-                Create your booking page, publish it, and let customers book themselves — while AutoFlow sends confirmations and reminders automatically. Built for salons, clinics, tutors, and travel agencies in the UAE.
+                Create your booking page, let customers choose their time,
+                and let AutoFlow handle the confirmations and reminders.
               </p>
-              <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 36 }}>
-                <a
-                  href={DASHBOARD_URL}
-                  className="cta-primary"
-                  style={{
-                    background: "linear-gradient(135deg, #0D9488, #14B8A6)",
-                    color: "white", padding: "16px 32px", borderRadius: 14,
-                    textDecoration: "none", fontWeight: 800, fontSize: 16,
-                    boxShadow: "0 8px 32px rgba(13,148,136,0.35)",
-                    transition: "opacity 0.2s, transform 0.2s", display: "inline-block",
-                  }}
-                >
-                  Create Your Business Page
+            </FadeIn>
+
+            <FadeIn delay={200}>
+              <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 52 }}>
+                <a href={DASHBOARD_URL} className="cta-primary" style={{ padding: "15px 28px", fontSize: 15 }}>
+                  Create Your Business Page →
                 </a>
-                <a
-                  href="#calc"
-                  className="cta-secondary"
-                  style={{
-                    background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-                    color: "white", padding: "16px 28px", borderRadius: 14,
-                    textDecoration: "none", fontWeight: 600, fontSize: 15,
-                    transition: "background 0.2s",
-                  }}
-                >
-                  Estimate Your Savings ↓
+                <a href="#how-it-works" className="cta-secondary" style={{ padding: "15px 24px", fontSize: 15 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" /><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none" />
+                  </svg>
+                  See How It Works
                 </a>
+              </div>
+            </FadeIn>
+
+            <FadeIn delay={260}>
+              <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
+                {[
+                  { icon: "⚡", title: "Save time", desc: "Automate routine tasks" },
+                  { icon: "👥", title: "Get more bookings", desc: "Make it easy for customers" },
+                  { icon: "📈", title: "Focus on growth", desc: "Let AutoFlow do the rest" },
+                ].map((f, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 20 }} role="img" aria-hidden="true">{f.icon}</span>
+                    <div>
+                      <div style={{ color: "white", fontWeight: 700, fontSize: 13 }}>{f.title}</div>
+                      <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>{f.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </FadeIn>
+          </div>
+
+          {/* Right — phone */}
+          <div className="hero-phone" style={{ flex: "0 0 auto", paddingRight: 180 }}>
+            <FadeIn delay={180}>
+              <PhoneMockup />
+            </FadeIn>
+          </div>
+        </div>
+      </section>
+
+      {/* ── How It Works ── */}
+      <section id="how-it-works" style={{ background: SECTION_ALT, padding: "96px 24px" }}>
+        <div style={{ maxWidth: 1160, margin: "0 auto" }}>
+          <FadeIn>
+            <div style={{ marginBottom: 64 }}>
+              <div style={{ color: "#14B8A6", fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>
+                HOW IT WORKS
+              </div>
+              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
+                <h2 className="section-title" style={{
+                  fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
+                  fontWeight: 900, color: "white", letterSpacing: -1, lineHeight: 1.1, maxWidth: 320,
+                }}>
+                  A simple flow<br />for real results.
+                </h2>
+                <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 15, maxWidth: 300, lineHeight: 1.7 }}>
+                  From setup to confirmed bookings —<br />AutoFlow keeps your business moving.
+                </p>
               </div>
             </div>
-            <div style={{ flex: "0 0 auto", animation: "float 6s ease-in-out infinite" }}>
-              <PhoneMockup />
+          </FadeIn>
+
+          <div className="how-steps" style={{ display: "flex", alignItems: "flex-start", gap: 0 }}>
+            {[
+              { num: "01", icon: "📄", title: "Create", desc: "Set up your booking page in minutes." },
+              { num: "02", icon: "🔗", title: "Share", desc: "Publish the link on your website, social media, or QR code." },
+              { num: "03", icon: "📅", title: "Customers book", desc: "They choose a service, date, and time." },
+              { num: "04", icon: null, title: "AutoFlow takes over", desc: "Confirmations and reminders go out automatically.", isLogo: true },
+            ].map((s, i, arr) => (
+              <div key={i} style={{ flex: 1, display: "flex", alignItems: "flex-start" }}>
+                <FadeIn delay={i * 100} style={{ width: "100%" }}>
+                  <div style={{ textAlign: "center", padding: "0 12px" }}>
+                    {/* Node */}
+                    <div style={{ position: "relative", display: "flex", justifyContent: "center", marginBottom: 20 }}>
+                      <div style={{
+                        width: 64, height: 64, borderRadius: 32,
+                        background: s.isLogo
+                          ? "linear-gradient(135deg, #0D9488, #14B8A6)"
+                          : "rgba(20,184,166,0.1)",
+                        border: `2px solid ${s.isLogo ? "transparent" : "rgba(20,184,166,0.3)"}`,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        position: "relative", zIndex: 1,
+                        boxShadow: s.isLogo ? "0 8px 28px rgba(13,148,136,0.4)" : "none",
+                      }}>
+                        {s.isLogo
+                          ? <svg width="28" height="28" viewBox="0 0 34 34" fill="none" aria-hidden="true">
+                              <path d="M8 24 L14 10 L17 18 L20 14 L26 24" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                              <circle cx="17" cy="18" r="2.5" fill="white" />
+                            </svg>
+                          : <span style={{ fontSize: 24 }} role="img" aria-hidden="true">{s.icon}</span>
+                        }
+                      </div>
+                      {/* Connector line */}
+                      {i < arr.length - 1 && (
+                        <div className="step-connector" style={{
+                          position: "absolute", top: "50%", left: "calc(50% + 32px)",
+                          width: "calc(100% - 32px)", height: 2,
+                          background: "linear-gradient(90deg, rgba(20,184,166,0.5), rgba(20,184,166,0.15))",
+                          transform: "translateY(-50%)",
+                        }} />
+                      )}
+                    </div>
+                    <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, fontWeight: 700, marginBottom: 8, letterSpacing: 1 }}>{s.num}</div>
+                    <div style={{ color: "white", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{s.title}</div>
+                    <div style={{ color: "rgba(255,255,255,0.45)", fontSize: 13, lineHeight: 1.6, maxWidth: 160, margin: "0 auto" }}>{s.desc}</div>
+                  </div>
+                </FadeIn>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Industries ── */}
+      <section id="industries" style={{ padding: "96px 24px" }}>
+        <div style={{ maxWidth: 1160, margin: "0 auto", display: "flex", gap: 60, alignItems: "flex-start", flexWrap: "wrap" }}>
+          <FadeIn style={{ flex: "0 0 260px" }}>
+            <div style={{ color: "#14B8A6", fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>
+              BUILT FOR REAL BUSINESSES
+            </div>
+            <h2 className="section-title" style={{
+              fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
+              fontWeight: 900, color: "white", letterSpacing: -1, lineHeight: 1.1, marginBottom: 16,
+            }}>
+              Works for<br />every industry.
+            </h2>
+            <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 14, lineHeight: 1.7 }}>
+              From salons to clinics, fitness studios to consultants — AutoFlow adapts to your business.
+            </p>
+          </FadeIn>
+
+          <div style={{ flex: 1 }}>
+            <div className="industry-grid" style={{
+              display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12,
+            }}>
+              {[
+                { icon: "✂️", title: "Beauty & Salon", desc: "Hair, nails, spa and more" },
+                { icon: "🏥", title: "Health & Wellness", desc: "Clinics, dental, therapy" },
+                { icon: "🎓", title: "Education", desc: "Tutoring, training, workshops" },
+                { icon: "🏋️", title: "Fitness & Sports", desc: "Gyms, personal training" },
+                { icon: "💼", title: "Professional Services", desc: "Consultations, coaching, and more" },
+              ].map((ind, i) => (
+                <FadeIn key={i} delay={i * 60}>
+                  <div style={{
+                    background: "rgba(255,255,255,0.03)",
+                    border: "1px solid rgba(20,184,166,0.1)",
+                    borderRadius: 16, padding: "20px 14px",
+                    textAlign: "center",
+                    transition: "background 0.2s, border-color 0.2s",
+                    cursor: "default",
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(20,184,166,0.06)"; e.currentTarget.style.borderColor = "rgba(20,184,166,0.25)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.borderColor = "rgba(20,184,166,0.1)"; }}
+                  >
+                    <div style={{ fontSize: 28, marginBottom: 10 }} role="img" aria-hidden="true">{ind.icon}</div>
+                    <div style={{ color: "white", fontWeight: 700, fontSize: 13, marginBottom: 6 }}>{ind.title}</div>
+                    <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, lineHeight: 1.5 }}>{ind.desc}</div>
+                  </div>
+                </FadeIn>
+              ))}
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* ─── SAVINGS CALCULATOR ─── */}
-        <section
-          id="calc"
-          aria-label="Savings calculator"
-          style={{
-            background: "linear-gradient(180deg, #0F172A 0%, #1E293B 100%)",
-            padding: "72px 32px 80px",
-          }}
-        >
-          <FadeIn>
-            <div style={{ maxWidth: 1140, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: 48, alignItems: "center", justifyContent: "center" }}>
-              <div style={{ flex: "1 1 340px", maxWidth: 440 }}>
-                <h2 style={{ fontSize: 34, fontWeight: 900, color: "white", lineHeight: 1.15, letterSpacing: -1, marginBottom: 16 }}>
-                  See what no-shows could be costing you
+      {/* ── Calculator ── */}
+      <section id="calculator" style={{ background: SECTION_ALT, padding: "96px 24px" }}>
+        <div style={{ maxWidth: 1160, margin: "0 auto" }}>
+          <div className="calc-grid" style={{ display: "flex", gap: 60, alignItems: "center", flexWrap: "wrap" }}>
+            <FadeIn style={{ flex: "1 1 300px" }}>
+              <div style={{ color: "#14B8A6", fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 16 }}>
+                CALCULATOR
+              </div>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 24 }}>
+                <div style={{
+                  width: 52, height: 52, borderRadius: 14, flexShrink: 0,
+                  background: "rgba(20,184,166,0.1)",
+                  border: "1px solid rgba(20,184,166,0.2)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 24,
+                }} role="img" aria-label="Chart">📊</div>
+                <h2 style={{
+                  fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)",
+                  fontWeight: 900, color: "white", letterSpacing: -0.8, lineHeight: 1.1,
+                }}>
+                  See how much<br />time you can save.
                 </h2>
-                <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 15, lineHeight: 1.7, marginBottom: 24 }}>
-                  Use the calculator to estimate the revenue impact of no-shows based on your own numbers. The more appointments you run, the more a reduction in no-shows can matter.
-                </p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  {[
-                    { icon: "📉", text: "Every no-show is an empty slot you can't fill" },
-                    { icon: "⏰", text: "Manual confirmation calls take time away from your business" },
-                    { icon: "✅", text: "Automated reminders let customers confirm without back-and-forth" },
-                  ].map((p, i) => (
-                    <div key={i} style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                      <span aria-hidden="true" style={{ fontSize: 20 }}>{p.icon}</span>
-                      <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 14 }}>{p.text}</span>
-                    </div>
-                  ))}
-                </div>
               </div>
+              <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 14, lineHeight: 1.7 }}>
+                Fewer manual tasks. More time for what matters.
+              </p>
+            </FadeIn>
+
+            <FadeIn delay={120} style={{ flex: "1 1 400px" }}>
               <SavingsCalculator />
-            </div>
-          </FadeIn>
-        </section>
+            </FadeIn>
+          </div>
+        </div>
+      </section>
 
-        {/* ─── HOW IT WORKS ─── */}
-        <section id="how" aria-label="How it works" style={{ padding: "80px 32px", background: "#F8FAFC" }}>
+      {/* ── Pricing ── */}
+      <section id="pricing" style={{ padding: "96px 24px" }}>
+        <div style={{ maxWidth: 1160, margin: "0 auto" }}>
           <FadeIn>
-            <div style={{ maxWidth: 900, margin: "0 auto" }}>
-              <div style={{ textAlign: "center", marginBottom: 48 }}>
-                <h2 style={{ fontSize: 34, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>How it works</h2>
-                <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>
-                  From booking page to confirmed customer — fully automated
-                </p>
+            <div style={{ textAlign: "center", marginBottom: 60 }}>
+              <div style={{ color: "#14B8A6", fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>
+                PRICING
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center" }}>
-                {[
-                  { icon: "📄", title: "Create your page", desc: "Set up your business booking page in minutes. Add your services, availability, and branding.", color: "#0D9488" },
-                  { icon: "🔗", title: "Share your link", desc: "Publish your booking page and share it wherever your customers find you.", color: "#F59E0B" },
-                  { icon: "📅", title: "Customers book", desc: "They pick a service, choose a date and time, and confirm. No back-and-forth needed.", color: "#8B5CF6" },
-                  { icon: "⚡", title: "AutoFlow takes over", desc: "Confirmations and reminders go out automatically. You just show up.", color: "#EF4444" },
-                ].map((s, i) => (
-                  <div key={i} style={{
-                    flex: "1 1 200px", maxWidth: 210, textAlign: "center", padding: "28px 16px",
-                    background: "white", borderRadius: 18, border: "1px solid #E2E8F0",
-                    position: "relative",
-                  }}>
-                    <div style={{
-                      position: "absolute", top: -1, left: "50%", transform: "translateX(-50%)",
-                      width: 40, height: 3, borderRadius: 2, background: s.color,
-                    }} />
-                    <div
-                      aria-hidden="true"
-                      style={{
-                        width: 52, height: 52, borderRadius: 16, margin: "8px auto 14px",
-                        background: `${s.color}12`, display: "flex", alignItems: "center",
-                        justifyContent: "center", fontSize: 24,
-                      }}
-                    >{s.icon}</div>
-                    <div style={{ fontWeight: 800, fontSize: 15, color: "#0F172A", marginBottom: 6 }}>{s.title}</div>
-                    <div style={{ fontSize: 12.5, color: "#64748B", lineHeight: 1.5 }}>{s.desc}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ textAlign: "center", marginTop: 40 }}>
-                <a
-                  href={DASHBOARD_URL}
-                  style={{
-                    display: "inline-block",
-                    background: "#0D9488", color: "white",
-                    padding: "14px 32px", borderRadius: 12,
-                    textDecoration: "none", fontWeight: 700, fontSize: 15,
-                    boxShadow: "0 6px 24px rgba(13,148,136,0.25)",
-                  }}
-                >
-                  Create Your Business Page
-                </a>
-              </div>
-            </div>
-          </FadeIn>
-        </section>
-
-        {/* ─── USE CASES ─── */}
-        <section aria-label="Who it's for" style={{ padding: "72px 32px", background: "white" }}>
-          <FadeIn>
-            <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-              <h2 style={{ fontSize: 30, fontWeight: 900, color: "#0F172A", textAlign: "center", marginBottom: 12, letterSpacing: -0.5 }}>
-                Built for businesses like yours
+              <h2 style={{
+                fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
+                fontWeight: 900, color: "white", letterSpacing: -1, marginBottom: 14,
+              }}>
+                Simple, transparent pricing.
               </h2>
-              <p style={{ color: "#94A3B8", textAlign: "center", fontSize: 15, marginBottom: 40 }}>
-                If people book time with you, AutoFlow helps keep those bookings on track
+              <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 16 }}>
+                Choose the plan that fits your business.
               </p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
-                {[
-                  { icon: "💇", title: "Salons", desc: "Automated booking confirmations and reminders so your chair stays full." },
-                  { icon: "🏥", title: "Clinics", desc: "Reduce manual follow-up calls with automated patient reminders." },
-                  { icon: "📚", title: "Tutors", desc: "Keep sessions on schedule with automatic booking confirmations." },
-                  { icon: "💅", title: "Spas", desc: "Let customers self-book and receive reminders without manual effort." },
-                  { icon: "✈️", title: "Travel", desc: "Send automated pre-trip reminders and booking confirmations." },
-                ].map((c, i) => (
-                  <div key={i} style={{
-                    background: "#F8FAFC", borderRadius: 18, padding: "24px 20px",
-                    flex: "1 1 170px", maxWidth: 190, border: "1px solid #E2E8F0",
-                    textAlign: "center",
-                  }}>
-                    <div aria-hidden="true" style={{ fontSize: 32, marginBottom: 8 }}>{c.icon}</div>
-                    <div style={{ fontWeight: 800, fontSize: 15, color: "#0F172A", marginBottom: 8 }}>{c.title}</div>
-                    <div style={{ fontSize: 12, color: "#64748B", lineHeight: 1.5 }}>{c.desc}</div>
+            </div>
+          </FadeIn>
+
+          <div className="pricing-grid" style={{ display: "flex", gap: 20, justifyContent: "center", alignItems: "stretch", flexWrap: "wrap" }}>
+            {[
+              {
+                name: "Starter", sub: "Start booking", price: "49", popular: false,
+                features: ["Booking page", "Automated confirmations", "Email support"],
+              },
+              {
+                name: "Professional", sub: "Automate more", price: "99", popular: true,
+                features: ["Everything in Starter", "Custom branding", "Advanced reminders", "Priority support"],
+              },
+              {
+                name: "Business", sub: "Scale your flow", price: "199", popular: false,
+                features: ["Everything in Professional", "Multiple locations", "Team access", "Advanced customization"],
+              },
+            ].map((plan, i) => (
+              <FadeIn key={i} delay={i * 80} style={{ flex: "1 1 260px", maxWidth: 320 }}>
+                <div className="pricing-card" style={{
+                  background: plan.popular ? "rgba(20,184,166,0.07)" : "rgba(255,255,255,0.03)",
+                  border: `1px solid ${plan.popular ? "rgba(20,184,166,0.4)" : "rgba(255,255,255,0.07)"}`,
+                  borderRadius: 20, padding: "28px 24px 28px",
+                  height: "100%", display: "flex", flexDirection: "column",
+                  position: "relative", overflow: "hidden",
+                }}>
+                  {plan.popular && (
+                    <div style={{
+                      position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
+                      background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+                      color: "white", fontSize: 11, fontWeight: 700, letterSpacing: 0.5,
+                      padding: "4px 18px", borderRadius: "0 0 10px 10px",
+                    }}>MOST POPULAR</div>
+                  )}
+
+                  <div style={{ marginTop: plan.popular ? 16 : 0, marginBottom: 20 }}>
+                    <div style={{ color: "white", fontWeight: 800, fontSize: 18, marginBottom: 2 }}>{plan.name}</div>
+                    <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>{plan.sub}</div>
                   </div>
-                ))}
-              </div>
-            </div>
-          </FadeIn>
-        </section>
 
-        {/* ─── PRICING ─── */}
-        <section id="pricing" aria-label="Pricing" style={{ padding: "80px 32px", background: "#F8FAFC" }}>
-          <FadeIn>
-            <div style={{ maxWidth: 1060, margin: "0 auto" }}>
-              <div style={{ textAlign: "center", marginBottom: 44 }}>
-                <h2 style={{ fontSize: 34, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>Simple, honest pricing</h2>
-                <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>Plans for every stage — start free and grow from there.</p>
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center", alignItems: "stretch" }}>
-                <PricingCard
-                  tier="Starter"
-                  tagline="Free to get started"
-                  desc="Create your booking page and start accepting bookings with automated confirmations."
-                  ctaLabel="Get Started Free"
-                  features={[
-                    "Business booking page",
-                    "Automated booking confirmations",
-                    "Basic reminder automation",
-                    "AutoFlow dashboard access",
-                  ]}
-                />
-                <PricingCard
-                  tier="Professional"
-                  tagline="For growing businesses"
-                  desc="More automation capacity and controls for businesses with a regular booking volume."
-                  highlight badge="Popular"
-                  ctaLabel="Get Started"
-                  features={[
-                    "Everything in Starter",
-                    "Higher automation capacity",
-                    "Customisable reminder sequences",
-                    "Booking analytics",
-                    "Priority support",
-                  ]}
-                />
-                <PricingCard
-                  tier="Business"
-                  tagline="For larger operations"
-                  desc="Expanded automation and support for businesses running higher booking volumes."
-                  ctaLabel="Get Started"
-                  features={[
-                    "Everything in Professional",
-                    "Increased automation limits",
-                    "Advanced workflow configuration",
-                    "Dedicated onboarding support",
-                  ]}
-                />
-              </div>
-              <p style={{ textAlign: "center", color: "#94A3B8", fontSize: 13, marginTop: 28 }}>
-                Already a customer?{" "}
-                <a href={DASHBOARD_URL} style={{ color: "#0D9488", fontWeight: 700, textDecoration: "none" }}>Log in to your dashboard →</a>
-              </p>
-            </div>
-          </FadeIn>
-        </section>
+                  <div style={{ marginBottom: 24 }}>
+                    <span style={{ color: "white", fontSize: 42, fontWeight: 900, letterSpacing: -1.5 }}>
+                      AED {plan.price}
+                    </span>
+                    <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 14, marginLeft: 4 }}>/month</span>
+                  </div>
 
-        {/* ─── SECURITY ─── */}
-        <section aria-label="Security and data" style={{ padding: "48px 32px" }}>
+                  <ul style={{ listStyle: "none", marginBottom: 28, flex: 1 }}>
+                    {plan.features.map((f, fi) => (
+                      <li key={fi} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                        <div style={{
+                          width: 18, height: 18, borderRadius: 9, flexShrink: 0,
+                          background: plan.popular ? "rgba(20,184,166,0.2)" : "rgba(255,255,255,0.08)",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                        }}>
+                          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                            <polyline points="2 6 5 9 10 3" stroke={plan.popular ? "#14B8A6" : "rgba(255,255,255,0.5)"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </div>
+                        <span style={{ color: "rgba(255,255,255,0.65)", fontSize: 13 }}>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <a href={DASHBOARD_URL} style={{
+                    display: "block", textAlign: "center",
+                    background: plan.popular ? "linear-gradient(135deg, #0D9488, #14B8A6)" : "rgba(255,255,255,0.07)",
+                    border: plan.popular ? "none" : "1px solid rgba(255,255,255,0.12)",
+                    color: "white", padding: "13px",
+                    borderRadius: 12, textDecoration: "none",
+                    fontWeight: 700, fontSize: 14,
+                    boxShadow: plan.popular ? "0 6px 24px rgba(13,148,136,0.35)" : "none",
+                    transition: "all 0.2s ease",
+                  }}
+                    onMouseEnter={e => {
+                      if (plan.popular) { e.currentTarget.style.boxShadow = "0 10px 36px rgba(13,148,136,0.5)"; e.currentTarget.style.transform = "translateY(-1px)"; }
+                      else e.currentTarget.style.background = "rgba(255,255,255,0.12)";
+                    }}
+                    onMouseLeave={e => {
+                      if (plan.popular) { e.currentTarget.style.boxShadow = "0 6px 24px rgba(13,148,136,0.35)"; e.currentTarget.style.transform = ""; }
+                      else e.currentTarget.style.background = "rgba(255,255,255,0.07)";
+                    }}
+                  >
+                    Get Started
+                  </a>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Security ── */}
+      <section style={{ background: SECTION_ALT, padding: "80px 24px" }}>
+        <div style={{ maxWidth: 1160, margin: "0 auto" }}>
           <FadeIn>
             <div style={{
-              maxWidth: 800, margin: "0 auto",
-              background: "linear-gradient(135deg, #0F172A, #1E293B)", borderRadius: 20,
-              padding: "36px 32px", display: "flex", flexWrap: "wrap", gap: 24, alignItems: "center",
-              border: "1px solid rgba(255,255,255,0.06)",
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              flexWrap: "wrap", gap: 40,
+              borderTop: "1px solid rgba(20,184,166,0.1)",
+              paddingTop: 60,
             }}>
-              <div style={{
-                width: 64, height: 64, borderRadius: 18,
-                background: "rgba(13,148,136,0.15)", display: "flex",
-                alignItems: "center", justifyContent: "center", fontSize: 30, flexShrink: 0,
-              }} aria-hidden="true">🔒</div>
-              <div style={{ flex: 1, minWidth: 280 }}>
-                <div style={{ fontWeight: 800, fontSize: 18, color: "white", marginBottom: 6 }}>
-                  Designed with data separation in mind
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 24, flex: "1 1 400px" }}>
+                <div style={{
+                  width: 56, height: 56, borderRadius: 16, flexShrink: 0,
+                  background: "rgba(20,184,166,0.1)",
+                  border: "1px solid rgba(20,184,166,0.2)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 26,
+                }} role="img" aria-label="Security">🔒</div>
+                <div>
+                  <div style={{ color: "#14B8A6", fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>
+                    SECURITY &amp; YOUR DATA
+                  </div>
+                  <h2 style={{ color: "white", fontWeight: 900, fontSize: "clamp(1.4rem, 3vw, 2rem)", letterSpacing: -0.5, marginBottom: 10 }}>
+                    Your data stays yours.
+                  </h2>
+                  <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 14, lineHeight: 1.7 }}>
+                    Designed with data separation in mind. Your business data is isolated and secure.
+                  </p>
                 </div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.7 }}>
-                  AutoFlow is built as a multi-tenant platform where each business account
-                  operates in its own isolated context. Server-side access controls are
-                  designed to keep booking data and customer details appropriately scoped
-                  to the relevant account. We take a security-first approach to how the
-                  platform is architected and operated.
+              </div>
+
+              <div style={{ flex: "0 0 auto", textAlign: "center" }}>
+                <div style={{ color: "#14B8A6", fontWeight: 900, fontSize: "clamp(1.2rem, 2.5vw, 1.6rem)", letterSpacing: -0.3, marginBottom: 6 }}>
+                  Simple. Secure. Reliable.
+                </div>
+                <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>
+                  Built for businesses that value their customers.
                 </div>
               </div>
             </div>
           </FadeIn>
-        </section>
+        </div>
+      </section>
 
-        {/* ─── FINAL CTA ─── */}
-        <section
-          aria-label="Get started"
-          style={{
-            padding: "80px 32px",
-            background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
-            textAlign: "center",
-          }}
-        >
-          <FadeIn>
-            <div style={{ maxWidth: 560, margin: "0 auto" }}>
-              <h2 style={{ fontSize: 36, fontWeight: 900, color: "white", letterSpacing: -1, marginBottom: 14 }}>
-                Ready to put your bookings on autopilot?
-              </h2>
-              <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 15, lineHeight: 1.7, marginBottom: 32 }}>
-                Create your business page and start accepting bookings with automated confirmations and reminders.
-              </p>
-              <a
-                href={DASHBOARD_URL}
-                style={{
-                  display: "inline-block",
-                  background: "linear-gradient(135deg, #0D9488, #14B8A6)",
-                  color: "white", padding: "18px 40px", borderRadius: 14,
-                  textDecoration: "none", fontWeight: 800, fontSize: 17,
-                  boxShadow: "0 8px 40px rgba(13,148,136,0.4)",
-                }}
-              >
-                Create Your Business Page
+      {/* ── Footer ── */}
+      <footer style={{ padding: "60px 24px 40px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ maxWidth: 1160, margin: "0 auto" }}>
+          <div className="footer-grid" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 48, gap: 40, flexWrap: "wrap" }}>
+            {/* Brand */}
+            <div>
+              <a href="#" aria-label="AutoFlow home" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                <svg width="28" height="28" viewBox="0 0 34 34" fill="none" aria-hidden="true">
+                  <rect width="34" height="34" rx="9" fill="url(#lg)" />
+                  <path d="M8 24 L14 10 L17 18 L20 14 L26 24" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                  <circle cx="17" cy="18" r="2.5" fill="white" />
+                </svg>
+                <span style={{ color: "white", fontWeight: 800, fontSize: 16 }}>Auto<span style={{ color: "#14B8A6" }}>Flow</span></span>
               </a>
+              <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, letterSpacing: 2, textTransform: "uppercase" }}>
+                Book · Automate · Grow
+              </p>
             </div>
-          </FadeIn>
-        </section>
-      </main>
 
-      {/* ─── FOOTER ─── */}
-      <footer
-        role="contentinfo"
-        style={{
-          background: "#0F172A", padding: "48px 32px", textAlign: "center",
-          borderTop: "1px solid rgba(255,255,255,0.05)",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 16 }}>
-          <div
-            aria-hidden="true"
-            style={{
-              width: 32, height: 32, borderRadius: 8,
-              background: "linear-gradient(135deg, #0D9488, #14B8A6)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: "white", fontWeight: 900, fontSize: 15,
-            }}
-          >A</div>
-          <span style={{ fontWeight: 900, fontSize: 17, color: "white" }}>AutoFlow</span>
+            {/* Nav */}
+            <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
+              {navLinks.map(l => (
+                <a key={l.href} href={l.href} className="nav-link" style={{ fontSize: 13 }}>{l.label}</a>
+              ))}
+            </div>
+          </div>
+
+          <div style={{
+            borderTop: "1px solid rgba(255,255,255,0.05)",
+            paddingTop: 24,
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            flexWrap: "wrap", gap: 12,
+          }}>
+            <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase" }}>
+              SAME BUSINESS. MORE TIME. A BRIGHTER TOMORROW.
+            </p>
+            <p style={{ color: "rgba(255,255,255,0.25)", fontSize: 12 }}>
+              © 2026 AutoFlow. All rights reserved.
+            </p>
+          </div>
         </div>
-        <nav aria-label="Footer navigation" style={{ display: "flex", justifyContent: "center", gap: 20, marginBottom: 16 }}>
-          <a href="#calc" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Calculator</a>
-          <a href="#pricing" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Pricing</a>
-          <a href="#how" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>How it works</a>
-          <a href={DASHBOARD_URL} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Log in</a>
-        </nav>
-        <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, marginBottom: 6 }}>
-          Booking automation for businesses in the UAE
-        </div>
-        <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 12 }}>© 2026 AutoFlow. All rights reserved.</div>
       </footer>
     </div>
   );
