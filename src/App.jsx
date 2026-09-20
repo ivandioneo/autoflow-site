@@ -2,855 +2,1468 @@ import { useState, useEffect, useRef } from "react";
 
 const DASHBOARD_URL = "https://dashboard.autoflow.ivanit.work";
 
-function scrollToQuote() {
-  const el = document.getElementById("quote");
-  if (el) el.scrollIntoView({ behavior: "smooth" });
-}
-
-// ─── Savings Calculator (the wow factor) ───
-function SavingsCalculator() {
-  const [bookingsPerWeek, setBookingsPerWeek] = useState(40);
-  const [avgPrice, setAvgPrice] = useState(150);
-  const [noShowRate, setNoShowRate] = useState(20);
-
-  const lostPerMonth = Math.round(bookingsPerWeek * 4 * (noShowRate / 100) * avgPrice);
-  const savedPerMonth = Math.round(lostPerMonth * 0.3);
-  const savedPerYear = savedPerMonth * 12;
-
-  return (
-    <div style={{
-      background: "rgba(255,255,255,0.03)", backdropFilter: "blur(20px)",
-      borderRadius: 24, padding: "40px 32px", border: "1px solid rgba(255,255,255,0.08)",
-      maxWidth: 520, width: "100%",
-    }}>
-      <h3 style={{ color: "white", fontSize: 22, fontWeight: 800, marginBottom: 4, letterSpacing: -0.5 }}>
-        How much are no-shows costing you?
-      </h3>
-      <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, marginBottom: 28 }}>
-        Drag the sliders — watch the money you're losing
-      </p>
-
-      {[
-        { label: "Bookings per week", value: bookingsPerWeek, set: setBookingsPerWeek, min: 5, max: 100, unit: "" },
-        { label: "Average booking price", value: avgPrice, set: setAvgPrice, min: 30, max: 500, unit: " AED" },
-        { label: "Your no-show rate", value: noShowRate, set: setNoShowRate, min: 5, max: 50, unit: "%" },
-      ].map((s, i) => (
-        <div key={i} style={{ marginBottom: 22 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-            <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, fontWeight: 500 }}>{s.label}</span>
-            <span style={{ color: "#F59E0B", fontSize: 15, fontWeight: 800 }}>
-              {s.unit === " AED" ? `${s.value} AED` : `${s.value}${s.unit}`}
-            </span>
-          </div>
-          <input
-            type="range" min={s.min} max={s.max} value={s.value}
-            onChange={e => s.set(Number(e.target.value))}
-            aria-label={s.label}
-            style={{ width: "100%", accentColor: "#F59E0B", cursor: "pointer" }}
-          />
-        </div>
-      ))}
-
-      <div style={{
-        marginTop: 8, borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 24,
-        display: "flex", gap: 12,
-      }}>
-        <div style={{
-          flex: 1, background: "rgba(239,68,68,0.1)", borderRadius: 14, padding: "18px 16px",
-          border: "1px solid rgba(239,68,68,0.15)",
-        }}>
-          <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>You're losing</div>
-          <div style={{ color: "#EF4444", fontSize: 28, fontWeight: 800, marginTop: 4 }}>
-            {lostPerMonth.toLocaleString()} <span style={{ fontSize: 14, fontWeight: 600 }}>AED/mo</span>
-          </div>
-        </div>
-        <div style={{
-          flex: 1, background: "rgba(16,185,129,0.1)", borderRadius: 14, padding: "18px 16px",
-          border: "1px solid rgba(16,185,129,0.15)",
-        }}>
-          <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>We save you</div>
-          <div style={{ color: "#10B981", fontSize: 28, fontWeight: 800, marginTop: 4 }}>
-            {savedPerMonth.toLocaleString()} <span style={{ fontSize: 14, fontWeight: 600 }}>AED/mo</span>
-          </div>
-        </div>
-      </div>
-      <div style={{
-        marginTop: 12, background: "rgba(245,158,11,0.08)", borderRadius: 14, padding: "14px 16px",
-        border: "1px solid rgba(245,158,11,0.12)", textAlign: "center",
-      }}>
-        <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}>That's </span>
-        <span style={{ color: "#F59E0B", fontSize: 22, fontWeight: 800 }}>{savedPerYear.toLocaleString()} AED</span>
-        <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}> saved per year</span>
-      </div>
-    </div>
+/* ─── Reduced-motion helper ─────────────────────────────────────────── */
+function useReducedMotion() {
+  const [reduced, setReduced] = useState(
+    () => typeof window !== "undefined"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : false
   );
-}
-
-// ─── Animated Phone ───
-function PhoneMockup() {
-  const [step, setStep] = useState(0);
-  const msgs = [
-    { dir: "in", text: "Hi, I'd like to book a haircut for Thursday 3pm", t: "10:32 AM" },
-    { dir: "out", text: "✅ Booked! Thursday at 3:00 PM. We'll remind you!", t: "10:32 AM" },
-    { dir: "out", text: "⏰ Reminder: Haircut tomorrow 3 PM. Reply YES to confirm.", t: "Wed 6:00 PM", slow: true },
-    { dir: "in", text: "YES", t: "Wed 6:12 PM" },
-    { dir: "out", text: "You're confirmed! See you tomorrow 💈", t: "Wed 6:12 PM" },
-  ];
-
   useEffect(() => {
-    if (step < msgs.length) {
-      const d = msgs[step].slow ? 2400 : step === 0 ? 1400 : 1200;
-      const timer = setTimeout(() => setStep(s => s + 1), d);
-      return () => clearTimeout(timer);
-    }
-    const reset = setTimeout(() => setStep(0), 3000);
-    return () => clearTimeout(reset);
-  }, [step]);
-
-  return (
-    <div style={{ position: "relative" }}>
-      <div style={{
-        position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
-        width: 320, height: 420, borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(13,148,136,0.25) 0%, transparent 70%)",
-        filter: "blur(40px)", zIndex: 0,
-      }} />
-      <div style={{
-        position: "relative", zIndex: 1,
-        width: 260, background: "#111", borderRadius: 32, padding: "6px",
-        boxShadow: "0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)",
-      }}>
-        <div style={{
-          width: 80, height: 6, background: "#333", borderRadius: 3,
-          margin: "6px auto 0",
-        }} />
-        <div style={{
-          padding: "14px 14px 10px", display: "flex", alignItems: "center", gap: 10,
-        }}>
-          <div style={{
-            width: 30, height: 30, borderRadius: 15, background: "#25D366",
-            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15,
-          }}>💈</div>
-          <div>
-            <div style={{ color: "white", fontWeight: 700, fontSize: 13 }}>GlowCuts Salon</div>
-            <div style={{ color: "#25D366", fontSize: 10 }}>● online</div>
-          </div>
-        </div>
-        <div style={{
-          background: "#0B141A", borderRadius: 0, minHeight: 260, padding: "10px 8px",
-          display: "flex", flexDirection: "column", gap: 5,
-          borderBottomLeftRadius: 26, borderBottomRightRadius: 26,
-        }}>
-          {msgs.slice(0, step).map((m, i) => (
-            <div key={i} style={{
-              alignSelf: m.dir === "out" ? "flex-end" : "flex-start",
-              background: m.dir === "out" ? "#005C4B" : "#1F2C34",
-              padding: "6px 10px 3px", borderRadius: 8, maxWidth: "85%",
-              animation: "msgPop 0.3s cubic-bezier(0.34,1.56,0.64,1)",
-            }}>
-              <div style={{ fontSize: 12, color: "#E9EDEF", lineHeight: 1.35 }}>{m.text}</div>
-              <div style={{ fontSize: 9, color: "rgba(255,255,255,0.3)", textAlign: "right", marginTop: 1 }}>{m.t}</div>
-            </div>
-          ))}
-          {step < msgs.length && (
-            <div style={{
-              alignSelf: msgs[step].dir === "out" ? "flex-end" : "flex-start",
-              background: msgs[step].dir === "out" ? "#005C4B" : "#1F2C34",
-              padding: "8px 16px", borderRadius: 8,
-            }}>
-              <div style={{ display: "flex", gap: 3 }}>
-                {[0,1,2].map(d => (
-                  <div key={d} style={{
-                    width: 5, height: 5, borderRadius: "50%", background: "rgba(255,255,255,0.3)",
-                    animation: `dotPulse 1.2s ${d * 0.2}s infinite`,
-                  }} />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handler = (e) => setReduced(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return reduced;
 }
 
-// ─── Animated Counter ───
-function Counter({ target, suffix = "", prefix = "" }) {
-  const [val, setVal] = useState(0);
-  const ref = useRef(null);
-  const started = useRef(false);
-
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && !started.current) {
-        started.current = true;
-        const dur = 1600;
-        const start = performance.now();
-        const tick = (now) => {
-          const p = Math.min((now - start) / dur, 1);
-          const ease = 1 - Math.pow(1 - p, 3);
-          setVal(Math.round(ease * target));
-          if (p < 1) requestAnimationFrame(tick);
-        };
-        requestAnimationFrame(tick);
-      }
-    }, { threshold: 0.5 });
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, [target]);
-
-  return <span ref={ref}>{prefix}{val.toLocaleString()}{suffix}</span>;
-}
-
-// ─── Fade In Section ───
-function FadeIn({ children, style = {} }) {
+/* ─── Fade-in on scroll ─────────────────────────────────────────────── */
+function FadeIn({ children, delay = 0, style = {} }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) { setVisible(true); obs.disconnect(); }
-    }, { threshold: 0.15 });
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, []);
+    if (reduced) { setVisible(true); return; }
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      { threshold: 0.12 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [reduced]);
 
   return (
-    <div ref={ref} style={{
-      ...style,
-      opacity: visible ? 1 : 0,
-      transform: visible ? "translateY(0)" : "translateY(30px)",
-      transition: "opacity 0.7s ease, transform 0.7s ease",
-    }}>
+    <div
+      ref={ref}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: reduced ? "none" : (visible ? "translateY(0)" : "translateY(24px)"),
+        transition: reduced ? "none" : `opacity 0.55s ease ${delay}ms, transform 0.55s ease ${delay}ms`,
+        ...style,
+      }}
+    >
       {children}
     </div>
   );
 }
 
-// ─── Pricing Card ───
-function PricingCard({ tier, price, desc, features, highlight, badge, onCta, ctaLabel }) {
-  const [hover, setHover] = useState(false);
+/* ─── AutoFlow Mark — flowing A with integrated forward arrow ───────── */
+function AutoFlowMark({ size = 44, animated = true, className = "" }) {
   return (
-    <div
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      style={{
-        background: highlight
-          ? "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)"
-          : "white",
-        borderRadius: 20, padding: "36px 26px", flex: "1 1 260px", maxWidth: 320,
-        border: highlight ? "1px solid rgba(245,158,11,0.3)" : "1px solid #E2E8F0",
-        boxShadow: highlight
-          ? hover ? "0 20px 60px rgba(245,158,11,0.2)" : "0 12px 40px rgba(15,23,42,0.3)"
-          : hover ? "0 12px 32px rgba(0,0,0,0.08)" : "0 2px 8px rgba(0,0,0,0.04)",
-        display: "flex", flexDirection: "column", gap: 16,
-        transform: hover ? "translateY(-6px)" : "translateY(0)",
-        transition: "all 0.3s ease",
-        cursor: "default",
-      }}
+    <svg
+      className={`autoflow-mark ${animated ? "autoflow-mark-animated" : ""} ${className}`}
+      width={size}
+      height={size}
+      viewBox="0 0 64 64"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-label="AutoFlow"
+      role="img"
     >
-      {badge && (
-        <div style={{
-          background: "linear-gradient(135deg, #F59E0B, #F97316)",
-          color: "white", fontWeight: 800, fontSize: 10, padding: "5px 14px",
-          borderRadius: 20, alignSelf: "flex-start", textTransform: "uppercase", letterSpacing: 1,
-        }}>{badge}</div>
-      )}
-      <div style={{ fontSize: 20, fontWeight: 800, color: highlight ? "white" : "#0F172A" }}>{tier}</div>
-      <div style={{ fontSize: 13, color: highlight ? "rgba(255,255,255,0.5)" : "#64748B", lineHeight: 1.5 }}>{desc}</div>
-      <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-        <span style={{ fontSize: 40, fontWeight: 900, color: highlight ? "white" : "#0F172A", letterSpacing: -1 }}>{price}</span>
-        {price !== "Free" && <span style={{ fontSize: 14, color: highlight ? "rgba(255,255,255,0.4)" : "#94A3B8" }}>/month</span>}
-      </div>
-      <div style={{
-        borderTop: `1px solid ${highlight ? "rgba(255,255,255,0.08)" : "#F1F5F9"}`,
-        paddingTop: 18, display: "flex", flexDirection: "column", gap: 11,
-      }}>
-        {features.map((f, i) => (
-          <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 13, color: highlight ? "rgba(255,255,255,0.8)" : "#475569" }}>
-            <div style={{
-              width: 18, height: 18, borderRadius: 6,
-              background: highlight ? "rgba(16,185,129,0.15)" : "rgba(13,148,136,0.1)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 10, color: "#10B981", flexShrink: 0,
-            }}>✓</div>
-            <span>{f}</span>
-          </div>
-        ))}
-      </div>
-      <button
-        onClick={onCta}
-        style={{
-          marginTop: "auto", padding: "13px 20px", borderRadius: 12, border: "none",
-          background: highlight
-            ? "linear-gradient(135deg, #F59E0B, #F97316)"
-            : "#0D9488",
-          color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer",
-          transition: "transform 0.2s",
-          transform: hover ? "scale(1.02)" : "scale(1)",
-        }}>
-        {ctaLabel}
-      </button>
+      <defs>
+        <linearGradient
+          id="autoflow-mark-gradient"
+          x1="10"
+          y1="8"
+          x2="54"
+          y2="56"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop offset="0" stopColor="#2DD4BF" />
+          <stop offset="0.5" stopColor="#14B8A6" />
+          <stop offset="1" stopColor="#0D9488" />
+        </linearGradient>
+
+        <filter
+          id="autoflow-mark-glow"
+          x="-50%"
+          y="-50%"
+          width="200%"
+          height="200%"
+        >
+          <feGaussianBlur stdDeviation="2.5" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      {/* Main flowing A — left leg */}
+      <path
+        className="autoflow-mark-path"
+        d="
+          M9 48
+          L27 10
+          C28 8 31 8 32 11
+          L47 42
+        "
+        stroke="url(#autoflow-mark-gradient)"
+        strokeWidth="6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        filter="url(#autoflow-mark-glow)"
+      />
+
+      {/* Right flowing leg */}
+      <path
+        className="autoflow-mark-path"
+        d="
+          M32 11
+          L55 49
+        "
+        stroke="url(#autoflow-mark-gradient)"
+        strokeWidth="6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        filter="url(#autoflow-mark-glow)"
+      />
+
+      {/* A cross-flow */}
+      <path
+        className="autoflow-mark-path"
+        d="
+          M20 34
+          C27 32 35 32 42 34
+        "
+        stroke="url(#autoflow-mark-gradient)"
+        strokeWidth="5"
+        strokeLinecap="round"
+      />
+
+      {/* Forward arrow */}
+      <path
+        className="autoflow-mark-arrow"
+        d="
+          M39 27
+          L52 34
+          L39 41
+        "
+        stroke="url(#autoflow-mark-gradient)"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/* ─── Hero Flow Visual — animated rings behind phone ────────────────── */
+function HeroFlowVisual() {
+  return (
+    <div className="hero-flow-visual" aria-hidden="true">
+      <svg viewBox="0 0 700 620" preserveAspectRatio="none">
+        <defs>
+          <linearGradient
+            id="hero-flow-gradient"
+            x1="0"
+            y1="0"
+            x2="1"
+            y2="1"
+          >
+            <stop offset="0%" stopColor="#0D9488" stopOpacity="0" />
+            <stop offset="35%" stopColor="#14B8A6" stopOpacity="0.9" />
+            <stop offset="65%" stopColor="#2DD4BF" stopOpacity="0.75" />
+            <stop offset="100%" stopColor="#14B8A6" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        <path
+          className="flow-ring flow-ring-1"
+          d="
+            M80 360
+            C120 150 350 70 570 180
+            C700 245 680 470 500 550
+            C330 625 120 540 80 360
+          "
+        />
+
+        <path
+          className="flow-ring flow-ring-2"
+          d="
+            M130 390
+            C180 190 360 120 540 205
+            C650 260 630 430 485 505
+            C330 580 170 520 130 390
+          "
+        />
+
+        <path
+          className="flow-ring flow-ring-3"
+          d="
+            M180 410
+            C220 245 380 175 510 235
+            C590 275 575 400 465 465
+          "
+        />
+      </svg>
     </div>
   );
 }
 
-// ─── Main Page ───
-export default function AutoFlowLanding() {
-  const [form, setForm] = useState({ name: "", business: "", email: "", whatsapp: "", type: "", message: "" });
-  const [errors, setErrors] = useState({});
-  const [submitted, setSubmitted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+/* ─── Animated counting number ──────────────────────────────────────── */
+function Counter({ target, suffix = "", duration = 1400 }) {
+  const [val, setVal] = useState(0);
+  const ref = useRef(null);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
-    const h = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", h);
-    return () => window.removeEventListener("scroll", h);
-  }, []);
+    if (reduced) { setVal(target); return; }
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      observer.disconnect();
+      let start = null;
+      function step(ts) {
+        if (!start) start = ts;
+        const progress = Math.min((ts - start) / duration, 1);
+        const ease = 1 - Math.pow(1 - progress, 3);
+        setVal(Math.round(ease * target));
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }, { threshold: 0.5 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target, duration, reduced]);
 
-  const sanitize = (str) => str.replace(/<[^>]*>/g, "").replace(/[<>"'`]/g, "").trim();
-  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const isValidWhatsApp = (num) => {
-    const digits = num.replace(/[\s\-\+\(\)]/g, "");
-    return /^\d{7,15}$/.test(digits);
-  };
-  const isValidName = (name) => /^[a-zA-Z\s\-'.]{2,50}$/.test(name);
+  return <span ref={ref}>{val.toLocaleString()}{suffix}</span>;
+}
 
-  const lastSubmitRef = useRef(0);
+/* ─── Phone Mockup ──────────────────────────────────────────────────── */
+function PhoneMockup() {
+  const [step, setStep] = useState(0);
+  const [selectedService, setSelectedService] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedTime, setSelectedTime] = useState(null);
+  const reduced = useReducedMotion();
 
-  const handleInputChange = (key, value) => {
-    let processed = value;
-    if (key === "email") processed = value.toLowerCase().trim();
-    if (key === "whatsapp") processed = value.replace(/[^0-9+\-\s()]/g, "");
-    if (key === "name" || key === "business") processed = value.replace(/[^a-zA-Z\s\-'.]/g, "");
-    if (key === "message") processed = value.slice(0, 500);
-    setForm(prev => ({ ...prev, [key]: processed }));
-    if (errors[key]) setErrors(prev => ({ ...prev, [key]: null }));
-  };
+  const services = [
+    { name: "Haircut", duration: "30 min", price: "AED 60" },
+    { name: "Haircut + Beard", duration: "45 min", price: "AED 80" },
+    { name: "Full Grooming", duration: "60 min", price: "AED 120" },
+  ];
+  const dates = [
+    { label: "Today", sub: "Sep 20" },
+    { label: "Tomorrow", sub: "Sep 21" },
+    { label: "Mon", sub: "Sep 22" },
+  ];
+  const times = ["2:00 PM", "2:30 PM", "3:00 PM", "3:30 PM"];
 
-  const validate = () => {
-    const e = {};
-    if (!form.name || !isValidName(form.name)) e.name = "Enter a valid name (letters only, 2-50 chars)";
-    if (!form.business || form.business.trim().length < 2) e.business = "Enter a business name";
-    if (!form.email || !isValidEmail(form.email)) e.email = "Enter a valid email address";
-    if (!form.whatsapp || !isValidWhatsApp(form.whatsapp)) e.whatsapp = "Enter a valid phone number (7-15 digits)";
-    if (!form.type) e.type = "Select a business type";
-    if (form.message && form.message.length > 500) e.message = "Message too long (max 500 characters)";
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
+  useEffect(() => {
+    if (reduced) { setStep(4); setSelectedService(0); setSelectedDate(0); setSelectedTime("3:00 PM"); return; }
+    // Slowed timings so the booking flow is visible longer than the confirmation state
+    const delays = [4200, 3000, 3000, 2500, 1800];
+    const d = delays[step] ?? 2000;
+    const timer = setTimeout(() => {
+      if (step === 0) setSelectedService(0);
+      if (step === 1) setSelectedDate(2);
+      if (step === 2) setSelectedTime("3:00 PM");
+      if (step === 4) {
+        setSelectedService(null);
+        setSelectedDate(null);
+        setSelectedTime(null);
+      }
+      setStep(s => (s + 1) % 5);
+    }, d);
+    return () => clearTimeout(timer);
+  }, [step, reduced]);
 
-  const handleSubmit = async () => {
-    const now = Date.now();
-    if (now - lastSubmitRef.current < 10000) return;
-    if (!validate()) return;
-    setSubmitting(true);
-    lastSubmitRef.current = now;
-    try {
-      const sanitizedForm = {
-        name: sanitize(form.name),
-        business: sanitize(form.business),
-        email: form.email.toLowerCase().trim(),
-        whatsapp: form.whatsapp.replace(/[^0-9+\-\s()]/g, ""),
-        type: form.type,
-        message: sanitize(form.message).slice(0, 500),
-      };
-      await fetch('https://automate.ivanit.work/api/v1/webhooks/1UIlGrv4FI4uRYsYdfWc5', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sanitizedForm)
-      });
-      setSubmitted(true);
-    } catch (err) {
-      setErrors({ submit: "Something went wrong. Please try again." });
-    }
-    setSubmitting(false);
-  };
+  const confirmed = step === 4;
+
+  const sidebarCards = [
+    {
+      color: "#10B981",
+      label: "Booking confirmed",
+      sub: "Customer receives instant confirmation",
+      icon: (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      ),
+    },
+    {
+      color: "#F59E0B",
+      label: "Automatic reminders",
+      sub: "We handle the follow-ups",
+      icon: (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+        </svg>
+      ),
+    },
+    {
+      color: "#14B8A6",
+      label: "You get more customers",
+      sub: "Less no-shows, more revenue",
+      icon: (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+          <polyline points="17 6 23 6 23 12" />
+        </svg>
+      ),
+    },
+  ];
 
   return (
-    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", color: "#334155", background: "#F0F4F8", overflowX: "hidden" }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
-        @keyframes msgPop {
-          from { opacity: 0; transform: scale(0.9) translateY(8px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        @keyframes dotPulse {
-          0%, 80% { opacity: 0.3; transform: scale(0.8); }
-          40% { opacity: 1; transform: scale(1.2); }
-        }
-        @keyframes gradientShift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-12px); }
-        }
-        input:focus, textarea:focus { border-color: #0D9488 !important; box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
-        a:focus-visible, button:focus-visible { outline: 2px solid #14B8A6; outline-offset: 2px; }
-        @media (prefers-reduced-motion: reduce) {
-          *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
-        }
-        .nav-link:hover { color: white !important; }
-        .login-link:hover { border-color: rgba(255,255,255,0.4) !important; color: white !important; }
-      `}</style>
+    <div style={{
+      position: "relative",
+      display: "flex",
+      alignItems: "flex-start",
+      gap: 20,
+    }}>
+      {/* ── Hero flow visual rings — behind phone ── */}
+      <div style={{ position: "relative" }}>
+        <HeroFlowVisual />
 
-      {/* ─── NAV ─── */}
-      <nav style={{
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: scrolled ? "12px 32px" : "18px 32px",
-        background: scrolled ? "rgba(15,23,42,0.95)" : "transparent",
-        backdropFilter: scrolled ? "blur(20px)" : "none",
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        transition: "all 0.3s ease",
-        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "none",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 10,
-            background: "linear-gradient(135deg, #0D9488, #14B8A6)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "white", fontWeight: 900, fontSize: 17,
-            boxShadow: "0 4px 12px rgba(13,148,136,0.3)",
-          }}>A</div>
-          <span style={{ fontWeight: 900, fontSize: 19, color: "white", letterSpacing: -0.5 }}>AutoFlow</span>
-        </div>
-        <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
-          <a href="#calc" className="nav-link" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>Calculator</a>
-          <a href="#how" className="nav-link" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>How it works</a>
-          <a href="#pricing" className="nav-link" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>Pricing</a>
-          <a href={DASHBOARD_URL} className="login-link" style={{
-            color: "rgba(255,255,255,0.75)", textDecoration: "none", fontWeight: 600, fontSize: 13,
-            padding: "8px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)",
-            transition: "all 0.2s",
-          }}>Log in</a>
-          <a href="#quote" style={{
-            background: "linear-gradient(135deg, #F59E0B, #F97316)",
-            color: "white", padding: "9px 20px", borderRadius: 10,
-            textDecoration: "none", fontWeight: 700, fontSize: 13,
-            boxShadow: "0 4px 16px rgba(245,158,11,0.3)",
-          }}>Get a Quote</a>
-        </div>
-      </nav>
-
-      {/* ─── HERO ─── */}
-      <section style={{
-        background: "linear-gradient(135deg, #0F172A 0%, #1E293B 40%, #0F172A 100%)",
-        backgroundSize: "200% 200%",
-        animation: "gradientShift 12s ease infinite",
-        padding: "120px 32px 80px", position: "relative", overflow: "hidden",
-      }}>
-        <div style={{
-          position: "absolute", top: -100, right: -100, width: 400, height: 400,
-          borderRadius: "50%", background: "radial-gradient(circle, rgba(13,148,136,0.12) 0%, transparent 70%)",
-          filter: "blur(60px)",
-        }} />
-        <div style={{
-          position: "absolute", bottom: -80, left: -80, width: 300, height: 300,
-          borderRadius: "50%", background: "radial-gradient(circle, rgba(245,158,11,0.08) 0%, transparent 70%)",
-          filter: "blur(50px)",
+        {/* Ambient glow — behind phone */}
+        <div aria-hidden="true" style={{
+          position: "absolute",
+          top: "30%", left: 80,
+          width: 300, height: 380, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(20,184,166,0.20) 0%, transparent 68%)",
+          filter: "blur(44px)", zIndex: 0, pointerEvents: "none",
         }} />
 
+        {/* ── Phone ── */}
         <div style={{
-          maxWidth: 1140, margin: "0 auto", display: "flex", flexWrap: "wrap",
-          alignItems: "center", justifyContent: "center", gap: 56, position: "relative",
+          position: "relative", zIndex: 2,
+          width: 248,
+          background: "#0d1117",
+          borderRadius: 38,
+          padding: "10px 8px 8px",
+          boxShadow: "0 32px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.07), inset 0 1px 0 rgba(255,255,255,0.05)",
+          flexShrink: 0,
         }}>
-          <div style={{ flex: "1 1 420px", maxWidth: 540 }}>
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)",
-              padding: "6px 16px", borderRadius: 24, marginBottom: 20,
-            }}>
-              <div style={{ width: 6, height: 6, borderRadius: 3, background: "#F59E0B", animation: "dotPulse 2s infinite" }} />
-              <span style={{ color: "#F59E0B", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                Automation built for UAE businesses
-              </span>
-            </div>
+          {/* Notch */}
+          <div style={{ width: 72, height: 5, background: "#222", borderRadius: 3, margin: "0 auto 8px" }} />
 
-            <h1 style={{
-              fontSize: 52, fontWeight: 900, color: "white", lineHeight: 1.08,
-              letterSpacing: -1.5, marginBottom: 20,
-            }}>
-              Put your business on{" "}
-              <span style={{
-                background: "linear-gradient(135deg, #14B8A6, #F59E0B)",
-                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-              }}>autopilot.</span>
-            </h1>
-            <p style={{
-              fontSize: 17, color: "rgba(255,255,255,0.5)", lineHeight: 1.7,
-              marginBottom: 32, maxWidth: 440,
-            }}>
-              Automated reminders, follow-ups, and booking confirmations that run on their own — so you stop chasing customers and start reclaiming your time. Built for salons, clinics, tutors, and travel agencies in the UAE.
-            </p>
-            <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 36 }}>
-              <a href="#quote" style={{
-                background: "linear-gradient(135deg, #0D9488, #14B8A6)",
-                color: "white", padding: "16px 32px", borderRadius: 14,
-                textDecoration: "none", fontWeight: 800, fontSize: 16,
-                boxShadow: "0 8px 32px rgba(13,148,136,0.35)",
-                transition: "transform 0.2s", display: "inline-block",
-              }}>Request a Free Quote</a>
-              <a href="#calc" style={{
-                background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-                color: "white", padding: "16px 28px", borderRadius: 14,
-                textDecoration: "none", fontWeight: 600, fontSize: 15,
-              }}>Calculate Your Savings ↓</a>
-            </div>
-            <div style={{ display: "flex", gap: 20, fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
-              <span>✦ No setup fees</span>
-              <span>✦ Works with WhatsApp</span>
-              <span>✦ Cancel anytime</span>
-            </div>
-          </div>
-          <div style={{ flex: "0 0 auto", animation: "float 6s ease-in-out infinite" }}>
-            <PhoneMockup />
-          </div>
-        </div>
-      </section>
-
-      {/* ─── SAVINGS CALCULATOR ─── */}
-      <section id="calc" style={{
-        background: "linear-gradient(180deg, #0F172A 0%, #1E293B 100%)",
-        padding: "72px 32px 80px",
-      }}>
-        <FadeIn>
-          <div style={{ maxWidth: 1140, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: 48, alignItems: "center", justifyContent: "center" }}>
-            <div style={{ flex: "1 1 340px", maxWidth: 440 }}>
-              <h2 style={{ fontSize: 34, fontWeight: 900, color: "white", lineHeight: 1.15, letterSpacing: -1, marginBottom: 16 }}>
-                See exactly how much you're leaving on the table
-              </h2>
-              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 15, lineHeight: 1.7, marginBottom: 24 }}>
-                The average appointment business loses 15–30% of revenue to no-shows. Drag the sliders to see your numbers — then let us fix them.
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                {[
-                  { icon: "📉", text: "Every no-show = an empty slot you can't fill" },
-                  { icon: "⏰", text: "Staff calling to confirm = hours wasted weekly" },
-                  { icon: "✅", text: "Automated reminders cut no-shows by 30% on average" },
-                ].map((p, i) => (
-                  <div key={i} style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                    <span style={{ fontSize: 20 }}>{p.icon}</span>
-                    <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 14 }}>{p.text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <SavingsCalculator />
-          </div>
-        </FadeIn>
-      </section>
-
-      {/* ─── STATS ─── */}
-      <section style={{ background: "white", padding: "48px 32px" }}>
-        <div style={{
-          maxWidth: 900, margin: "0 auto", display: "flex", flexWrap: "wrap",
-          justifyContent: "center", gap: 48,
-        }}>
-          {[
-            { n: 30, s: "%", label: "Average no-show reduction" },
-            { n: 5, s: " min", label: "Setup time" },
-            { n: 24, s: "/7", label: "Runs while you sleep" },
-            { n: 0, s: "", label: "Messages you send manually" },
-          ].map((s, i) => (
-            <div key={i} style={{ textAlign: "center", minWidth: 160 }}>
-              <div style={{ fontSize: 42, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>
-                {s.n === 0 ? "0" : <Counter target={s.n} />}{s.s}
-              </div>
-              <div style={{ fontSize: 13, color: "#94A3B8", marginTop: 4, fontWeight: 500 }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ─── HOW IT WORKS ─── */}
-      <section id="how" style={{ padding: "80px 32px", background: "#F8FAFC" }}>
-        <FadeIn>
-          <div style={{ maxWidth: 900, margin: "0 auto" }}>
-            <div style={{ textAlign: "center", marginBottom: 48 }}>
-              <h2 style={{ fontSize: 34, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>How it works</h2>
-              <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>
-                From booking to confirmation — fully automated
-              </p>
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center" }}>
-              {[
-                { icon: "📅", title: "Customer books", desc: "Via your form, phone, Instagram, or walk-in. We connect to however you take bookings.", color: "#0D9488" },
-                { icon: "⚡", title: "Flow triggers", desc: "Our automation engine picks it up instantly — no delay, no manual entry needed.", color: "#F59E0B" },
-                { icon: "💬", title: "Reminders go out", desc: "WhatsApp or SMS, 24h and 2h before. Customer confirms or reschedules right in the chat.", color: "#8B5CF6" },
-                { icon: "📊", title: "Everything logged", desc: "Dashboard shows confirmed, pending, no-shows. You see the full picture at a glance.", color: "#EF4444" },
-              ].map((s, i) => (
-                <div key={i} style={{
-                  flex: "1 1 200px", maxWidth: 210, textAlign: "center", padding: "28px 16px",
-                  background: "white", borderRadius: 18, border: "1px solid #E2E8F0",
-                  position: "relative",
-                }}>
-                  <div style={{
-                    position: "absolute", top: -1, left: "50%", transform: "translateX(-50%)",
-                    width: 40, height: 3, borderRadius: 2, background: s.color,
-                  }} />
-                  <div style={{
-                    width: 52, height: 52, borderRadius: 16, margin: "8px auto 14px",
-                    background: `${s.color}12`, display: "flex", alignItems: "center",
-                    justifyContent: "center", fontSize: 24,
-                  }}>{s.icon}</div>
-                  <div style={{ fontWeight: 800, fontSize: 15, color: "#0F172A", marginBottom: 6 }}>{s.title}</div>
-                  <div style={{ fontSize: 12.5, color: "#64748B", lineHeight: 1.5 }}>{s.desc}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </FadeIn>
-      </section>
-
-      {/* ─── USE CASES ─── */}
-      <section style={{ padding: "72px 32px", background: "white" }}>
-        <FadeIn>
-          <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-            <h2 style={{ fontSize: 30, fontWeight: 900, color: "#0F172A", textAlign: "center", marginBottom: 12, letterSpacing: -0.5 }}>
-              Built for businesses like yours
-            </h2>
-            <p style={{ color: "#94A3B8", textAlign: "center", fontSize: 15, marginBottom: 40 }}>
-              If people book time with you, we make sure they show up
-            </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
-              {[
-                { icon: "💇", title: "Salons", stat: "28%", desc: "average no-show rate in UAE salons. Reminders cut that to under 10%." },
-                { icon: "🏥", title: "Clinics", stat: "4 hrs", desc: "per week staff spend calling patients to confirm. Zero with automation." },
-                { icon: "📚", title: "Tutors", stat: "3x", desc: "more rebookings when students get a follow-up after their session." },
-                { icon: "💅", title: "Spas", stat: "AED 600+", desc: "average revenue recovered per month from prevented no-shows." },
-                { icon: "✈️", title: "Travel", stat: "92%", desc: "of travelers appreciate pre-trip reminders (visa, docs, check-in)." },
-              ].map((c, i) => (
-                <div key={i} style={{
-                  background: "#F8FAFC", borderRadius: 18, padding: "24px 20px",
-                  flex: "1 1 170px", maxWidth: 190, border: "1px solid #E2E8F0",
-                  textAlign: "center",
-                }}>
-                  <div style={{ fontSize: 32, marginBottom: 8 }}>{c.icon}</div>
-                  <div style={{ fontWeight: 800, fontSize: 15, color: "#0F172A", marginBottom: 6 }}>{c.title}</div>
-                  <div style={{ fontSize: 24, fontWeight: 900, color: "#0D9488", marginBottom: 6 }}>{c.stat}</div>
-                  <div style={{ fontSize: 12, color: "#64748B", lineHeight: 1.5 }}>{c.desc}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </FadeIn>
-      </section>
-
-      {/* ─── PRICING ─── */}
-      <section id="pricing" style={{ padding: "80px 32px", background: "#F8FAFC" }}>
-        <FadeIn>
-          <div style={{ maxWidth: 1060, margin: "0 auto" }}>
-            <div style={{ textAlign: "center", marginBottom: 44 }}>
-              <h2 style={{ fontSize: 34, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>Simple, honest pricing</h2>
-              <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>Start free. Upgrade when the ROI is obvious.</p>
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center", alignItems: "stretch" }}>
-              <PricingCard tier="Starter" price="Free" desc="Try it with basic reminders"
-                ctaLabel="Start Free" onCta={scrollToQuote}
-                features={["1 active automation", "Up to 50 reminders/month", "WhatsApp or SMS", "Basic dashboard"]} />
-              <PricingCard tier="Professional" price="AED 149" desc="For businesses that can't afford no-shows" highlight badge="Most Popular"
-                ctaLabel="Get Started" onCta={scrollToQuote}
-                features={["5 active automations", "Unlimited reminders", "WhatsApp + SMS", "No-show tracking dashboard", "Follow-up sequences", "Priority support"]} />
-              <PricingCard tier="Business" price="AED 349" desc="Full automation suite, custom workflows"
-                ctaLabel="Get Started" onCta={scrollToQuote}
-                features={["Unlimited automations", "Custom workflow builds", "Multi-location support", "Lead capture + CRM sync", "Dedicated account manager", "Monthly performance report"]} />
-            </div>
-            <p style={{ textAlign: "center", color: "#94A3B8", fontSize: 13, marginTop: 28 }}>
-              Already a customer? <a href={DASHBOARD_URL} style={{ color: "#0D9488", fontWeight: 700, textDecoration: "none" }}>Log in to your dashboard →</a>
-            </p>
-          </div>
-        </FadeIn>
-      </section>
-
-      {/* ─── SECURITY ─── */}
-      <section style={{ padding: "48px 32px" }}>
-        <FadeIn>
+          {/* Header */}
           <div style={{
-            maxWidth: 800, margin: "0 auto",
-            background: "linear-gradient(135deg, #0F172A, #1E293B)", borderRadius: 20,
-            padding: "36px 32px", display: "flex", flexWrap: "wrap", gap: 24, alignItems: "center",
-            border: "1px solid rgba(255,255,255,0.06)",
+            background: "#111820", borderRadius: "24px 24px 0 0",
+            padding: "12px 14px 10px",
+            display: "flex", alignItems: "center", gap: 10,
+            borderBottom: "1px solid rgba(20,184,166,0.12)",
           }}>
             <div style={{
-              width: 64, height: 64, borderRadius: 18,
-              background: "rgba(13,148,136,0.15)", display: "flex",
-              alignItems: "center", justifyContent: "center", fontSize: 30, flexShrink: 0,
-            }}>🔒</div>
-            <div style={{ flex: 1, minWidth: 280 }}>
-              <div style={{ fontWeight: 800, fontSize: 18, color: "white", marginBottom: 6 }}>
-                Built security-first, from the ground up
-              </div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.7 }}>
-                Every account is fully isolated — one business can never see another's data,
-                credentials, or automations. Access is enforced at the server, not just hidden
-                in the interface. We run continuous security monitoring and intrusion detection
-                across our own infrastructure, so your customers' details stay yours alone.
-              </div>
+              width: 34, height: 34, borderRadius: 17,
+              background: "linear-gradient(135deg, #0c1a24, #142030)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+              boxShadow: "0 4px 12px rgba(13,148,136,0.4)",
+              border: "1px solid rgba(20,184,166,0.25)",
+            }}>
+              <AutoFlowMark size={22} animated={false} />
+            </div>
+            <div>
+              <div style={{ color: "white", fontWeight: 700, fontSize: 13, letterSpacing: -0.2 }}>GlowCuts Salon</div>
+              <div style={{ color: "#14B8A6", fontSize: 10, fontWeight: 500 }}>Book an appointment</div>
             </div>
           </div>
-        </FadeIn>
-      </section>
 
-      {/* ─── QUOTE FORM ─── */}
-      <section id="quote" style={{ padding: "80px 32px", background: "white" }}>
-        <FadeIn>
-          <div style={{ maxWidth: 560, margin: "0 auto" }}>
-            <div style={{ textAlign: "center", marginBottom: 36 }}>
-              <h2 style={{ fontSize: 34, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>
-                Get your free automation plan
-              </h2>
-              <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>
-                Tell us about your business — we'll design your first flow and set it up for free.
-              </p>
-            </div>
-            {submitted ? (
-              <div style={{
-                background: "#F0FDF4", borderRadius: 20, padding: "56px 32px",
-                textAlign: "center", border: "1px solid #BBF7D0",
-              }}>
-                <div style={{ fontSize: 56, marginBottom: 16 }}>🎉</div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: "#0F172A", marginBottom: 8 }}>
-                  You're in!
+          {/* Body */}
+          <div style={{
+            background: "#F8FAFC",
+            minHeight: 310,
+            padding: "12px 12px 14px",
+            borderRadius: "0 0 30px 30px",
+            overflow: "hidden",
+            transition: "all 0.3s ease",
+          }}>
+            {confirmed ? (
+              <div style={{ textAlign: "center", padding: "30px 8px" }}>
+                <div style={{
+                  width: 52, height: 52, borderRadius: 26,
+                  background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+                  margin: "0 auto 14px",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  boxShadow: "0 8px 24px rgba(13,148,136,0.35)",
+                }}>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
                 </div>
-                <div style={{ color: "#64748B", fontSize: 14, lineHeight: 1.6 }}>
-                  We'll reach out on WhatsApp within 24 hours with your custom automation plan. No payment needed to start.
+                <div style={{ color: "#0D9488", fontWeight: 800, fontSize: 15, marginBottom: 4 }}>Booking Confirmed!</div>
+                <div style={{ color: "#64748B", fontSize: 11, lineHeight: 1.5 }}>
+                  Mon Sep 22 · 3:00 PM<br />
+                  Confirmation sent to your phone
                 </div>
               </div>
             ) : (
-              <div style={{
-                background: "#F8FAFC", borderRadius: 20, padding: "36px 28px",
-                border: "1px solid #E2E8F0",
-              }}>
-                {errors.submit && (
-                  <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, padding: "10px 14px", marginBottom: 14, color: "#DC2626", fontSize: 13 }}>
-                    {errors.submit}
-                  </div>
-                )}
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginBottom: 14 }}>
-                  {[
-                    { key: "name", label: "Your name", ph: "Ahmed", w: "1 1 48%", type: "text", maxLen: 50 },
-                    { key: "business", label: "Business name", ph: "GlowCuts Salon", w: "1 1 48%", type: "text", maxLen: 50 },
-                    { key: "email", label: "Email", ph: "ahmed@glowcuts.ae", w: "1 1 48%", type: "email", maxLen: 100 },
-                    { key: "whatsapp", label: "WhatsApp", ph: "+971 50 123 4567", w: "1 1 48%", type: "tel", maxLen: 20 },
-                  ].map(f => (
-                    <div key={f.key} style={{ flex: f.w }}>
-                      <label style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
-                        {f.label}
-                      </label>
-                      <input
-                        type={f.type}
-                        placeholder={f.ph}
-                        value={form[f.key]}
-                        maxLength={f.maxLen}
-                        onChange={e => handleInputChange(f.key, e.target.value)}
-                        style={{
-                          width: "100%", padding: "12px 14px", borderRadius: 10,
-                          border: errors[f.key] ? "1px solid #EF4444" : "1px solid #E2E8F0",
-                          fontSize: 14, outline: "none",
-                          fontFamily: "inherit", background: "white", transition: "all 0.2s",
-                        }}
-                      />
-                      {errors[f.key] && (
-                        <p style={{ color: "#EF4444", fontSize: 11, marginTop: 4 }}>{errors[f.key]}</p>
-                      )}
+              <>
+                {/* Services */}
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ color: "#64748B", fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>① Select a service</div>
+                  {services.map((s, i) => (
+                    <div key={i} style={{
+                      display: "flex", alignItems: "center", justifyContent: "space-between",
+                      padding: "7px 10px", borderRadius: 8, marginBottom: 4,
+                      background: selectedService === i ? "rgba(13,148,136,0.08)" : "#F1F5F9",
+                      border: `1px solid ${selectedService === i ? "rgba(13,148,136,0.3)" : "transparent"}`,
+                      transition: "all 0.25s ease", cursor: "default",
+                    }}>
+                      <div>
+                        <div style={{ color: "#1E293B", fontSize: 11, fontWeight: 600 }}>{s.name}</div>
+                        <div style={{ color: "#94A3B8", fontSize: 9 }}>{s.duration}</div>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ color: "#1E293B", fontSize: 11, fontWeight: 700 }}>{s.price}</span>
+                        <div style={{
+                          width: 14, height: 14, borderRadius: 7,
+                          border: `2px solid ${selectedService === i ? "#0D9488" : "#CBD5E1"}`,
+                          background: selectedService === i ? "#0D9488" : "transparent",
+                          transition: "all 0.25s ease",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                        }}>
+                          {selectedService === i && (
+                            <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                              <polyline points="1.5 4 3 5.5 6.5 2" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+                            </svg>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
-                <div style={{ marginBottom: 14 }}>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
-                    Business type
-                  </label>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                    {["Salon", "Clinic", "Tutor", "Spa", "Travel", "Other"].map(t => (
-                      <button
-                        key={t}
-                        onClick={() => { setForm(prev => ({ ...prev, type: t })); if (errors.type) setErrors(prev => ({ ...prev, type: null })); }}
-                        style={{
-                          padding: "8px 16px", borderRadius: 10, fontSize: 13, fontWeight: 600,
-                          border: form.type === t ? "2px solid #0D9488" : errors.type ? "1px solid #EF4444" : "1px solid #E2E8F0",
-                          background: form.type === t ? "rgba(13,148,136,0.08)" : "white",
-                          color: form.type === t ? "#0D9488" : "#64748B",
-                          cursor: "pointer", transition: "all 0.2s",
-                        }}
-                      >{t}</button>
-                    ))}
+
+                {/* Dates */}
+                {selectedService !== null && (
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ color: "#64748B", fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>② Choose a date</div>
+                    <div style={{ display: "flex", gap: 5 }}>
+                      {dates.map((d, i) => (
+                        <div key={i} style={{
+                          flex: 1, textAlign: "center", padding: "6px 4px", borderRadius: 8,
+                          background: selectedDate === i ? "#0D9488" : "#F1F5F9",
+                          cursor: "default", transition: "all 0.25s ease",
+                        }}>
+                          <div style={{ color: selectedDate === i ? "white" : "#64748B", fontSize: 9, fontWeight: 600 }}>{d.label}</div>
+                          <div style={{ color: selectedDate === i ? "rgba(255,255,255,0.8)" : "#94A3B8", fontSize: 8 }}>{d.sub}</div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  {errors.type && (
-                    <p style={{ color: "#EF4444", fontSize: 11, marginTop: 4 }}>{errors.type}</p>
-                  )}
-                </div>
-                <div style={{ marginBottom: 18 }}>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
-                    What do you need automated?
-                  </label>
-                  <textarea
-                    placeholder="e.g. appointment reminders, follow-ups, booking confirmations..."
-                    value={form.message} rows={3}
-                    maxLength={500}
-                    onChange={e => handleInputChange("message", e.target.value)}
-                    style={{
-                      width: "100%", padding: "12px 14px", borderRadius: 10,
-                      border: "1px solid #E2E8F0", fontSize: 14, outline: "none",
-                      fontFamily: "inherit", resize: "vertical", background: "white",
-                      transition: "all 0.2s",
-                    }}
-                  />
-                  <p style={{ textAlign: "right", fontSize: 11, color: "#94A3B8", marginTop: 2 }}>
-                    {form.message.length}/500
-                  </p>
-                </div>
-                <button
-                  onClick={handleSubmit}
-                  disabled={submitting}
-                  style={{
-                    width: "100%", padding: "16px", borderRadius: 14, border: "none",
-                    background: submitting ? "#94A3B8" : "linear-gradient(135deg, #0D9488, #14B8A6)",
-                    color: "white", fontWeight: 800, fontSize: 16,
-                    cursor: submitting ? "not-allowed" : "pointer",
-                    boxShadow: submitting ? "none" : "0 8px 32px rgba(13,148,136,0.3)",
-                    transition: "all 0.2s",
-                  }}
-                >
-                  {submitting ? "Submitting..." : "Submit — It's Free"}
-                </button>
-                <p style={{ textAlign: "center", fontSize: 12, color: "#94A3B8", marginTop: 10 }}>
-                  No payment required. We'll design your automation and show you how it works first.
-                </p>
-              </div>
+                )}
+
+                {/* Times */}
+                {selectedDate !== null && (
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ color: "#64748B", fontSize: 10, fontWeight: 600, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 6 }}>③ Select a time</div>
+                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                      {times.map((t, i) => (
+                        <div key={i} style={{
+                          padding: "5px 8px", borderRadius: 6, fontSize: 10, fontWeight: 600,
+                          background: selectedTime === t ? "#0D9488" : "#F1F5F9",
+                          color: selectedTime === t ? "white" : "#475569",
+                          transition: "all 0.25s ease", cursor: "default",
+                        }}>{t}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Confirm button */}
+                {selectedTime && (
+                  <div style={{
+                    background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+                    borderRadius: 8, padding: "8px 12px",
+                    textAlign: "center", color: "white",
+                    fontSize: 11, fontWeight: 700,
+                    marginTop: 4,
+                    boxShadow: "0 4px 14px rgba(13,148,136,0.4)",
+                  }}>
+                    Confirm Booking →
+                  </div>
+                )}
+              </>
             )}
           </div>
-        </FadeIn>
+        </div>
+      </div>
+
+      {/* ── Right column: annotation (top) + cards (below) ── */}
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 0,
+        alignItems: "flex-start",
+        position: "relative",
+        zIndex: 2,
+      }}>
+
+        {/*
+         * Annotation — clear space ABOVE the cards.
+         * Text top-right, curved dashed arrow exits bottom-left toward phone.
+         */}
+        <div
+          className="hero-annotation"
+          aria-hidden="true"
+        >
+          <div className="hero-annotation-text">
+            It just works
+            <br />
+            in the background.
+          </div>
+
+          <svg
+            width="150"
+            height="100"
+            viewBox="0 0 150 100"
+          >
+            <path
+              d="M140 8 C112 15 95 32 78 50 C60 69 40 83 12 89"
+              fill="none"
+              stroke="#14B8A6"
+              strokeWidth="2"
+              strokeDasharray="5 5"
+              strokeLinecap="round"
+            />
+            <path
+              d="M12 89 L24 84 M12 89 L18 78"
+              fill="none"
+              stroke="#14B8A6"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+
+        {/* ── Sidebar cards — below annotation ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {sidebarCards.map((c, i) => (
+            <div key={i} style={{
+              background: "rgba(13,20,30,0.85)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(20,184,166,0.15)",
+              borderRadius: 12,
+              padding: "10px 14px",
+              width: 190,
+              display: "flex", alignItems: "flex-start", gap: 10,
+              boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+            }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+                background: `${c.color}22`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>{c.icon}</div>
+              <div>
+                <div style={{ color: "white", fontSize: 11, fontWeight: 700, marginBottom: 2 }}>{c.label}</div>
+                <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 9, lineHeight: 1.4 }}>{c.sub}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Savings Calculator ─────────────────────────────────────────────── */
+function SavingsCalculator() {
+  const [apptPerMonth, setApptPerMonth] = useState(50);
+
+  return (
+    <div style={{
+      background: "rgba(255,255,255,0.03)",
+      backdropFilter: "blur(20px)",
+      borderRadius: 20,
+      padding: "28px 32px",
+      border: "1px solid rgba(20,184,166,0.12)",
+      maxWidth: 680,
+      width: "100%",
+    }}>
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 28,
+        flexWrap: "wrap",
+      }}>
+        {/* Left: label + slider */}
+        <div style={{ flex: "1 1 260px" }}>
+          <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, fontWeight: 500, marginBottom: 16 }}>
+            Estimate your monthly time savings
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+            <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 14, fontWeight: 500 }}>Appointments per month</span>
+            <span style={{ color: "white", fontSize: 20, fontWeight: 800 }}>{apptPerMonth}</span>
+          </div>
+          <input
+            type="range" min={10} max={200} step={5} value={apptPerMonth}
+            onChange={e => setApptPerMonth(Number(e.target.value))}
+            aria-label="Appointments per month"
+            style={{ width: "100%", accentColor: "#14B8A6", cursor: "pointer", height: 4 }}
+          />
+        </div>
+
+        {/* Right: CTA button */}
+        <div style={{ flex: "0 0 auto", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+          <a
+            href={DASHBOARD_URL}
+            style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+              background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+              color: "white", padding: "14px 22px", borderRadius: 12,
+              textDecoration: "none", fontWeight: 700, fontSize: 15,
+              boxShadow: "0 6px 24px rgba(13,148,136,0.35)",
+              transition: "box-shadow 0.2s ease, transform 0.15s ease",
+              whiteSpace: "nowrap",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 10px 36px rgba(13,148,136,0.5)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 6px 24px rgba(13,148,136,0.35)"; e.currentTarget.style.transform = ""; }}
+          >
+            Estimate Your Savings →
+          </a>
+          <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, textAlign: "center" }}>
+            It takes less than 30 seconds.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Global styles ──────────────────────────────────────────────────── */
+const GLOBAL_CSS = `
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #060d14; color: #e2e8f0; line-height: 1.6; }
+  a { color: inherit; }
+  button { cursor: pointer; font: inherit; }
+  input[type=range]::-webkit-slider-thumb { cursor: pointer; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* ── AutoFlowMark animations ── */
+  .autoflow-mark {
+    display: block;
+    overflow: visible;
+  }
+  .autoflow-mark-path,
+  .autoflow-mark-arrow {
+    transform-origin: center;
+  }
+  .autoflow-mark-animated .autoflow-mark-arrow {
+    animation: autoflow-arrow-flow 5s ease-in-out infinite;
+  }
+  .autoflow-mark-animated .autoflow-mark-path {
+    animation: autoflow-flow-glow 5s ease-in-out infinite;
+  }
+  @keyframes autoflow-arrow-flow {
+    0%, 72%, 100% { opacity: 0.85; transform: translateX(0); }
+    80%  { opacity: 1; transform: translateX(3px); }
+    88%  { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes autoflow-flow-glow {
+    0%, 72%, 100% { filter: brightness(1); }
+    82%  { filter: brightness(1.7); }
+    90%  { filter: brightness(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .autoflow-mark-animated .autoflow-mark-arrow,
+    .autoflow-mark-animated .autoflow-mark-path {
+      animation: none;
+    }
+  }
+
+  /* ── Hero flow visual rings ── */
+  .hero-flow-visual {
+    position: absolute;
+    inset: -70px -130px -80px -170px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.85;
+  }
+  .hero-flow-visual svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .flow-ring {
+    fill: none;
+    stroke: url(#hero-flow-gradient);
+    stroke-width: 3;
+    stroke-linecap: round;
+    opacity: 0.45;
+  }
+  .flow-ring-1 { stroke-width: 4; opacity: 0.7; }
+  .flow-ring-2 { opacity: 0.4; }
+  .flow-ring-3 { opacity: 0.25; }
+  @media (prefers-reduced-motion: no-preference) {
+    .flow-ring-1 { animation: flow-ring-drift 8s ease-in-out infinite; }
+    .flow-ring-2 { animation: flow-ring-drift 10s ease-in-out infinite reverse; }
+    .flow-ring-3 { animation: flow-ring-drift 12s ease-in-out infinite; }
+  }
+  @keyframes flow-ring-drift {
+    0%, 100% { transform: translateX(0) translateY(0); }
+    50%       { transform: translateX(18px) translateY(-8px); }
+  }
+
+  /* ── Hero annotation ── */
+  .hero-annotation {
+    margin-bottom: 28px;
+    padding-left: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    width: 190px;
+    pointer-events: none;
+  }
+  .hero-annotation-text {
+    color: #2dd4bf;
+    font-family: 'Comic Sans MS', 'Segoe Print', cursive;
+    font-size: 14px;
+    line-height: 1.25;
+    font-style: italic;
+    transform: rotate(-4deg);
+    text-align: center;
+    text-shadow: 0 0 12px rgba(20,184,166,0.25);
+    margin-bottom: 2px;
+  }
+  .hero-annotation svg {
+    display: block;
+    margin-left: 5px;
+    margin-top: 4px;
+  }
+
+  .nav-link { color: rgba(255,255,255,0.65); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+  .nav-link:hover { color: white; }
+  .cta-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, #0D9488, #14B8A6);
+    color: white; padding: 12px 22px; border-radius: 10px;
+    text-decoration: none; font-weight: 700; font-size: 14px;
+    box-shadow: 0 4px 20px rgba(13,148,136,0.35);
+    transition: box-shadow 0.2s, transform 0.15s;
+    white-space: nowrap;
+  }
+  .cta-primary:hover { box-shadow: 0 8px 32px rgba(13,148,136,0.5); transform: translateY(-1px); }
+  .cta-secondary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+    color: white; padding: 12px 22px; border-radius: 10px;
+    text-decoration: none; font-weight: 600; font-size: 14px;
+    transition: background 0.2s, border-color 0.2s;
+    white-space: nowrap;
+  }
+  .cta-secondary:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+  @media (max-width: 900px) {
+    .hero-grid { flex-direction: column !important; }
+    .hero-phone { display: none !important; }
+    .how-steps { flex-direction: column !important; gap: 32px !important; }
+    .step-connector { display: none !important; }
+    .industry-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .calc-grid { flex-direction: column !important; }
+    .pricing-grid { flex-direction: column !important; align-items: center !important; }
+    .pricing-card { max-width: 360px !important; width: 100% !important; }
+    .footer-grid { flex-direction: column !important; gap: 32px !important; }
+    .nav-links { display: none !important; }
+    .calc-inner { flex-direction: column !important; }
+  }
+  @media (max-width: 600px) {
+    .hero-headline { font-size: clamp(2rem, 8vw, 3.5rem) !important; }
+    .section-title { font-size: clamp(1.6rem, 6vw, 2.5rem) !important; }
+    .industry-grid { grid-template-columns: 1fr 1fr !important; }
+  }
+`;
+
+/* ─── App ────────────────────────────────────────────────────────────── */
+export default function App() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const el = document.getElementById("autoflow-global-styles");
+    if (!el) {
+      const style = document.createElement("style");
+      style.id = "autoflow-global-styles";
+      style.textContent = GLOBAL_CSS;
+      document.head.appendChild(style);
+    }
+    const link = document.getElementById("autoflow-font");
+    if (!link) {
+      const l = document.createElement("link");
+      l.id = "autoflow-font";
+      l.rel = "stylesheet";
+      l.href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap";
+      document.head.appendChild(l);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handler = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+
+  const navLinks = [
+    { label: "How it works", href: "#how-it-works" },
+    { label: "Pricing", href: "#pricing" },
+    { label: "Calculator", href: "#calculator" },
+    { label: "Use cases", href: "#industries" },
+  ];
+
+  const BG = "#060d14";
+  const SECTION_ALT = "#081018";
+
+  return (
+    <div style={{ background: BG, minHeight: "100vh", overflowX: "hidden" }}>
+
+      {/* ── Nav ── */}
+      <header style={{
+        position: "sticky", top: 0, zIndex: 100,
+        borderBottom: scrolled ? "1px solid rgba(20,184,166,0.1)" : "1px solid transparent",
+        background: scrolled ? "rgba(6,13,20,0.92)" : "transparent",
+        backdropFilter: scrolled ? "blur(20px)" : "none",
+        transition: "all 0.3s ease",
+      }}>
+        <nav style={{
+          maxWidth: 1160, margin: "0 auto",
+          padding: "0 24px",
+          height: 64,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+          {/* Logo: AutoFlowMark + wordmark (no square container) */}
+          <a
+            href="#"
+            aria-label="AutoFlow home"
+            style={{
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            <AutoFlowMark size={46} />
+
+            <div>
+              <div
+                style={{
+                  color: "white",
+                  fontWeight: 850,
+                  fontSize: 22,
+                  letterSpacing: -1,
+                  lineHeight: 1,
+                }}
+              >
+                Auto<span style={{ color: "#14B8A6" }}>Flow</span>
+              </div>
+
+              <div
+                style={{
+                  color: "rgba(255,255,255,0.32)",
+                  fontSize: 8,
+                  fontWeight: 700,
+                  letterSpacing: 2.5,
+                  marginTop: 5,
+                }}
+              >
+                BOOK · AUTOMATE · GROW
+              </div>
+            </div>
+          </a>
+
+          {/* Nav links */}
+          <div className="nav-links" style={{ display: "flex", alignItems: "center", gap: 32 }}>
+            {navLinks.map(l => (
+              <a key={l.href} href={l.href} className="nav-link">{l.label}</a>
+            ))}
+          </div>
+
+          {/* Right side */}
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <a href={DASHBOARD_URL} className="nav-link" style={{ fontSize: 14 }}>Log in</a>
+            <a href={DASHBOARD_URL} className="cta-primary" style={{ padding: "10px 18px", fontSize: 13 }}>
+              Create Your Business Page →
+            </a>
+          </div>
+        </nav>
+      </header>
+
+      {/* ── Hero ── */}
+      <section style={{
+        maxWidth: 1160, margin: "0 auto",
+        padding: "72px 24px 80px",
+        position: "relative",
+      }}>
+        {/* Background glow */}
+        <div aria-hidden="true" style={{
+          position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
+          width: 700, height: 500,
+          background: "radial-gradient(ellipse at 50% 0%, rgba(13,148,136,0.14) 0%, transparent 65%)",
+          pointerEvents: "none",
+        }} />
+
+        <div className="hero-grid" style={{ display: "flex", alignItems: "center", gap: 60 }}>
+          {/* Left */}
+          <div style={{ flex: "1 1 480px", position: "relative", zIndex: 1 }}>
+            <FadeIn>
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                background: "rgba(20,184,166,0.1)", border: "1px solid rgba(20,184,166,0.2)",
+                color: "#14B8A6", padding: "6px 14px", borderRadius: 20,
+                fontSize: 12, fontWeight: 600, letterSpacing: 1.2, textTransform: "uppercase",
+                marginBottom: 28,
+              }}>
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#14B8A6", display: "inline-block" }} />
+                Booking automation for UAE businesses
+              </div>
+            </FadeIn>
+
+            <FadeIn delay={80}>
+              <h1 className="hero-headline" style={{
+                fontSize: "clamp(2.6rem, 5vw, 4rem)",
+                fontWeight: 900, lineHeight: 1.05, letterSpacing: -1.5,
+                color: "white", marginBottom: 24,
+              }}>
+                Turn bookings<br />
+                into a <span style={{ color: "#14B8A6" }}>flow.</span>
+              </h1>
+            </FadeIn>
+
+            <FadeIn delay={140}>
+              <p style={{
+                color: "rgba(255,255,255,0.55)", fontSize: 17, lineHeight: 1.7,
+                maxWidth: 440, marginBottom: 36,
+              }}>
+                Create your booking page, let customers choose their time,
+                and let AutoFlow handle the confirmations and reminders.
+              </p>
+            </FadeIn>
+
+            <FadeIn delay={200}>
+              <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 52 }}>
+                <a href={DASHBOARD_URL} className="cta-primary" style={{ padding: "15px 28px", fontSize: 15 }}>
+                  Create Your Business Page →
+                </a>
+                <a href="#how-it-works" className="cta-secondary" style={{ padding: "15px 24px", fontSize: 15 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" /><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none" />
+                  </svg>
+                  See How It Works
+                </a>
+              </div>
+            </FadeIn>
+
+            {/* Hero trust icons */}
+            <FadeIn delay={260}>
+              <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                  </svg>
+                  <div>
+                    <div style={{ color: "white", fontWeight: 700, fontSize: 13 }}>Save time</div>
+                    <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>Automate routine tasks</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                  <div>
+                    <div style={{ color: "white", fontWeight: 700, fontSize: 13 }}>Get more bookings</div>
+                    <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>Make it easy for customers</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                    <line x1="2" y1="20" x2="22" y2="20" />
+                  </svg>
+                  <div>
+                    <div style={{ color: "white", fontWeight: 700, fontSize: 13 }}>Focus on growth</div>
+                    <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>Let AutoFlow do the rest</div>
+                  </div>
+                </div>
+              </div>
+            </FadeIn>
+          </div>
+
+          {/* Right — phone with flow rings */}
+          <div className="hero-phone" style={{ flex: "0 0 auto" }}>
+            <FadeIn delay={180}>
+              <PhoneMockup />
+            </FadeIn>
+          </div>
+        </div>
       </section>
 
-      {/* ─── FOOTER ─── */}
-      <footer style={{
-        background: "#0F172A", padding: "48px 32px", textAlign: "center",
-        borderTop: "1px solid rgba(255,255,255,0.05)",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 16 }}>
+      {/* ── How It Works ── */}
+      <section id="how-it-works" style={{ background: SECTION_ALT, padding: "96px 24px" }}>
+        <div style={{ maxWidth: 1160, margin: "0 auto" }}>
+          <FadeIn>
+            <div style={{ marginBottom: 64 }}>
+              <div style={{ color: "#14B8A6", fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>
+                HOW IT WORKS
+              </div>
+              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
+                <h2 className="section-title" style={{
+                  fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
+                  fontWeight: 900, color: "white", letterSpacing: -1, lineHeight: 1.1, maxWidth: 320,
+                }}>
+                  A simple flow<br />for real results.
+                </h2>
+                <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 15, maxWidth: 300, lineHeight: 1.7 }}>
+                  From setup to confirmed bookings —<br />AutoFlow keeps your business moving.
+                </p>
+              </div>
+            </div>
+          </FadeIn>
+
+          {/* Steps with curved SVG wave connector */}
+          <div style={{ position: "relative" }}>
+            <svg
+              className="step-connector"
+              aria-hidden="true"
+              viewBox="0 0 900 60"
+              preserveAspectRatio="none"
+              style={{
+                position: "absolute",
+                top: 28,
+                left: "12.5%",
+                width: "75%",
+                height: 60,
+                zIndex: 0,
+                pointerEvents: "none",
+                overflow: "visible",
+              }}
+            >
+              <path
+                d="M0 30 C80 10, 160 50, 300 30 C440 10, 520 50, 600 30 C680 10, 760 50, 900 30"
+                stroke="rgba(20,184,166,0.45)"
+                strokeWidth="2"
+                fill="none"
+                strokeDasharray="6 4"
+              />
+            </svg>
+
+            <div className="how-steps" style={{ display: "flex", alignItems: "flex-start", gap: 0, position: "relative", zIndex: 1 }}>
+              {[
+                {
+                  num: "01",
+                  title: "Create",
+                  desc: "Set up your booking page in minutes.",
+                  icon: (
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <line x1="16" y1="13" x2="8" y2="13" />
+                      <line x1="16" y1="17" x2="8" y2="17" />
+                      <polyline points="10 9 9 9 8 9" />
+                    </svg>
+                  ),
+                },
+                {
+                  num: "02",
+                  title: "Share",
+                  desc: "Publish the link on your website, social media, or QR code.",
+                  icon: (
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                    </svg>
+                  ),
+                },
+                {
+                  num: "03",
+                  title: "Customers book",
+                  desc: "They choose a service, date, and time.",
+                  icon: (
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                      <line x1="16" y1="2" x2="16" y2="6" />
+                      <line x1="8" y1="2" x2="8" y2="6" />
+                      <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                  ),
+                },
+                {
+                  num: "04",
+                  title: "AutoFlow takes over",
+                  desc: "Confirmations and reminders go out automatically.",
+                  isLogo: true,
+                },
+              ].map((s, i) => (
+                <div key={i} style={{ flex: 1, display: "flex", alignItems: "flex-start" }}>
+                  <FadeIn delay={i * 100} style={{ width: "100%" }}>
+                    <div style={{ textAlign: "center", padding: "0 12px" }}>
+                      <div style={{ color: "rgba(255,255,255,0.25)", fontSize: 12, fontWeight: 700, letterSpacing: 1, marginBottom: 8 }}>
+                        {s.num}
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
+                        <div style={{
+                          width: 64, height: 64, borderRadius: 32,
+                          background: s.isLogo
+                            ? "linear-gradient(135deg, #0D9488, #14B8A6)"
+                            : "rgba(20,184,166,0.1)",
+                          border: `2px solid ${s.isLogo ? "transparent" : "rgba(20,184,166,0.35)"}`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          boxShadow: s.isLogo ? "0 8px 28px rgba(13,148,136,0.4)" : "none",
+                        }}>
+                          {s.isLogo
+                            ? <AutoFlowMark size={30} animated={false} />
+                            : s.icon
+                          }
+                        </div>
+                      </div>
+                      <div style={{ color: "white", fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{s.title}</div>
+                      <div style={{ color: "rgba(255,255,255,0.45)", fontSize: 13, lineHeight: 1.6, maxWidth: 160, margin: "0 auto" }}>{s.desc}</div>
+                    </div>
+                  </FadeIn>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Industries ── */}
+      <section id="industries" style={{ padding: "96px 24px" }}>
+        <div style={{ maxWidth: 1160, margin: "0 auto", display: "flex", gap: 60, alignItems: "flex-start", flexWrap: "wrap" }}>
+          <FadeIn style={{ flex: "0 0 260px" }}>
+            <div style={{ color: "#14B8A6", fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>
+              BUILT FOR REAL BUSINESSES
+            </div>
+            <h2 className="section-title" style={{
+              fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
+              fontWeight: 900, color: "white", letterSpacing: -1, lineHeight: 1.1, marginBottom: 16,
+            }}>
+              Works for<br />every industry.
+            </h2>
+            <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 14, lineHeight: 1.7 }}>
+              From salons to clinics, fitness studios to consultants — AutoFlow adapts to your business.
+            </p>
+          </FadeIn>
+
+          <div style={{ flex: 1 }}>
+            <div className="industry-grid" style={{
+              display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12,
+            }}>
+              {[
+                {
+                  title: "Beauty & Salon",
+                  desc: "Hair, nails, spa and more",
+                  icon: (
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <circle cx="6" cy="6" r="3" />
+                      <circle cx="6" cy="18" r="3" />
+                      <line x1="20" y1="4" x2="8.12" y2="15.88" />
+                      <line x1="14.47" y1="14.48" x2="20" y2="20" />
+                      <line x1="8.12" y1="8.12" x2="12" y2="12" />
+                    </svg>
+                  ),
+                },
+                {
+                  title: "Health & Wellness",
+                  desc: "Clinics, dental, therapy",
+                  icon: (
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M9 3H15V9H21V15H15V21H9V15H3V9H9V3Z" />
+                    </svg>
+                  ),
+                },
+                {
+                  title: "Education",
+                  desc: "Tutoring, training, workshops",
+                  icon: (
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                      <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" />
+                    </svg>
+                  ),
+                },
+                {
+                  title: "Fitness & Sports",
+                  desc: "Gyms, personal training",
+                  icon: (
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M6 5v14M18 5v14" />
+                      <path d="M2 9v6M22 9v6" />
+                      <line x1="6" y1="12" x2="18" y2="12" />
+                    </svg>
+                  ),
+                },
+                {
+                  title: "Professional Services",
+                  desc: "Consultations, coaching, and more",
+                  icon: (
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                    </svg>
+                  ),
+                },
+              ].map((ind, i) => (
+                <FadeIn key={i} delay={i * 60}>
+                  <div style={{
+                    background: "rgba(255,255,255,0.03)",
+                    border: "1px solid rgba(20,184,166,0.1)",
+                    borderRadius: 16, padding: "20px 14px",
+                    textAlign: "center",
+                    transition: "background 0.2s, border-color 0.2s",
+                    cursor: "default",
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(20,184,166,0.06)"; e.currentTarget.style.borderColor = "rgba(20,184,166,0.25)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.borderColor = "rgba(20,184,166,0.1)"; }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>{ind.icon}</div>
+                    <div style={{ color: "white", fontWeight: 700, fontSize: 13, marginBottom: 6 }}>{ind.title}</div>
+                    <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, lineHeight: 1.5 }}>{ind.desc}</div>
+                  </div>
+                </FadeIn>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Calculator ── */}
+      <section id="calculator" style={{ background: SECTION_ALT, padding: "96px 24px" }}>
+        <div style={{ maxWidth: 1160, margin: "0 auto" }}>
+          <div className="calc-grid" style={{ display: "flex", gap: 60, alignItems: "center", flexWrap: "wrap" }}>
+            <FadeIn style={{ flex: "1 1 300px" }}>
+              <div style={{ color: "#14B8A6", fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 16 }}>
+                CALCULATOR
+              </div>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 24 }}>
+                <div style={{
+                  width: 52, height: 52, borderRadius: 14, flexShrink: 0,
+                  background: "rgba(20,184,166,0.1)",
+                  border: "1px solid rgba(20,184,166,0.2)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-label="Chart">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                  </svg>
+                </div>
+                <h2 style={{
+                  fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)",
+                  fontWeight: 900, color: "white", letterSpacing: -0.8, lineHeight: 1.1,
+                }}>
+                  See how much<br />time you can save.
+                </h2>
+              </div>
+              <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 14, lineHeight: 1.7 }}>
+                Fewer manual tasks. More time for what matters.
+              </p>
+            </FadeIn>
+
+            <FadeIn delay={120} style={{ flex: "1 1 400px" }}>
+              <SavingsCalculator />
+            </FadeIn>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Pricing ── */}
+      <section id="pricing" style={{ padding: "96px 24px" }}>
+        <div style={{ maxWidth: 1160, margin: "0 auto" }}>
+          <FadeIn>
+            <div style={{ textAlign: "center", marginBottom: 60 }}>
+              <div style={{ color: "#14B8A6", fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>
+                PRICING
+              </div>
+              <h2 style={{
+                fontSize: "clamp(1.8rem, 4vw, 2.8rem)",
+                fontWeight: 900, color: "white", letterSpacing: -1, marginBottom: 14,
+              }}>
+                Simple, transparent pricing.
+              </h2>
+              <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 16 }}>
+                Choose the plan that fits your business.
+              </p>
+            </div>
+          </FadeIn>
+
+          <div className="pricing-grid" style={{ display: "flex", gap: 20, justifyContent: "center", alignItems: "stretch", flexWrap: "wrap" }}>
+            {[
+              {
+                name: "Starter", sub: "Start booking", price: "49", popular: false,
+                features: ["Booking page", "Automated confirmations", "Email support"],
+              },
+              {
+                name: "Professional", sub: "Automate more", price: "99", popular: true,
+                features: ["Everything in Starter", "Custom branding", "Advanced reminders", "Priority support"],
+              },
+              {
+                name: "Business", sub: "Scale your flow", price: "199", popular: false,
+                features: ["Everything in Professional", "Multiple locations", "Team access", "Advanced customization"],
+              },
+            ].map((plan, i) => (
+              <FadeIn key={i} delay={i * 80} style={{ flex: "1 1 260px", maxWidth: 320 }}>
+                <div className="pricing-card" style={{
+                  background: plan.popular ? "rgba(20,184,166,0.07)" : "rgba(255,255,255,0.03)",
+                  border: `1px solid ${plan.popular ? "rgba(20,184,166,0.4)" : "rgba(255,255,255,0.07)"}`,
+                  borderRadius: 20, padding: "28px 24px 28px",
+                  height: "100%", display: "flex", flexDirection: "column",
+                  position: "relative", overflow: "hidden",
+                }}>
+                  {plan.popular && (
+                    <div style={{
+                      position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
+                      background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+                      color: "white", fontSize: 11, fontWeight: 700, letterSpacing: 0.5,
+                      padding: "4px 18px", borderRadius: "0 0 10px 10px",
+                    }}>MOST POPULAR</div>
+                  )}
+
+                  <div style={{ marginTop: plan.popular ? 16 : 0, marginBottom: 20 }}>
+                    <div style={{ color: "white", fontWeight: 800, fontSize: 18, marginBottom: 2 }}>{plan.name}</div>
+                    <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>{plan.sub}</div>
+                  </div>
+
+                  <div style={{ marginBottom: 24 }}>
+                    <span style={{ color: "white", fontSize: 42, fontWeight: 900, letterSpacing: -1.5 }}>
+                      AED {plan.price}
+                    </span>
+                    <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 14, marginLeft: 4 }}>/month</span>
+                  </div>
+
+                  <ul style={{ listStyle: "none", marginBottom: 28, flex: 1 }}>
+                    {plan.features.map((f, fi) => (
+                      <li key={fi} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                        <div style={{
+                          width: 18, height: 18, borderRadius: 9, flexShrink: 0,
+                          background: plan.popular ? "rgba(20,184,166,0.2)" : "rgba(255,255,255,0.08)",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                        }}>
+                          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                            <polyline points="2 6 5 9 10 3" stroke={plan.popular ? "#14B8A6" : "rgba(255,255,255,0.5)"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </div>
+                        <span style={{ color: "rgba(255,255,255,0.65)", fontSize: 13 }}>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <a href={DASHBOARD_URL} style={{
+                    display: "block", textAlign: "center",
+                    background: plan.popular ? "linear-gradient(135deg, #0D9488, #14B8A6)" : "rgba(255,255,255,0.07)",
+                    border: plan.popular ? "none" : "1px solid rgba(255,255,255,0.12)",
+                    color: "white", padding: "13px",
+                    borderRadius: 12, textDecoration: "none",
+                    fontWeight: 700, fontSize: 14,
+                    boxShadow: plan.popular ? "0 6px 24px rgba(13,148,136,0.35)" : "none",
+                    transition: "all 0.2s ease",
+                  }}
+                    onMouseEnter={e => {
+                      if (plan.popular) { e.currentTarget.style.boxShadow = "0 10px 36px rgba(13,148,136,0.5)"; e.currentTarget.style.transform = "translateY(-1px)"; }
+                      else e.currentTarget.style.background = "rgba(255,255,255,0.12)";
+                    }}
+                    onMouseLeave={e => {
+                      if (plan.popular) { e.currentTarget.style.boxShadow = "0 6px 24px rgba(13,148,136,0.35)"; e.currentTarget.style.transform = ""; }
+                      else e.currentTarget.style.background = "rgba(255,255,255,0.07)";
+                    }}
+                  >
+                    Get Started
+                  </a>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Security ── */}
+      <section style={{ background: SECTION_ALT, padding: "80px 24px" }}>
+        <div style={{ maxWidth: 1160, margin: "0 auto" }}>
+          <FadeIn>
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              flexWrap: "wrap", gap: 40,
+              borderTop: "1px solid rgba(20,184,166,0.1)",
+              paddingTop: 60,
+            }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 24, flex: "1 1 400px" }}>
+                <div style={{
+                  width: 56, height: 56, borderRadius: 16, flexShrink: 0,
+                  background: "rgba(20,184,166,0.1)",
+                  border: "1px solid rgba(20,184,166,0.2)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-label="Security">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                </div>
+                <div>
+                  <div style={{ color: "#14B8A6", fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>
+                    SECURITY &amp; YOUR DATA
+                  </div>
+                  <h2 style={{ color: "white", fontWeight: 900, fontSize: "clamp(1.4rem, 3vw, 2rem)", letterSpacing: -0.5, marginBottom: 10 }}>
+                    Your data stays yours.
+                  </h2>
+                  <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 14, lineHeight: 1.7 }}>
+                    Designed with data separation in mind. Your business data is isolated and secure.
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ flex: "0 0 auto", textAlign: "center" }}>
+                <div style={{ color: "#14B8A6", fontWeight: 900, fontSize: "clamp(1.2rem, 2.5vw, 1.6rem)", letterSpacing: -0.3, marginBottom: 6 }}>
+                  Simple. Secure. Reliable.
+                </div>
+                <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>
+                  Built for businesses that value their customers.
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* ── Footer ── */}
+      <footer style={{ padding: "60px 24px 40px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ maxWidth: 1160, margin: "0 auto" }}>
+          <div className="footer-grid" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 48, gap: 40, flexWrap: "wrap" }}>
+            <div>
+              <a href="#" aria-label="AutoFlow home" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                <AutoFlowMark size={32} animated={false} />
+                <span style={{ color: "white", fontWeight: 800, fontSize: 16 }}>Auto<span style={{ color: "#14B8A6" }}>Flow</span></span>
+              </a>
+              <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, letterSpacing: 2, textTransform: "uppercase" }}>
+                Book · Automate · Grow
+              </p>
+            </div>
+
+            {/* Nav */}
+            <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
+              {navLinks.map(l => (
+                <a key={l.href} href={l.href} className="nav-link" style={{ fontSize: 13 }}>{l.label}</a>
+              ))}
+            </div>
+          </div>
+
           <div style={{
-            width: 32, height: 32, borderRadius: 8,
-            background: "linear-gradient(135deg, #0D9488, #14B8A6)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "white", fontWeight: 900, fontSize: 15,
-          }}>A</div>
-          <span style={{ fontWeight: 900, fontSize: 17, color: "white" }}>AutoFlow</span>
+            borderTop: "1px solid rgba(255,255,255,0.05)",
+            paddingTop: 24,
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            flexWrap: "wrap", gap: 12,
+          }}>
+            <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase" }}>
+              SAME BUSINESS. MORE TIME. A BRIGHTER TOMORROW.
+            </p>
+            <p style={{ color: "rgba(255,255,255,0.25)", fontSize: 12 }}>
+              © 2026 AutoFlow. All rights reserved.
+            </p>
+          </div>
         </div>
-        <div style={{ display: "flex", justifyContent: "center", gap: 20, marginBottom: 16 }}>
-          <a href="#pricing" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Pricing</a>
-          <a href="#quote" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Get a Quote</a>
-          <a href={DASHBOARD_URL} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Log in</a>
-        </div>
-        <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, marginBottom: 6 }}>
-          Automation services for businesses in the UAE
-        </div>
-        <div style={{ color: "rgba(255,255,255,0.2)", fontSize: 12 }}>© 2026 AutoFlow. All rights reserved.</div>
       </footer>
     </div>
   );
