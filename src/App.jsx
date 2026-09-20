@@ -54,89 +54,95 @@ function FadeIn({ children, delay = 0, style = {} }) {
 /*
  * ─── Flow-A Logo — Concept 01: "Modern Flow" ────────────────────────────
  *
- * Geometry:
- *   The mark is a custom A constructed from two thick angled strokes that
- *   converge at an apex, plus a crossbar.  The right leg extends past the
- *   baseline and bends forward into an arrowhead, communicating movement /
- *   automation / flow.  There is NO background rectangle or rounded-square
- *   container — the mark stands alone.
+ * Design brief:
+ *   A custom letterform A where the RIGHT LEG does not stop at the
+ *   baseline — it extends past the foot, bends forward-right, and
+ *   terminates as an integrated arrowhead.  This communicates forward
+ *   motion / flow / automation as part of the letterform itself.
  *
- *   ViewBox 40 × 36 keeps the arrow fully inside while giving the A a
- *   natural proportion at any size from 24 px upward.
+ * Geometry (viewBox 44 × 38):
  *
- *   Path breakdown (all coords in the 40 × 36 viewBox):
- *     Left leg  : M 4,34  L 20,3
- *     Right leg : M 36,34  L 20,3  — then continues to arrow tip
- *     Arrow tip : from (36,34) → forward-right to (40,30), then arrowhead
- *     Crossbar  : M 11.5,22  L 28.5,22
+ *   LEFT LEG  : M 2,36  L 19,3          — angled stroke, left side
+ *   CROSSBAR  : M 10,23 L 30,23         — horizontal bar ~60% up
+ *   RIGHT LEG : M 19,3  L 33,34         — angled stroke, right side
+ *   EXTENSION : L 40,28                 — right leg bends forward-right
+ *   ARROWHEAD : ← two short strokes closing the arrowhead at (40,28)
+ *                 up-back:   M 40,28 L 34,22
+ *                 down-back: M 40,28 L 36,35
  *
- *   Gradient: teal #0BBFB8 → cyan #14E8D4  (left-to-right).
+ * The arrowhead is PART OF the right leg path, not a separate element.
+ * The gradient runs left→right so the arrow tip glows brightest.
+ *
+ * No background shape, no rounded-square container.
+ * Works at 24 px through 200 px.
  */
-function FlowALogo({ size = 34 }) {
-  /* Each instance needs a unique gradient id to avoid SVG id collisions
-     when the logo appears multiple times on the page.                   */
+function FlowALogo({ size = 34, white = false }) {
   const uid = useRef(`fg-${Math.random().toString(36).slice(2, 7)}`);
   const gid = uid.current;
+
+  const stroke = white ? "white" : `url(#${gid})`;
 
   return (
     <svg
       width={size}
-      height={Math.round(size * 36 / 40)}
-      viewBox="0 0 40 36"
+      height={Math.round(size * 38 / 44)}
+      viewBox="0 0 44 38"
       fill="none"
       aria-hidden="true"
       style={{ display: "block", flexShrink: 0 }}
     >
-      <defs>
-        <linearGradient id={gid} x1="0" y1="18" x2="40" y2="18" gradientUnits="userSpaceOnUse">
-          <stop offset="0%"   stopColor="#0BBFB8" />
-          <stop offset="100%" stopColor="#14E8D4" />
-        </linearGradient>
-      </defs>
+      {!white && (
+        <defs>
+          <linearGradient id={gid} x1="0" y1="19" x2="44" y2="19" gradientUnits="userSpaceOnUse">
+            <stop offset="0%"   stopColor="#0BBFB8" />
+            <stop offset="100%" stopColor="#14E8D4" />
+          </linearGradient>
+        </defs>
+      )}
 
-      {/* Left leg of the A */}
+      {/* Left leg */}
       <line
-        x1="4"  y1="34"
-        x2="20" y2="3"
-        stroke={`url(#${gid})`}
-        strokeWidth="3.2"
+        x1="2"  y1="36"
+        x2="19" y2="3"
+        stroke={stroke}
+        strokeWidth="3.4"
         strokeLinecap="round"
-      />
-
-      {/*
-       * Right leg of the A — drawn as a path so we can:
-       *   1. go from apex (20,3) down to the base (34,34)
-       *   2. continue as a slight curve that forms the forward arrow tip
-       *
-       * The arrow: from (34,34) the stroke curves forward then terminates;
-       * a small arrowhead (two short strokes) marks the tip at ~(40,31).
-       */}
-      <path
-        d="M 20,3 L 34,34 L 40,28"
-        stroke={`url(#${gid})`}
-        strokeWidth="3.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-
-      {/* Arrowhead on the forward tip */}
-      <path
-        d="M 33,27 L 40,28 L 36,34"
-        stroke={`url(#${gid})`}
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
       />
 
       {/* Crossbar */}
       <line
-        x1="11.5" y1="22"
-        x2="28.5" y2="22"
-        stroke={`url(#${gid})`}
+        x1="10" y1="23"
+        x2="30" y2="23"
+        stroke={stroke}
         strokeWidth="3.0"
         strokeLinecap="round"
+      />
+
+      {/*
+       * Right leg → extension → arrowhead tip.
+       * Single continuous path:
+       *   apex (19,3) → foot (33,34) → arrow tip (40,27)
+       *
+       * Then the two arrowhead feathers back from (40,27):
+       *   up-feather  : (40,27) → (33,21)
+       *   down-feather: (40,27) → (37,35)
+       */}
+      <path
+        d="M 19,3 L 33,34 L 40,27"
+        stroke={stroke}
+        strokeWidth="3.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+      {/* Arrowhead feathers — slightly thinner so they read as the tip */}
+      <path
+        d="M 33,21 L 40,27 L 37,35"
+        stroke={stroke}
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
       />
     </svg>
   );
@@ -247,32 +253,38 @@ function PhoneMockup() {
     },
   ];
 
+  /*
+   * Layout: a 3-column grid
+   *   col 1 (flex): phone body
+   *   col 2 (fixed 200px): sidebar cards
+   *   col 3 (fixed 160px): annotation — occupies the top of this column;
+   *                         the column is tall enough that the annotation
+   *                         sits clearly above the card group.
+   *
+   * The annotation column is to the RIGHT of the cards column.
+   * A curved dashed arrow exits the annotation text and curves
+   * down-left, pointing toward the phone.
+   *
+   * On narrow screens the entire PhoneMockup is hidden via CSS
+   * (.hero-phone display:none at < 900px) so no collision at mobile.
+   */
   return (
-    /*
-     * Outer wrapper uses a fixed height so the annotation can be
-     * absolutely positioned above-right without colliding with the
-     * sidebar cards.  The annotation lives in its own column of space
-     * to the right of the phone; the sidebar cards are below it.
-     *
-     * Layout sketch (not to scale):
-     *
-     *   [ annotation + arrow ]   ←  top-right of wrapper, above cards
-     *         ↓ (curved arrow points toward phone)
-     *   [  phone  ]  [ card 1 ]
-     *                [ card 2 ]
-     *                [ card 3 ]
-     */
-    <div style={{ position: "relative", display: "flex", justifyContent: "center", minHeight: 520 }}>
-      {/* Ambient glow */}
+    <div style={{
+      position: "relative",
+      display: "flex",
+      alignItems: "flex-start",
+      gap: 20,
+    }}>
+      {/* Ambient glow — behind phone */}
       <div aria-hidden="true" style={{
-        position: "absolute", top: "50%", left: "50%",
-        transform: "translate(-50%,-50%)",
-        width: 340, height: 460, borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(20,184,166,0.22) 0%, transparent 68%)",
-        filter: "blur(48px)", zIndex: 0, pointerEvents: "none",
+        position: "absolute",
+        top: "30%", left: 80,
+        width: 300, height: 380, borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(20,184,166,0.20) 0%, transparent 68%)",
+        filter: "blur(44px)", zIndex: 0, pointerEvents: "none",
       }} />
 
-      {/* Phone */}
+      {/* ── Phone ── */}
       <div style={{
         position: "relative", zIndex: 1,
         width: 248,
@@ -280,8 +292,7 @@ function PhoneMockup() {
         borderRadius: 38,
         padding: "10px 8px 8px",
         boxShadow: "0 32px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.07), inset 0 1px 0 rgba(255,255,255,0.05)",
-        alignSelf: "flex-start",
-        marginTop: 56,   /* push phone down so annotation has clear space above */
+        flexShrink: 0,
       }}>
         {/* Notch */}
         <div style={{ width: 72, height: 5, background: "#222", borderRadius: 3, margin: "0 auto 8px" }} />
@@ -293,7 +304,6 @@ function PhoneMockup() {
           display: "flex", alignItems: "center", gap: 10,
           borderBottom: "1px solid rgba(20,184,166,0.12)",
         }}>
-          {/* Small Flow-A mark instead of plain letter */}
           <div style={{
             width: 34, height: 34, borderRadius: 17,
             background: "linear-gradient(135deg, #0c1a24, #142030)",
@@ -429,102 +439,106 @@ function PhoneMockup() {
         </div>
       </div>
 
-      {/*
-       * ── Handwritten annotation ──────────────────────────────────────
-       * Sits in the upper-right area, well clear of the sidebar cards.
-       * The curved SVG arrow points down-left toward the phone body.
-       * Positioned using absolute coordinates relative to the outer
-       * wrapper (minHeight 520, phone starts at marginTop 56).
-       */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          top: 0,          /* top of wrapper — above the phone */
-          right: -50,      /* right side, past the sidebar card column */
-          width: 180,
-          pointerEvents: "none",
-          zIndex: 4,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        {/* Annotation text first, arrow below pointing toward phone */}
-        <div style={{
-          fontFamily: "'Segoe Script', 'Brush Script MT', 'Comic Sans MS', cursive",
-          color: "#14B8A6",
-          fontSize: 13,
-          lineHeight: 1.4,
-          textAlign: "center",
-          opacity: 0.9,
-          fontStyle: "italic",
-          marginBottom: 6,
-          whiteSpace: "nowrap",
-        }}>
-          It just works<br />in the background.
-        </div>
-
-        {/*
-         * Curved arrow: starts top-right, curves down-left, tip points
-         * toward the phone (lower-left relative to annotation).
-         * ViewBox: 90 × 70, arrow tip lands around (10, 62).
-         */}
-        <svg
-          width="90"
-          height="70"
-          viewBox="0 0 90 70"
-          fill="none"
-          style={{ display: "block" }}
-        >
-          <path
-            d="M 78,6 C 78,30 40,40 12,62"
-            stroke="#14B8A6"
-            strokeWidth="1.6"
-            fill="none"
-            strokeDasharray="4 3"
-            strokeLinecap="round"
-          />
-          {/* Arrowhead at tip (12, 62) */}
-          <path
-            d="M 12,62 L 6,54 M 12,62 L 20,57"
-            stroke="#14B8A6"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
-        </svg>
-      </div>
-
-      {/* Floating sidebar cards — teal SVG line icons */}
+      {/* ── Right column: cards + annotation ── */}
       <div style={{
-        position: "absolute",
-        right: -160,
-        top: 110,   /* below annotation — clear vertical separation */
-        display: "flex", flexDirection: "column", gap: 10,
+        display: "flex",
+        flexDirection: "column",
+        gap: 0,
+        alignItems: "flex-start",
+        position: "relative",
         zIndex: 2,
       }}>
-        {sidebarCards.map((c, i) => (
-          <div key={i} style={{
-            background: "rgba(13,20,30,0.85)",
-            backdropFilter: "blur(12px)",
-            border: "1px solid rgba(20,184,166,0.15)",
-            borderRadius: 12,
-            padding: "10px 14px",
-            width: 180,
-            display: "flex", alignItems: "flex-start", gap: 10,
-            boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+
+        {/*
+         * Annotation block — sits at the TOP of this column, above the
+         * cards. It has its own clear vertical space (~120px) before the
+         * first card begins.
+         *
+         * The annotation text is in the top-right area.
+         * The curved dashed arrow exits from the bottom-left of the
+         * annotation SVG, curves down and to the LEFT, with the
+         * arrowhead pointing toward the phone body.
+         */}
+        <div
+          aria-hidden="true"
+          style={{
+            marginBottom: 28,
+            paddingLeft: 10,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",   /* push text to the right */
+            width: 190,
+          }}
+        >
+          {/* Annotation text */}
+          <div style={{
+            fontFamily: "'Segoe Script', 'Brush Script MT', 'Comic Sans MS', cursive",
+            color: "#14B8A6",
+            fontSize: 13,
+            lineHeight: 1.5,
+            textAlign: "right",
+            opacity: 0.9,
+            fontStyle: "italic",
+            marginBottom: 2,
           }}>
-            <div style={{
-              width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-              background: `${c.color}22`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>{c.icon}</div>
-            <div>
-              <div style={{ color: "white", fontSize: 11, fontWeight: 700, marginBottom: 2 }}>{c.label}</div>
-              <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 9, lineHeight: 1.4 }}>{c.sub}</div>
-            </div>
+            It just works<br />in the background.
           </div>
-        ))}
+
+          {/*
+           * Curved arrow: starts near (110,4) — under the text, right side —
+           * curves down-left to tip at (8,72) — pointing toward the phone.
+           * ViewBox 120 × 80.
+           */}
+          <svg
+            width="120"
+            height="80"
+            viewBox="0 0 120 80"
+            fill="none"
+            style={{ display: "block", marginTop: -2 }}
+          >
+            <path
+              d="M 108,6 C 90,20 60,30 20,68"
+              stroke="#14B8A6"
+              strokeWidth="1.5"
+              fill="none"
+              strokeDasharray="4 3"
+              strokeLinecap="round"
+            />
+            {/* Arrowhead at tip (20,68) pointing down-left */}
+            <path
+              d="M 20,68 L 10,60 M 20,68 L 27,58"
+              stroke="#14B8A6"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </div>
+
+        {/* ── Sidebar cards — below annotation ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {sidebarCards.map((c, i) => (
+            <div key={i} style={{
+              background: "rgba(13,20,30,0.85)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(20,184,166,0.15)",
+              borderRadius: 12,
+              padding: "10px 14px",
+              width: 190,
+              display: "flex", alignItems: "flex-start", gap: 10,
+              boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
+            }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+                background: `${c.color}22`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>{c.icon}</div>
+              <div>
+                <div style={{ color: "white", fontSize: 11, fontWeight: 700, marginBottom: 2 }}>{c.label}</div>
+                <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 9, lineHeight: 1.4 }}>{c.sub}</div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -706,7 +720,8 @@ export default function App() {
           height: 64,
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          <a href="#" aria-label="AutoFlow home" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 12 }}>
+          {/* Logo: Flow-A mark + wordmark */}
+          <a href="#" aria-label="AutoFlow home" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
             <FlowALogo size={36} />
             <div>
               <div style={{ color: "white", fontWeight: 800, fontSize: 17, letterSpacing: -0.5, lineHeight: 1.1 }}>
@@ -841,7 +856,7 @@ export default function App() {
           </div>
 
           {/* Right — phone */}
-          <div className="hero-phone" style={{ flex: "0 0 auto", paddingRight: 220 }}>
+          <div className="hero-phone" style={{ flex: "0 0 auto" }}>
             <FadeIn delay={180}>
               <PhoneMockup />
             </FadeIn>
@@ -962,15 +977,7 @@ export default function App() {
                           boxShadow: s.isLogo ? "0 8px 28px rgba(13,148,136,0.4)" : "none",
                         }}>
                           {s.isLogo
-                            ? (
-                              /* Flow-A mark on teal background — white strokes */
-                              <svg width="30" height="27" viewBox="0 0 40 36" fill="none" aria-hidden="true">
-                                <line x1="4" y1="34" x2="20" y2="3" stroke="white" strokeWidth="3.2" strokeLinecap="round" />
-                                <path d="M 20,3 L 34,34 L 40,28" stroke="white" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                                <path d="M 33,27 L 40,28 L 36,34" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                                <line x1="11.5" y1="22" x2="28.5" y2="22" stroke="white" strokeWidth="3.0" strokeLinecap="round" />
-                              </svg>
-                            )
+                            ? <FlowALogo size={30} white={true} />
                             : s.icon
                           }
                         </div>
