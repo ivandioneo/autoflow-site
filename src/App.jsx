@@ -51,27 +51,92 @@ function FadeIn({ children, delay = 0, style = {} }) {
   );
 }
 
-/* ─── Flow-A Logo SVG (triangle / forward-arrow mark) ───────────────── */
+/*
+ * ─── Flow-A Logo — Concept 01: "Modern Flow" ────────────────────────────
+ *
+ * Geometry:
+ *   The mark is a custom A constructed from two thick angled strokes that
+ *   converge at an apex, plus a crossbar.  The right leg extends past the
+ *   baseline and bends forward into an arrowhead, communicating movement /
+ *   automation / flow.  There is NO background rectangle or rounded-square
+ *   container — the mark stands alone.
+ *
+ *   ViewBox 40 × 36 keeps the arrow fully inside while giving the A a
+ *   natural proportion at any size from 24 px upward.
+ *
+ *   Path breakdown (all coords in the 40 × 36 viewBox):
+ *     Left leg  : M 4,34  L 20,3
+ *     Right leg : M 36,34  L 20,3  — then continues to arrow tip
+ *     Arrow tip : from (36,34) → forward-right to (40,30), then arrowhead
+ *     Crossbar  : M 11.5,22  L 28.5,22
+ *
+ *   Gradient: teal #0BBFB8 → cyan #14E8D4  (left-to-right).
+ */
 function FlowALogo({ size = 34 }) {
-  const id = `flowA-${size}`;
+  /* Each instance needs a unique gradient id to avoid SVG id collisions
+     when the logo appears multiple times on the page.                   */
+  const uid = useRef(`fg-${Math.random().toString(36).slice(2, 7)}`);
+  const gid = uid.current;
+
   return (
-    <svg width={size} height={size} viewBox="0 0 34 34" fill="none" aria-hidden="true">
+    <svg
+      width={size}
+      height={Math.round(size * 36 / 40)}
+      viewBox="0 0 40 36"
+      fill="none"
+      aria-hidden="true"
+      style={{ display: "block", flexShrink: 0 }}
+    >
       <defs>
-        <linearGradient id={id} x1="0" y1="0" x2="34" y2="34" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#0D9488" />
-          <stop offset="100%" stopColor="#14B8A6" />
+        <linearGradient id={gid} x1="0" y1="18" x2="40" y2="18" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"   stopColor="#0BBFB8" />
+          <stop offset="100%" stopColor="#14E8D4" />
         </linearGradient>
       </defs>
-      {/* Teal rounded-square background */}
-      <rect width="34" height="34" rx="8" fill={`url(#${id})`} />
-      {/* Forward-arrow / Flow-A triangle mark */}
-      <path
-        d="M9 25 L17 9 L25 25"
-        stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none"
+
+      {/* Left leg of the A */}
+      <line
+        x1="4"  y1="34"
+        x2="20" y2="3"
+        stroke={`url(#${gid})`}
+        strokeWidth="3.2"
+        strokeLinecap="round"
       />
+
+      {/*
+       * Right leg of the A — drawn as a path so we can:
+       *   1. go from apex (20,3) down to the base (34,34)
+       *   2. continue as a slight curve that forms the forward arrow tip
+       *
+       * The arrow: from (34,34) the stroke curves forward then terminates;
+       * a small arrowhead (two short strokes) marks the tip at ~(40,31).
+       */}
       <path
-        d="M12 20 L22 20"
-        stroke="white" strokeWidth="2.4" strokeLinecap="round"
+        d="M 20,3 L 34,34 L 40,28"
+        stroke={`url(#${gid})`}
+        strokeWidth="3.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+
+      {/* Arrowhead on the forward tip */}
+      <path
+        d="M 33,27 L 40,28 L 36,34"
+        stroke={`url(#${gid})`}
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+
+      {/* Crossbar */}
+      <line
+        x1="11.5" y1="22"
+        x2="28.5" y2="22"
+        stroke={`url(#${gid})`}
+        strokeWidth="3.0"
+        strokeLinecap="round"
       />
     </svg>
   );
@@ -147,14 +212,12 @@ function PhoneMockup() {
 
   const confirmed = step === 4;
 
-  /* Sidebar card icon definitions — teal SVG line icons */
   const sidebarCards = [
     {
       color: "#10B981",
       label: "Booking confirmed",
       sub: "Customer receives instant confirmation",
       icon: (
-        /* Checkmark circle */
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <polyline points="20 6 9 17 4 12" />
         </svg>
@@ -165,7 +228,6 @@ function PhoneMockup() {
       label: "Automatic reminders",
       sub: "We handle the follow-ups",
       icon: (
-        /* Bell */
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
           <path d="M13.73 21a2 2 0 0 1-3.46 0" />
@@ -177,7 +239,6 @@ function PhoneMockup() {
       label: "You get more customers",
       sub: "Less no-shows, more revenue",
       icon: (
-        /* Trending up */
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
           <polyline points="17 6 23 6 23 12" />
@@ -187,7 +248,21 @@ function PhoneMockup() {
   ];
 
   return (
-    <div style={{ position: "relative", display: "flex", justifyContent: "center" }}>
+    /*
+     * Outer wrapper uses a fixed height so the annotation can be
+     * absolutely positioned above-right without colliding with the
+     * sidebar cards.  The annotation lives in its own column of space
+     * to the right of the phone; the sidebar cards are below it.
+     *
+     * Layout sketch (not to scale):
+     *
+     *   [ annotation + arrow ]   ←  top-right of wrapper, above cards
+     *         ↓ (curved arrow points toward phone)
+     *   [  phone  ]  [ card 1 ]
+     *                [ card 2 ]
+     *                [ card 3 ]
+     */
+    <div style={{ position: "relative", display: "flex", justifyContent: "center", minHeight: 520 }}>
       {/* Ambient glow */}
       <div aria-hidden="true" style={{
         position: "absolute", top: "50%", left: "50%",
@@ -205,6 +280,8 @@ function PhoneMockup() {
         borderRadius: 38,
         padding: "10px 8px 8px",
         boxShadow: "0 32px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.07), inset 0 1px 0 rgba(255,255,255,0.05)",
+        alignSelf: "flex-start",
+        marginTop: 56,   /* push phone down so annotation has clear space above */
       }}>
         {/* Notch */}
         <div style={{ width: 72, height: 5, background: "#222", borderRadius: 3, margin: "0 auto 8px" }} />
@@ -216,13 +293,17 @@ function PhoneMockup() {
           display: "flex", alignItems: "center", gap: 10,
           borderBottom: "1px solid rgba(20,184,166,0.12)",
         }}>
+          {/* Small Flow-A mark instead of plain letter */}
           <div style={{
             width: 34, height: 34, borderRadius: 17,
-            background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+            background: "linear-gradient(135deg, #0c1a24, #142030)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            color: "white", fontWeight: 900, fontSize: 15, flexShrink: 0,
+            flexShrink: 0,
             boxShadow: "0 4px 12px rgba(13,148,136,0.4)",
-          }}>A</div>
+            border: "1px solid rgba(20,184,166,0.25)",
+          }}>
+            <FlowALogo size={22} />
+          </div>
           <div>
             <div style={{ color: "white", fontWeight: 700, fontSize: 13, letterSpacing: -0.2 }}>GlowCuts Salon</div>
             <div style={{ color: "#14B8A6", fontSize: 10, fontWeight: 500 }}>Book an appointment</div>
@@ -348,9 +429,77 @@ function PhoneMockup() {
         </div>
       </div>
 
+      {/*
+       * ── Handwritten annotation ──────────────────────────────────────
+       * Sits in the upper-right area, well clear of the sidebar cards.
+       * The curved SVG arrow points down-left toward the phone body.
+       * Positioned using absolute coordinates relative to the outer
+       * wrapper (minHeight 520, phone starts at marginTop 56).
+       */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          top: 0,          /* top of wrapper — above the phone */
+          right: -50,      /* right side, past the sidebar card column */
+          width: 180,
+          pointerEvents: "none",
+          zIndex: 4,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        {/* Annotation text first, arrow below pointing toward phone */}
+        <div style={{
+          fontFamily: "'Segoe Script', 'Brush Script MT', 'Comic Sans MS', cursive",
+          color: "#14B8A6",
+          fontSize: 13,
+          lineHeight: 1.4,
+          textAlign: "center",
+          opacity: 0.9,
+          fontStyle: "italic",
+          marginBottom: 6,
+          whiteSpace: "nowrap",
+        }}>
+          It just works<br />in the background.
+        </div>
+
+        {/*
+         * Curved arrow: starts top-right, curves down-left, tip points
+         * toward the phone (lower-left relative to annotation).
+         * ViewBox: 90 × 70, arrow tip lands around (10, 62).
+         */}
+        <svg
+          width="90"
+          height="70"
+          viewBox="0 0 90 70"
+          fill="none"
+          style={{ display: "block" }}
+        >
+          <path
+            d="M 78,6 C 78,30 40,40 12,62"
+            stroke="#14B8A6"
+            strokeWidth="1.6"
+            fill="none"
+            strokeDasharray="4 3"
+            strokeLinecap="round"
+          />
+          {/* Arrowhead at tip (12, 62) */}
+          <path
+            d="M 12,62 L 6,54 M 12,62 L 20,57"
+            stroke="#14B8A6"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
+
       {/* Floating sidebar cards — teal SVG line icons */}
       <div style={{
-        position: "absolute", right: -160, top: 60,
+        position: "absolute",
+        right: -160,
+        top: 110,   /* below annotation — clear vertical separation */
         display: "flex", flexDirection: "column", gap: 10,
         zIndex: 2,
       }}>
@@ -376,39 +525,6 @@ function PhoneMockup() {
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Handwritten annotation: "It just works in the background." */}
-      <div aria-hidden="true" style={{
-        position: "absolute",
-        top: 20,
-        right: -220,
-        width: 160,
-        pointerEvents: "none",
-        zIndex: 3,
-      }}>
-        {/* Curved arrow SVG */}
-        <svg width="80" height="60" viewBox="0 0 80 60" fill="none" style={{ display: "block", marginLeft: 40 }}>
-          <path
-            d="M70 8 C60 8, 20 10, 10 48"
-            stroke="#14B8A6" strokeWidth="1.6" fill="none"
-            strokeDasharray="4 3"
-            strokeLinecap="round"
-          />
-          <path d="M10 48 L7 40 M10 48 L17 44" stroke="#14B8A6" strokeWidth="1.6" strokeLinecap="round" />
-        </svg>
-        <div style={{
-          fontFamily: "'Segoe Script', 'Brush Script MT', 'Comic Sans MS', cursive",
-          color: "#14B8A6",
-          fontSize: 13,
-          lineHeight: 1.35,
-          textAlign: "center",
-          marginTop: -8,
-          opacity: 0.92,
-          fontStyle: "italic",
-        }}>
-          It just works<br />in the background.
-        </div>
       </div>
     </div>
   );
@@ -590,8 +706,8 @@ export default function App() {
           height: 64,
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          <a href="#" aria-label="AutoFlow home" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
-            <FlowALogo size={34} />
+          <a href="#" aria-label="AutoFlow home" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 12 }}>
+            <FlowALogo size={36} />
             <div>
               <div style={{ color: "white", fontWeight: 800, fontSize: 17, letterSpacing: -0.5, lineHeight: 1.1 }}>
                 Auto<span style={{ color: "#14B8A6" }}>Flow</span>
@@ -684,10 +800,9 @@ export default function App() {
               </div>
             </FadeIn>
 
-            {/* Hero trust icons — teal SVG line icons */}
+            {/* Hero trust icons */}
             <FadeIn delay={260}>
               <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
-                {/* Lightning bolt — Save time */}
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
@@ -697,7 +812,6 @@ export default function App() {
                     <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>Automate routine tasks</div>
                   </div>
                 </div>
-                {/* Users — Get more bookings */}
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -710,7 +824,6 @@ export default function App() {
                     <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>Make it easy for customers</div>
                   </div>
                 </div>
-                {/* Bar chart — Focus on growth */}
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <line x1="18" y1="20" x2="18" y2="10" />
@@ -850,9 +963,12 @@ export default function App() {
                         }}>
                           {s.isLogo
                             ? (
-                              <svg width="28" height="28" viewBox="0 0 34 34" fill="none" aria-hidden="true">
-                                <path d="M9 25 L17 9 L25 25" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                                <path d="M12 20 L22 20" stroke="white" strokeWidth="2.4" strokeLinecap="round" />
+                              /* Flow-A mark on teal background — white strokes */
+                              <svg width="30" height="27" viewBox="0 0 40 36" fill="none" aria-hidden="true">
+                                <line x1="4" y1="34" x2="20" y2="3" stroke="white" strokeWidth="3.2" strokeLinecap="round" />
+                                <path d="M 20,3 L 34,34 L 40,28" stroke="white" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                                <path d="M 33,27 L 40,28 L 36,34" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                                <line x1="11.5" y1="22" x2="28.5" y2="22" stroke="white" strokeWidth="3.0" strokeLinecap="round" />
                               </svg>
                             )
                             : s.icon
