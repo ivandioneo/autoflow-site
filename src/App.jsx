@@ -89,10 +89,10 @@ function PhoneMockup() {
   const [step, setStep] = useState(0);
   const msgs = [
     { dir: "in", text: "Hi, I'd like to book a haircut for Thursday 3pm", t: "10:32 AM" },
-    { dir: "out", text: "\u2705 Booked! Thursday at 3:00 PM. We'll remind you!", t: "10:32 AM" },
-    { dir: "out", text: "\u23f0 Reminder: Haircut tomorrow 3 PM. Reply YES to confirm.", t: "Wed 6:00 PM", slow: true },
+    { dir: "out", text: "✅ Booked! Thursday at 3:00 PM. We'll remind you!", t: "10:32 AM" },
+    { dir: "out", text: "⏰ Reminder: Haircut tomorrow 3 PM. Reply YES to confirm.", t: "Wed 6:00 PM", slow: true },
     { dir: "in", text: "YES", t: "Wed 6:12 PM" },
-    { dir: "out", text: "You're confirmed! See you tomorrow \ud83d\udc88", t: "Wed 6:12 PM" },
+    { dir: "out", text: "You're confirmed! See you tomorrow 💈", t: "Wed 6:12 PM" },
   ];
 
   useEffect(() => {
@@ -531,9 +531,9 @@ export default function AutoFlowLanding() {
                 </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   {[
-                    { icon: "\ud83d\udcc9", text: "Every no-show is an empty slot you can't fill" },
-                    { icon: "\u23f0", text: "Manual confirmation calls take time away from your business" },
-                    { icon: "\u2705", text: "Automated reminders let customers confirm without back-and-forth" },
+                    { icon: "📉", text: "Every no-show is an empty slot you can't fill" },
+                    { icon: "⏰", text: "Manual confirmation calls take time away from your business" },
+                    { icon: "✅", text: "Automated reminders let customers confirm without back-and-forth" },
                   ].map((p, i) => (
                     <div key={i} style={{ display: "flex", gap: 12, alignItems: "center" }}>
                       <span aria-hidden="true" style={{ fontSize: 20 }}>{p.icon}</span>
@@ -559,10 +559,10 @@ export default function AutoFlowLanding() {
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center" }}>
                 {[
-                  { icon: "\ud83d\udcc4", title: "Create your page", desc: "Set up your business booking page in minutes. Add your services, availability, and branding.", color: "#0D9488" },
-                  { icon: "\ud83d\udd17", title: "Share your link", desc: "Publish your booking page and share it wherever your customers find you.", color: "#F59E0B" },
-                  { icon: "\ud83d\udcac", title: "Customers book", desc: "They pick a time, fill in their details, and confirm. No back-and-forth messages needed.", color: "#8B5CF6" },
-                  { icon: "\u26a1", title: "AutoFlow takes over", desc: "Confirmations and reminders go out automatically. You just show up.", color: "#EF4444" },
+                  { icon: "📄", title: "Create your page", desc: "Set up your business booking page in minutes. Add your services, availability, and branding.", color: "#0D9488" },
+                  { icon: "🔗", title: "Share your link", desc: "Publish your booking page and share it wherever your customers find you.", color: "#F59E0B" },
+                  { icon: "💬", title: "Customers book", desc: "They pick a time, fill in their details, and confirm. No back-and-forth messages needed.", color: "#8B5CF6" },
+                  { icon: "⚡", title: "AutoFlow takes over", desc: "Confirmations and reminders go out automatically. You just show up.", color: "#EF4444" },
                 ].map((s, i) => (
                   <div key={i} style={{
                     flex: "1 1 200px", maxWidth: 210, textAlign: "center", padding: "28px 16px",
@@ -616,11 +616,11 @@ export default function AutoFlowLanding() {
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
                 {[
-                  { icon: "\ud83d\udc87", title: "Salons", desc: "Automated booking confirmations and reminders so your chair stays full." },
-                  { icon: "\ud83c\udfe5", title: "Clinics", desc: "Reduce manual follow-up calls with automated patient reminders." },
-                  { icon: "\ud83d\udcda", title: "Tutors", desc: "Keep sessions on schedule with automatic booking confirmations." },
-                  { icon: "\ud83d\udc85", title: "Spas", desc: "Let customers self-book and receive reminders without manual effort." },
-                  { icon: "\u2708\ufe0f", title: "Travel", desc: "Send automated pre-trip reminders and booking confirmations." },
+                  { icon: "💇", title: "Salons", desc: "Automated booking confirmations and reminders so your chair stays full." },
+                  { icon: "🏥", title: "Clinics", desc: "Reduce manual follow-up calls with automated patient reminders." },
+                  { icon: "📚", title: "Tutors", desc: "Keep sessions on schedule with automatic booking confirmations." },
+                  { icon: "💅", title: "Spas", desc: "Let customers self-book and receive reminders without manual effort." },
+                  { icon: "✈️", title: "Travel", desc: "Send automated pre-trip reminders and booking confirmations." },
                 ].map((c, i) => (
                   <div key={i} style={{
                     background: "#F8FAFC", borderRadius: 18, padding: "24px 20px",
