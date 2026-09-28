@@ -307,7 +307,15 @@ function DashboardMockup() {
     <div className="af-hero-visual">
       <div className="af-dashboard-glow" />
       <div className="af-dashboard">
-        <div className="af-dashboard-top"><div className="af-window-dots"><i /><i /><i /></div><div className="af-dashboard-brand"><span>A</span> AutoFlow</div><div className="af-live">● Live</div></div>
+        <div className="af-dashboard-top"><div className="af-window-dots"><i /><i /><i /></div><div className="af-dashboard-brand">
+              <span className="af-dashboard-brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
+                  <path d="M5 16 9.5 6h5L19 16" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M7.5 13h9" stroke="#9BE7FF" strokeWidth="2" strokeLinecap="round"/>
+                  <path d="M14 6 18 11" stroke="#00C8FF" strokeWidth="2.5" strokeLinecap="round"/>
+                </svg>
+              </span> AutoFlow
+            </div><div className="af-live">● Live</div></div>
         <div className="af-dashboard-body">
           <aside className="af-dashboard-sidebar">
             <div className="af-side-item active">⌂ <span>Dashboard</span></div>
@@ -372,7 +380,7 @@ export default function AutoFlowLanding() {
         .af-nav { display:flex; justify-content:space-between; align-items:center; padding:16px 32px; background:rgba(6,17,31,.72); backdrop-filter:blur(18px); position:fixed; inset:0 0 auto 0; z-index:100; border-bottom:1px solid rgba(255,255,255,.06); transition:all .25s ease; }
         .af-nav.af-nav-scrolled { background:rgba(6,17,31,.96); padding-top:11px; padding-bottom:11px; }
         .af-brand { display:flex; align-items:center; gap:10px; color:#fff; text-decoration:none; font-size:20px; font-weight:900; letter-spacing:-.5px; }
-        .af-brand-mark { width:38px; height:38px; display:grid; place-items:center; border-radius:11px; background:linear-gradient(135deg,#1687ff,#00c8ff); box-shadow:0 8px 26px rgba(0,160,255,.25); }
+        .af-brand-mark { width:44px; height:44px; display:grid; place-items:center; border-radius:13px; background:linear-gradient(145deg,#0b74ff 0%,#1687ff 45%,#00c8ff 100%); box-shadow:0 8px 28px rgba(0,160,255,.28), inset 0 1px 0 rgba(255,255,255,.18); } .af-brand-mark svg { display:block; }
         .af-nav-links { display:flex; align-items:center; gap:24px; }
         .af-nav-links a { color:rgba(255,255,255,.68); text-decoration:none; font-weight:600; font-size:13px; transition:color .2s,background .2s,border .2s; }
         .af-nav-links a:hover { color:#fff; }
@@ -385,7 +393,7 @@ export default function AutoFlowLanding() {
         .af-dashboard { position:relative; z-index:2; width:min(560px,100%); border:1px solid rgba(255,255,255,.13); border-radius:18px; overflow:hidden; background:#081525; box-shadow:0 28px 80px rgba(0,0,0,.48),0 0 60px rgba(0,140,255,.09); transform:perspective(1100px) rotateY(-4deg); }
         .af-dashboard-top { height:44px; display:flex; align-items:center; gap:14px; padding:0 14px; border-bottom:1px solid rgba(255,255,255,.08); background:#0b1a2c; }
         .af-window-dots { display:flex; gap:5px; }.af-window-dots i { width:7px;height:7px;border-radius:50%;background:#34516c;display:block; }
-        .af-dashboard-brand { color:#eaf4ff; font-size:11px; font-weight:800; flex:1; }.af-dashboard-brand span { display:inline-grid;place-items:center;width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,#1687ff,#00c8ff);margin-right:5px;color:#fff; }
+        .af-dashboard-brand { color:#eaf4ff; font-size:11px; font-weight:800; flex:1; display:flex; align-items:center; gap:5px; }.af-dashboard-brand-mark { display:grid; place-items:center; width:18px; height:18px; border-radius:5px; background:linear-gradient(135deg,#1687ff,#00c8ff); }
         .af-live { color:#19d98a; font-size:10px; font-weight:700; }
         .af-dashboard-body { display:flex; min-height:330px; }
         .af-dashboard-sidebar { width:125px; padding:14px 9px; background:#071321; border-right:1px solid rgba(255,255,255,.06); }
@@ -410,7 +418,14 @@ export default function AutoFlowLanding() {
 
       {/* ─── NAV ─── */}
       <nav className={"af-nav " + (scrolled ? "af-nav-scrolled" : "")}>
-        <a href="#" className="af-brand" aria-label="AutoFlow home"><span className="af-brand-mark">A</span><span>AutoFlow</span></a>
+        <a href="#" className="af-brand" aria-label="AutoFlow home"><span className="af-brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="28" height="28" fill="none">
+              <path d="M10 31.5 19.5 11h9L38 31.5" stroke="white" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M15 27h18" stroke="#9BE7FF" strokeWidth="4" strokeLinecap="round"/>
+              <path d="M27.5 11 35 20.5" stroke="#00C8FF" strokeWidth="5" strokeLinecap="round"/>
+              <path d="M31 31.5c2.2-3.1 3.6-6.5 3.8-10.2" stroke="#1687FF" strokeWidth="4" strokeLinecap="round"/>
+            </svg>
+          </span><span>AutoFlow</span></a>
         <div className={"af-nav-links " + (mobileNavOpen ? "open" : "")}>
           <a href="#how" onClick={() => setMobileNavOpen(false)}>How it works</a>
           <a href="#industries" onClick={() => setMobileNavOpen(false)}>Industries</a>
