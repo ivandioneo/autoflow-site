@@ -239,7 +239,7 @@ function PricingCard({ tier, price, desc, features, highlight, badge, onCta, cta
           ? "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)"
           : "white",
         borderRadius: 20, padding: "36px 26px", flex: "1 1 260px", maxWidth: 320,
-        border: highlight ? "1px solid rgba(245,158,11,0.3)" : "1px solid #E2E8F0",
+        border: highlight ? "1px solid rgba(245,158,11,0.3)" : "1px solid #1d3b59",
         boxShadow: highlight
           ? hover ? "0 20px 60px rgba(245,158,11,0.2)" : "0 12px 40px rgba(15,23,42,0.3)"
           : hover ? "0 12px 32px rgba(0,0,0,0.08)" : "0 2px 8px rgba(0,0,0,0.04)",
@@ -263,7 +263,7 @@ function PricingCard({ tier, price, desc, features, highlight, badge, onCta, cta
         {price !== "Free" && <span style={{ fontSize: 14, color: highlight ? "rgba(255,255,255,0.4)" : "#94A3B8" }}>/month</span>}
       </div>
       <div style={{
-        borderTop: `1px solid ${highlight ? "rgba(255,255,255,0.08)" : "#F1F5F9"}`,
+        borderTop: `1px solid ${highlight ? "rgba(255,255,255,0.08)" : "#142a40"}`,
         paddingTop: 18, display: "flex", flexDirection: "column", gap: 11,
       }}>
         {features.map((f, i) => (
@@ -284,7 +284,7 @@ function PricingCard({ tier, price, desc, features, highlight, badge, onCta, cta
           marginTop: "auto", padding: "13px 20px", borderRadius: 12, border: "none",
           background: highlight
             ? "linear-gradient(135deg, #F59E0B, #F97316)"
-            : "#0D9488",
+            : "#1687ff",
           color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer",
           transition: "transform 0.2s",
           transform: hover ? "scale(1.02)" : "scale(1)",
@@ -369,7 +369,7 @@ export default function AutoFlowLanding() {
   };
 
   return (
-    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", color: "#334155", background: "#F0F4F8", overflowX: "hidden" }}>
+    <div className="autoflow-dark-site" style={{ fontFamily: "'Inter', system-ui, sans-serif", color: "#dce7f3", background: "#06111f", overflowX: "hidden" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -391,9 +391,12 @@ export default function AutoFlowLanding() {
           0%, 100% { transform: translateY(0px); }
           50% { transform: translateY(-12px); }
         }
-        input:focus, textarea:focus { border-color: #0D9488 !important; box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
-        a:focus-visible, button:focus-visible { outline: 2px solid #14B8A6; outline-offset: 2px; }
-        @media (prefers-reduced-motion: reduce) {
+        input:focus, textarea:focus { border-color: #1687ff !important; box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
+        a:focus-visible, button:focus-visible { outline: 2px solid #00c8ff; outline-offset: 2px; }
+        /* AutoFlow dark landing-page system */
+        ::selection { background: rgba(22,135,255,0.35); color: #fff; }
+        input::placeholder, textarea::placeholder { color: #7187a0; }
+                @media (prefers-reduced-motion: reduce) {
           *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
         }
         .nav-link:hover { color: white !important; }
@@ -413,7 +416,7 @@ export default function AutoFlowLanding() {
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{
             width: 36, height: 36, borderRadius: 10,
-            background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+            background: "linear-gradient(135deg, #1687ff, #00c8ff)",
             display: "flex", alignItems: "center", justifyContent: "center",
             color: "white", fontWeight: 900, fontSize: 17,
             boxShadow: "0 4px 12px rgba(13,148,136,0.3)",
@@ -478,7 +481,7 @@ export default function AutoFlowLanding() {
             }}>
               Put your business on{" "}
               <span style={{
-                background: "linear-gradient(135deg, #14B8A6, #F59E0B)",
+                background: "linear-gradient(135deg, #00c8ff, #F59E0B)",
                 WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
               }}>autopilot.</span>
             </h1>
@@ -490,7 +493,7 @@ export default function AutoFlowLanding() {
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 36 }}>
               <a href="#quote" style={{
-                background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+                background: "linear-gradient(135deg, #1687ff, #00c8ff)",
                 color: "white", padding: "16px 32px", borderRadius: 14,
                 textDecoration: "none", fontWeight: 800, fontSize: 16,
                 boxShadow: "0 8px 32px rgba(13,148,136,0.35)",
@@ -547,7 +550,7 @@ export default function AutoFlowLanding() {
       </section>
 
       {/* ─── STATS ─── */}
-      <section style={{ background: "white", padding: "48px 32px" }}>
+      <section style={{ background: "#0b1a2c", padding: "48px 32px" }}>
         <div style={{
           maxWidth: 900, margin: "0 auto", display: "flex", flexWrap: "wrap",
           justifyContent: "center", gap: 48,
@@ -559,35 +562,35 @@ export default function AutoFlowLanding() {
             { n: 0, s: "", label: "Messages you send manually" },
           ].map((s, i) => (
             <div key={i} style={{ textAlign: "center", minWidth: 160 }}>
-              <div style={{ fontSize: 42, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>
+              <div style={{ fontSize: 42, fontWeight: 900, color: "#f5f9ff", letterSpacing: -1 }}>
                 {s.n === 0 ? "0" : <Counter target={s.n} />}{s.s}
               </div>
-              <div style={{ fontSize: 13, color: "#94A3B8", marginTop: 4, fontWeight: 500 }}>{s.label}</div>
+              <div style={{ fontSize: 13, color: "#7187a0", marginTop: 4, fontWeight: 500 }}>{s.label}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* ─── HOW IT WORKS ─── */}
-      <section id="how" style={{ padding: "80px 32px", background: "#F8FAFC" }}>
+      <section id="how" style={{ padding: "80px 32px", background: "#081525" }}>
         <FadeIn>
           <div style={{ maxWidth: 900, margin: "0 auto" }}>
             <div style={{ textAlign: "center", marginBottom: 48 }}>
-              <h2 style={{ fontSize: 34, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>How it works</h2>
-              <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>
+              <h2 style={{ fontSize: 34, fontWeight: 900, color: "#f5f9ff", letterSpacing: -1 }}>How it works</h2>
+              <p style={{ color: "#7187a0", fontSize: 15, marginTop: 8 }}>
                 From booking to confirmation — fully automated
               </p>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center" }}>
               {[
-                { icon: "📅", title: "Customer books", desc: "Via your form, phone, Instagram, or walk-in. We connect to however you take bookings.", color: "#0D9488" },
+                { icon: "📅", title: "Customer books", desc: "Via your form, phone, Instagram, or walk-in. We connect to however you take bookings.", color: "#1687ff" },
                 { icon: "⚡", title: "Flow triggers", desc: "Our automation engine picks it up instantly — no delay, no manual entry needed.", color: "#F59E0B" },
                 { icon: "💬", title: "Reminders go out", desc: "WhatsApp or SMS, 24h and 2h before. Customer confirms or reschedules right in the chat.", color: "#8B5CF6" },
                 { icon: "📊", title: "Everything logged", desc: "Dashboard shows confirmed, pending, no-shows. You see the full picture at a glance.", color: "#EF4444" },
               ].map((s, i) => (
                 <div key={i} style={{
                   flex: "1 1 200px", maxWidth: 210, textAlign: "center", padding: "28px 16px",
-                  background: "white", borderRadius: 18, border: "1px solid #E2E8F0",
+                  background: "#0b1a2c", borderRadius: 18, border: "1px solid #1d3b59",
                   position: "relative",
                 }}>
                   <div style={{
@@ -599,8 +602,8 @@ export default function AutoFlowLanding() {
                     background: `${s.color}12`, display: "flex", alignItems: "center",
                     justifyContent: "center", fontSize: 24,
                   }}>{s.icon}</div>
-                  <div style={{ fontWeight: 800, fontSize: 15, color: "#0F172A", marginBottom: 6 }}>{s.title}</div>
-                  <div style={{ fontSize: 12.5, color: "#64748B", lineHeight: 1.5 }}>{s.desc}</div>
+                  <div style={{ fontWeight: 800, fontSize: 15, color: "#f5f9ff", marginBottom: 6 }}>{s.title}</div>
+                  <div style={{ fontSize: 12.5, color: "#91a7bd", lineHeight: 1.5 }}>{s.desc}</div>
                 </div>
               ))}
             </div>
@@ -609,13 +612,13 @@ export default function AutoFlowLanding() {
       </section>
 
       {/* ─── USE CASES ─── */}
-      <section style={{ padding: "72px 32px", background: "white" }}>
+      <section style={{ padding: "72px 32px", background: "#0b1a2c" }}>
         <FadeIn>
           <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-            <h2 style={{ fontSize: 30, fontWeight: 900, color: "#0F172A", textAlign: "center", marginBottom: 12, letterSpacing: -0.5 }}>
+            <h2 style={{ fontSize: 30, fontWeight: 900, color: "#f5f9ff", textAlign: "center", marginBottom: 12, letterSpacing: -0.5 }}>
               Built for businesses like yours
             </h2>
-            <p style={{ color: "#94A3B8", textAlign: "center", fontSize: 15, marginBottom: 40 }}>
+            <p style={{ color: "#7187a0", textAlign: "center", fontSize: 15, marginBottom: 40 }}>
               If people book time with you, we make sure they show up
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
@@ -627,14 +630,14 @@ export default function AutoFlowLanding() {
                 { icon: "✈️", title: "Travel", stat: "92%", desc: "of travelers appreciate pre-trip reminders (visa, docs, check-in)." },
               ].map((c, i) => (
                 <div key={i} style={{
-                  background: "#F8FAFC", borderRadius: 18, padding: "24px 20px",
-                  flex: "1 1 170px", maxWidth: 190, border: "1px solid #E2E8F0",
+                  background: "#081525", borderRadius: 18, padding: "24px 20px",
+                  flex: "1 1 170px", maxWidth: 190, border: "1px solid #1d3b59",
                   textAlign: "center",
                 }}>
                   <div style={{ fontSize: 32, marginBottom: 8 }}>{c.icon}</div>
-                  <div style={{ fontWeight: 800, fontSize: 15, color: "#0F172A", marginBottom: 6 }}>{c.title}</div>
-                  <div style={{ fontSize: 24, fontWeight: 900, color: "#0D9488", marginBottom: 6 }}>{c.stat}</div>
-                  <div style={{ fontSize: 12, color: "#64748B", lineHeight: 1.5 }}>{c.desc}</div>
+                  <div style={{ fontWeight: 800, fontSize: 15, color: "#f5f9ff", marginBottom: 6 }}>{c.title}</div>
+                  <div style={{ fontSize: 24, fontWeight: 900, color: "#1687ff", marginBottom: 6 }}>{c.stat}</div>
+                  <div style={{ fontSize: 12, color: "#91a7bd", lineHeight: 1.5 }}>{c.desc}</div>
                 </div>
               ))}
             </div>
@@ -643,12 +646,12 @@ export default function AutoFlowLanding() {
       </section>
 
       {/* ─── PRICING ─── */}
-      <section id="pricing" style={{ padding: "80px 32px", background: "#F8FAFC" }}>
+      <section id="pricing" style={{ padding: "80px 32px", background: "#081525" }}>
         <FadeIn>
           <div style={{ maxWidth: 1060, margin: "0 auto" }}>
             <div style={{ textAlign: "center", marginBottom: 44 }}>
-              <h2 style={{ fontSize: 34, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>Simple, honest pricing</h2>
-              <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>Start free. Upgrade when the ROI is obvious.</p>
+              <h2 style={{ fontSize: 34, fontWeight: 900, color: "#f5f9ff", letterSpacing: -1 }}>Simple, honest pricing</h2>
+              <p style={{ color: "#7187a0", fontSize: 15, marginTop: 8 }}>Start free. Upgrade when the ROI is obvious.</p>
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center", alignItems: "stretch" }}>
               <PricingCard tier="Starter" price="Free" desc="Try it with basic reminders"
@@ -661,8 +664,8 @@ export default function AutoFlowLanding() {
                 ctaLabel="Get Started" onCta={scrollToQuote}
                 features={["Unlimited automations", "Custom workflow builds", "Multi-location support", "Lead capture + CRM sync", "Dedicated account manager", "Monthly performance report"]} />
             </div>
-            <p style={{ textAlign: "center", color: "#94A3B8", fontSize: 13, marginTop: 28 }}>
-              Already a customer? <a href={DASHBOARD_URL} style={{ color: "#0D9488", fontWeight: 700, textDecoration: "none" }}>Log in to your dashboard →</a>
+            <p style={{ textAlign: "center", color: "#7187a0", fontSize: 13, marginTop: 28 }}>
+              Already a customer? <a href={DASHBOARD_URL} style={{ color: "#1687ff", fontWeight: 700, textDecoration: "none" }}>Log in to your dashboard →</a>
             </p>
           </div>
         </FadeIn>
@@ -698,14 +701,14 @@ export default function AutoFlowLanding() {
       </section>
 
       {/* ─── QUOTE FORM ─── */}
-      <section id="quote" style={{ padding: "80px 32px", background: "white" }}>
+      <section id="quote" style={{ padding: "80px 32px", background: "#0b1a2c" }}>
         <FadeIn>
           <div style={{ maxWidth: 560, margin: "0 auto" }}>
             <div style={{ textAlign: "center", marginBottom: 36 }}>
-              <h2 style={{ fontSize: 34, fontWeight: 900, color: "#0F172A", letterSpacing: -1 }}>
+              <h2 style={{ fontSize: 34, fontWeight: 900, color: "#f5f9ff", letterSpacing: -1 }}>
                 Get your free automation plan
               </h2>
-              <p style={{ color: "#94A3B8", fontSize: 15, marginTop: 8 }}>
+              <p style={{ color: "#7187a0", fontSize: 15, marginTop: 8 }}>
                 Tell us about your business — we'll design your first flow and set it up for free.
               </p>
             </div>
@@ -715,17 +718,17 @@ export default function AutoFlowLanding() {
                 textAlign: "center", border: "1px solid #BBF7D0",
               }}>
                 <div style={{ fontSize: 56, marginBottom: 16 }}>🎉</div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: "#0F172A", marginBottom: 8 }}>
+                <div style={{ fontSize: 22, fontWeight: 800, color: "#f5f9ff", marginBottom: 8 }}>
                   You're in!
                 </div>
-                <div style={{ color: "#64748B", fontSize: 14, lineHeight: 1.6 }}>
+                <div style={{ color: "#91a7bd", fontSize: 14, lineHeight: 1.6 }}>
                   We'll reach out on WhatsApp within 24 hours with your custom automation plan. No payment needed to start.
                 </div>
               </div>
             ) : (
               <div style={{
-                background: "#F8FAFC", borderRadius: 20, padding: "36px 28px",
-                border: "1px solid #E2E8F0",
+                background: "#081525", borderRadius: 20, padding: "36px 28px",
+                border: "1px solid #1d3b59",
               }}>
                 {errors.submit && (
                   <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, padding: "10px 14px", marginBottom: 14, color: "#DC2626", fontSize: 13 }}>
@@ -740,7 +743,7 @@ export default function AutoFlowLanding() {
                     { key: "whatsapp", label: "WhatsApp", ph: "+971 50 123 4567", w: "1 1 48%", type: "tel", maxLen: 20 },
                   ].map(f => (
                     <div key={f.key} style={{ flex: f.w }}>
-                      <label style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
+                      <label style={{ fontSize: 12, fontWeight: 700, color: "#f5f9ff", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
                         {f.label}
                       </label>
                       <input
@@ -751,9 +754,9 @@ export default function AutoFlowLanding() {
                         onChange={e => handleInputChange(f.key, e.target.value)}
                         style={{
                           width: "100%", padding: "12px 14px", borderRadius: 10,
-                          border: errors[f.key] ? "1px solid #EF4444" : "1px solid #E2E8F0",
+                          border: errors[f.key] ? "1px solid #EF4444" : "1px solid #1d3b59",
                           fontSize: 14, outline: "none",
-                          fontFamily: "inherit", background: "white", transition: "all 0.2s",
+                          fontFamily: "inherit", background: "#0b1a2c", transition: "all 0.2s",
                         }}
                       />
                       {errors[f.key] && (
@@ -763,7 +766,7 @@ export default function AutoFlowLanding() {
                   ))}
                 </div>
                 <div style={{ marginBottom: 14 }}>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: "#f5f9ff", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
                     Business type
                   </label>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -773,9 +776,9 @@ export default function AutoFlowLanding() {
                         onClick={() => { setForm(prev => ({ ...prev, type: t })); if (errors.type) setErrors(prev => ({ ...prev, type: null })); }}
                         style={{
                           padding: "8px 16px", borderRadius: 10, fontSize: 13, fontWeight: 600,
-                          border: form.type === t ? "2px solid #0D9488" : errors.type ? "1px solid #EF4444" : "1px solid #E2E8F0",
+                          border: form.type === t ? "2px solid #1687ff" : errors.type ? "1px solid #EF4444" : "1px solid #1d3b59",
                           background: form.type === t ? "rgba(13,148,136,0.08)" : "white",
-                          color: form.type === t ? "#0D9488" : "#64748B",
+                          color: form.type === t ? "#1687ff" : "#64748B",
                           cursor: "pointer", transition: "all 0.2s",
                         }}
                       >{t}</button>
@@ -786,7 +789,7 @@ export default function AutoFlowLanding() {
                   )}
                 </div>
                 <div style={{ marginBottom: 18 }}>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: "#0F172A", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: "#f5f9ff", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
                     What do you need automated?
                   </label>
                   <textarea
@@ -796,12 +799,12 @@ export default function AutoFlowLanding() {
                     onChange={e => handleInputChange("message", e.target.value)}
                     style={{
                       width: "100%", padding: "12px 14px", borderRadius: 10,
-                      border: "1px solid #E2E8F0", fontSize: 14, outline: "none",
-                      fontFamily: "inherit", resize: "vertical", background: "white",
+                      border: "1px solid #1d3b59", fontSize: 14, outline: "none",
+                      fontFamily: "inherit", resize: "vertical", background: "#0b1a2c",
                       transition: "all 0.2s",
                     }}
                   />
-                  <p style={{ textAlign: "right", fontSize: 11, color: "#94A3B8", marginTop: 2 }}>
+                  <p style={{ textAlign: "right", fontSize: 11, color: "#7187a0", marginTop: 2 }}>
                     {form.message.length}/500
                   </p>
                 </div>
@@ -810,7 +813,7 @@ export default function AutoFlowLanding() {
                   disabled={submitting}
                   style={{
                     width: "100%", padding: "16px", borderRadius: 14, border: "none",
-                    background: submitting ? "#94A3B8" : "linear-gradient(135deg, #0D9488, #14B8A6)",
+                    background: submitting ? "#94A3B8" : "linear-gradient(135deg, #1687ff, #00c8ff)",
                     color: "white", fontWeight: 800, fontSize: 16,
                     cursor: submitting ? "not-allowed" : "pointer",
                     boxShadow: submitting ? "none" : "0 8px 32px rgba(13,148,136,0.3)",
@@ -819,7 +822,7 @@ export default function AutoFlowLanding() {
                 >
                   {submitting ? "Submitting..." : "Submit — It's Free"}
                 </button>
-                <p style={{ textAlign: "center", fontSize: 12, color: "#94A3B8", marginTop: 10 }}>
+                <p style={{ textAlign: "center", fontSize: 12, color: "#7187a0", marginTop: 10 }}>
                   No payment required. We'll design your automation and show you how it works first.
                 </p>
               </div>
@@ -836,7 +839,7 @@ export default function AutoFlowLanding() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 16 }}>
           <div style={{
             width: 32, height: 32, borderRadius: 8,
-            background: "linear-gradient(135deg, #0D9488, #14B8A6)",
+            background: "linear-gradient(135deg, #1687ff, #00c8ff)",
             display: "flex", alignItems: "center", justifyContent: "center",
             color: "white", fontWeight: 900, fontSize: 15,
           }}>A</div>
