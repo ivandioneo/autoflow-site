@@ -33,7 +33,7 @@ function scrollToQuote() {
 
 // ─── Savings Calculator (the wow factor) ───
 function SavingsCalculator() {
-  const [bookingsPerWeek, setBookingsPerWeek] = useState(40);
+  const [bookingsPerWeek, setBookingsPerWeek] = useState(76);
   const [avgPrice, setAvgPrice] = useState(150);
   const [noShowRate, setNoShowRate] = useState(20);
 
@@ -97,14 +97,6 @@ function SavingsCalculator() {
             {savedPerMonth.toLocaleString()} <span style={{ fontSize: 14, fontWeight: 600 }}>AED/mo</span>
           </div>
         </div>
-      </div>
-      <div style={{
-        marginTop: 12, background: "rgba(245,158,11,0.08)", borderRadius: 14, padding: "14px 16px",
-        border: "1px solid rgba(245,158,11,0.12)", textAlign: "center",
-      }}>
-        <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}>That's </span>
-        <span style={{ color: "#F59E0B", fontSize: 22, fontWeight: 800 }}>{savedPerYear.toLocaleString()} AED</span>
-        <span style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}> saved per year</span>
       </div>
     </div>
   );
@@ -461,11 +453,140 @@ export default function AutoFlowLanding() {
         .af-phone-mini { position:absolute; z-index:3; right:-28px; bottom:-34px; transform:scale(.58); transform-origin:bottom right; filter:drop-shadow(0 20px 30px rgba(0,0,0,.5)); }
         .af-footer .af-logo-mark { width:40px; height:34px; }
         .af-footer .af-logo-type { font-size:21px; }
+        /* Reference visual system: deep navy + photographic office + cyan glow */
+        .af-hero-section { min-height: 620px; }
+        .af-hero-photo {
+          background-image:url("https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=2200&q=88");
+          background-position:center 48%;
+          opacity:.34;
+          filter:saturate(1.15) contrast(1.05);
+        }
+        .af-hero-photo-overlay {
+          background:
+            linear-gradient(90deg,rgba(2,13,28,.94) 0%,rgba(3,17,34,.78) 45%,rgba(2,13,28,.42) 100%),
+            linear-gradient(180deg,rgba(2,11,24,.48) 0%,rgba(2,13,28,.82) 92%);
+        }
+        .af-hero-grid { display:none; }
+        .af-hero-section:before {
+          content:""; position:absolute; width:760px; height:760px; right:-120px; top:-330px;
+          border-radius:50%; border:1px solid rgba(0,200,255,.28);
+          box-shadow:0 0 0 1px rgba(22,135,255,.05),0 0 90px rgba(0,200,255,.08);
+          transform:rotate(-18deg); z-index:1; pointer-events:none;
+        }
+        .af-hero-section:after {
+          width:1100px; height:1100px; right:-520px; top:40px;
+          border:1px solid rgba(0,200,255,.18); background:none; filter:none;
+        }
+        .af-hero-visual { min-height:650px; padding-top:38px; }
+        .af-laptop { width:min(760px,100%); transform:translateY(14px); }
+        .af-laptop-screen {
+          border-radius:20px 20px 7px 7px;
+          background:linear-gradient(145deg,#223347,#07111d 65%);
+          box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 75px rgba(0,157,255,.16);
+        }
+        .af-dashboard { border-radius:11px 11px 4px 4px; }
+        .af-dashboard-body { min-height:340px; }
+        .af-dashboard-sidebar { width:132px; }
+        .af-calendar { grid-template-columns:repeat(5,1fr); }
+        .af-day { min-height:250px; }
+        .af-automation-visual {
+          right:-38px; bottom:-2px; width:440px;
+          animation:float 6s ease-in-out infinite;
+        }
+        .af-flow-card {
+          background:rgba(3,17,32,.95);
+          border-color:rgba(0,200,255,.34);
+          box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 40px rgba(0,180,255,.16);
+        }
+        .af-feature-strip {
+          position:relative; z-index:8;
+          background:rgba(2,16,33,.94);
+          padding-top:15px; padding-bottom:15px;
+          border-top:1px solid rgba(0,200,255,.12);
+        }
+        .af-feature-card {
+          min-width:0;
+          background:rgba(8,29,49,.72);
+          border-color:rgba(73,215,255,.08);
+        }
+        .af-reference-section {
+          position:relative; overflow:hidden; color:#fff;
+          background:#041a31;
+          border-top:1px solid rgba(0,200,255,.07);
+        }
+        .af-reference-section:before {
+          content:""; position:absolute; inset:0; pointer-events:none;
+          background:radial-gradient(circle at 50% 0%,rgba(0,164,255,.08),transparent 55%);
+        }
+        .af-reference-inner { position:relative; z-index:1; max-width:1240px; margin:0 auto; padding:34px 20px 28px; }
+        .af-reference-heading { text-align:center; margin-bottom:20px; }
+        .af-reference-heading h2 { color:#f7fbff; font-size:28px; line-height:1.1; font-weight:900; letter-spacing:-.8px; }
+        .af-reference-heading p { color:#9db1c6; font-size:13px; margin-top:7px; }
+        .af-industry-grid { display:grid; grid-template-columns:repeat(8,1fr); gap:8px; }
+        .af-industry-card {
+          height:116px; border-radius:10px; overflow:hidden; background-size:cover; background-position:center;
+          border:1px solid rgba(255,255,255,.12); box-shadow:0 12px 30px rgba(0,0,0,.22);
+          display:flex; align-items:flex-end; padding:10px; transition:transform .25s ease,border-color .25s ease;
+        }
+        .af-industry-card:hover { transform:translateY(-4px); border-color:rgba(0,200,255,.5); }
+        .af-industry-card span { color:#fff; font-size:10px; font-weight:800; text-shadow:0 2px 10px rgba(0,0,0,.7); }
+        .af-how-section { background:#041b33; padding-bottom:34px; }
+        .af-how-grid { display:grid; grid-template-columns:1fr 40px 1fr 40px 1fr; align-items:center; }
+        .af-how-card {
+          min-height:142px; padding:16px 20px; border:1px solid rgba(74,149,205,.18); border-radius:16px;
+          background:linear-gradient(145deg,rgba(7,30,53,.9),rgba(4,21,39,.72));
+          box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+        }
+        .af-how-top { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+        .af-step-number { width:40px; height:40px; border-radius:50%; display:grid; place-items:center; color:#fff; font-weight:900; font-size:17px; box-shadow:0 8px 20px rgba(0,0,0,.22); }
+        .af-step-icon { width:40px; height:40px; display:grid; place-items:center; border-radius:10px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.09); color:#e8f5ff; font-size:19px; }
+        .af-how-card strong { display:block; color:#fff; font-size:13px; margin-bottom:5px; }
+        .af-how-card p { color:#8fa5ba; font-size:11px; line-height:1.5; max-width:250px; }
+        .af-how-arrow { color:#cfe9ff; font-size:30px; text-align:center; }
+        #calc {
+          position:relative; overflow:hidden;
+          background:
+            linear-gradient(90deg,rgba(2,14,29,.91),rgba(3,19,38,.88)),
+            url("https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=2200&q=88") center/cover;
+          padding-top:58px !important; padding-bottom:66px !important;
+        }
+        #calc:after {
+          content:""; position:absolute; inset:auto -15% -40% -15%; height:260px;
+          border-radius:50% 50% 0 0; border-top:1px solid rgba(0,200,255,.22);
+          box-shadow:0 -20px 90px rgba(0,160,255,.08); pointer-events:none;
+        }
+        #calc > div { position:relative; z-index:1; }
+        #calc h2 { font-size:34px !important; }
+        #calc input[type="range"] { height:5px; }
+        #calc input[type="range"]::-webkit-slider-runnable-track { height:5px; background:linear-gradient(90deg,#f5a400,#ffb51b); border-radius:99px; }
+        #calc input[type="range"]::-webkit-slider-thumb { margin-top:-5px; width:15px; height:15px; }
+        @media (max-width: 980px) {
+          .af-industry-grid { grid-template-columns:repeat(4,1fr); }
+          .af-how-grid { grid-template-columns:1fr; gap:12px; }
+          .af-how-arrow { transform:rotate(90deg); }
+        }
+
+        @media (max-width: 620px) {
+          .af-reference-inner { padding-left:16px; padding-right:16px; }
+          .af-reference-heading h2 { font-size:24px; }
+          .af-industry-grid { grid-template-columns:repeat(2,1fr); gap:8px; }
+          .af-industry-card { height:105px; }
+          .af-how-card { min-height:128px; padding:14px; }
+          .af-how-arrow { display:none; }
+          .af-reference-section { padding-bottom:8px; }
+          #calc { padding-left:16px !important; padding-right:16px !important; }
+        }
+        .af-faq-section { background:#031a30; }
+        .af-faq-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+        .af-faq-grid details { background:rgba(7,30,53,.78); border:1px solid rgba(74,149,205,.18); border-radius:14px; padding:16px; }
+        .af-faq-grid summary { color:#fff; font-weight:800; font-size:13px; cursor:pointer; }
+        .af-faq-grid p { color:#8fa5ba; font-size:11px; line-height:1.55; margin-top:10px; }
+        @media (max-width:980px){ .af-faq-grid{grid-template-columns:1fr;} }
         @media (max-width: 900px) {
-          .af-hero-photo { background-position:72% center; opacity:.20; } .af-hero-photo-overlay { background:linear-gradient(180deg,rgba(3,14,28,.91) 0%,rgba(4,18,35,.86) 55%,rgba(3,14,28,.97) 100%); }
+          .af-hero-photo { background-position:68% center; opacity:.22; } .af-hero-photo-overlay { background:linear-gradient(180deg,rgba(3,14,28,.93) 0%,rgba(4,18,35,.84) 55%,rgba(3,14,28,.97) 100%); }
           .af-nav { padding:12px 18px; }.af-logo-mark { width:46px; height:39px; }.af-logo-type { font-size:22px; }.af-nav-links { position:absolute; top:66px; left:12px; right:12px; display:none; flex-direction:column; align-items:stretch; gap:4px; padding:12px; background:rgba(7,19,33,.98); border:1px solid rgba(255,255,255,.1); border-radius:14px; box-shadow:0 20px 50px rgba(0,0,0,.45); }.af-nav-links.open { display:flex; }.af-nav-links a { padding:12px 13px; border-radius:9px; }.af-nav-links .af-nav-cta { text-align:center; }.af-menu-btn { display:block; }
           .af-hero-visual { min-height:0; margin-top:18px; padding:0 0 8px; display:block; }.af-laptop { width:100%; padding:0 0 42px; }.af-laptop-screen { padding:7px 7px 0; border-radius:13px 13px 6px 6px; }.af-dashboard { width:100%; }.af-laptop-base { left:-3%; right:-3%; bottom:9px; height:34px; border-radius:4px 4px 13px 13px; }.af-laptop-trackpad { top:6px; height:18px; }.af-laptop-hinge { bottom:43px; width:60px; height:6px; }.af-phone-mini { display:none; }
-          .af-automation-visual { position:relative; right:auto; bottom:auto; width:82%; margin:-10px 0 0 auto; animation:none; transform:translateX(2%); }
+          .af-automation-visual { position:relative; right:auto; bottom:auto; width:82%; margin:-4px 0 0 auto; animation:none; transform:translateX(2%); }
           .af-flow-card { padding:14px; border-radius:18px; }
         }
         @media (max-width: 620px) {
@@ -485,6 +606,7 @@ export default function AutoFlowLanding() {
           <a href="#industries" onClick={() => setMobileNavOpen(false)}>Industries</a>
           <a href="#calc" onClick={() => setMobileNavOpen(false)}>Calculator</a>
           <a href="#pricing" onClick={() => setMobileNavOpen(false)}>Pricing</a>
+          <a href="#faq" onClick={() => setMobileNavOpen(false)}>FAQ</a>
           <a href={DASHBOARD_URL} className="af-login">Log in</a>
           <a href={DASHBOARD_URL} className="af-nav-cta" onClick={() => setMobileNavOpen(false)}>Open AutoFlow →</a>
         </div>
@@ -578,6 +700,65 @@ export default function AutoFlowLanding() {
         ].map((item,i)=><div className="af-feature-card" key={item.title}><span className={"af-feature-icon af-feature-icon-"+i}>{item.icon}</span><div><strong>{item.title}</strong><small>{item.text}</small></div></div>)}
       </section>
 
+      {/* ─── INDUSTRIES ─── */}
+      <section id="industries" className="af-reference-section af-industries-section">
+        <FadeIn>
+          <div className="af-reference-inner">
+            <div className="af-reference-heading">
+              <h2>Built for Real Businesses</h2>
+              <p>AutoFlow works for many industries. Get a ready-to-use solution tailored to your business.</p>
+            </div>
+            <div className="af-industry-grid">
+              {[
+                ["Hair Salon","https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=700&q=85","✂"],
+                ["Beauty & Spa","https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=700&q=85","♨"],
+                ["Clinic","https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=700&q=85","⚕"],
+                ["Barber Shop","https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=700&q=85","✂"],
+                ["Cleaning Services","https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=700&q=85","♧"],
+                ["Fitness & Wellness","https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=700&q=85","✚"],
+                ["Coaching & Consulting","https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=700&q=85","◉"],
+                ["Food & Beverage","https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=700&q=85","◌"],
+              ].map(([title,image,icon]) => (
+                <div className="af-industry-card" key={title} style={{backgroundImage:"linear-gradient(180deg,transparent 28%,rgba(2,10,22,.95) 100%),url("+image+")"}}>
+                  <span>{icon} {title}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </FadeIn>
+      </section>
+
+      {/* ─── HOW AUTOFLOW WORKS ─── */}
+      <section id="how" className="af-reference-section af-how-section">
+        <FadeIn>
+          <div className="af-reference-inner">
+            <div className="af-reference-heading">
+              <h2>How AutoFlow Works</h2>
+              <p>Get your business online and automated in just 3 simple steps.</p>
+            </div>
+            <div className="af-how-grid">
+              {[
+                ["1","▣","Create Your Profile","Tell us about your business and choose a template.","#1687ff"],
+                ["2","▤","AutoFlow Generates Your Page","We create your branded website with booking system.","#7c3aed"],
+                ["3","♟","Customers Book Automatically","Start getting bookings and let automation do the rest.","#10d89a"],
+              ].map(([n,icon,title,desc,color],i)=>(
+                <div className="af-how-wrap" key={title}>
+                  <div className="af-how-card">
+                    <div className="af-how-top">
+                      <span className="af-step-number" style={{background:color}}>{n}</span>
+                      <span className="af-step-icon">{icon}</span>
+                    </div>
+                    <strong>{title}</strong>
+                    <p>{desc}</p>
+                  </div>
+                  {i<2 && <span className="af-how-arrow" aria-hidden="true">→</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </FadeIn>
+      </section>
+
       {/* ─── SAVINGS CALCULATOR ─── */}
       <section id="calc" style={{
         background: "linear-gradient(180deg, #0F172A 0%, #1E293B 100%)",
@@ -610,100 +791,16 @@ export default function AutoFlowLanding() {
         </FadeIn>
       </section>
 
-      {/* ─── STATS ─── */}
-      <section style={{ background: "#0b1a2c", padding: "48px 32px" }}>
-        <div style={{
-          maxWidth: 900, margin: "0 auto", display: "flex", flexWrap: "wrap",
-          justifyContent: "center", gap: 48,
-        }}>
-          {[
-            { n: 30, s: "%", label: "Average no-show reduction" },
-            { n: 5, s: " min", label: "Setup time" },
-            { n: 24, s: "/7", label: "Runs while you sleep" },
-            { n: 0, s: "", label: "Messages you send manually" },
-          ].map((s, i) => (
-            <div key={i} style={{ textAlign: "center", minWidth: 160 }}>
-              <div style={{ fontSize: 42, fontWeight: 900, color: "#f5f9ff", letterSpacing: -1 }}>
-                {s.n === 0 ? "0" : <Counter target={s.n} />}{s.s}
-              </div>
-              <div style={{ fontSize: 13, color: "#7187a0", marginTop: 4, fontWeight: 500 }}>{s.label}</div>
-            </div>
-          ))}
+      {/* ─── FAQ ─── */}
+      <section id="faq" className="af-reference-section af-faq-section">
+        <div className="af-reference-inner">
+          <div className="af-reference-heading"><h2>Frequently Asked Questions</h2><p>Simple answers before you get started.</p></div>
+          <div className="af-faq-grid">
+            <details><summary>Do I need coding skills?</summary><p>No. AutoFlow is designed so the setup and automation flow can be configured without coding.</p></details>
+            <details><summary>What happens after a customer books?</summary><p>AutoFlow can trigger confirmations, reminders and follow-ups automatically through the configured workflow.</p></details>
+            <details><summary>Can I start for free?</summary><p>Yes. The Starter plan on this page is presented as a free starting option.</p></details>
+          </div>
         </div>
-      </section>
-
-      {/* ─── HOW IT WORKS ─── */}
-      <section id="how" style={{ padding: "80px 32px", background: "#081525" }}>
-        <FadeIn>
-          <div style={{ maxWidth: 900, margin: "0 auto" }}>
-            <div style={{ textAlign: "center", marginBottom: 48 }}>
-              <h2 style={{ fontSize: 34, fontWeight: 900, color: "#f5f9ff", letterSpacing: -1 }}>How it works</h2>
-              <p style={{ color: "#7187a0", fontSize: 15, marginTop: 8 }}>
-                From booking to confirmation — fully automated
-              </p>
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center" }}>
-              {[
-                { icon: "📅", title: "Customer books", desc: "Via your form, phone, Instagram, or walk-in. We connect to however you take bookings.", color: "#1687ff" },
-                { icon: "⚡", title: "Flow triggers", desc: "Our automation engine picks it up instantly — no delay, no manual entry needed.", color: "#F59E0B" },
-                { icon: "💬", title: "Reminders go out", desc: "WhatsApp or SMS, 24h and 2h before. Customer confirms or reschedules right in the chat.", color: "#8B5CF6" },
-                { icon: "📊", title: "Everything logged", desc: "Dashboard shows confirmed, pending, no-shows. You see the full picture at a glance.", color: "#EF4444" },
-              ].map((s, i) => (
-                <div key={i} style={{
-                  flex: "1 1 200px", maxWidth: 210, textAlign: "center", padding: "28px 16px",
-                  background: "#0b1a2c", borderRadius: 18, border: "1px solid #1d3b59",
-                  position: "relative",
-                }}>
-                  <div style={{
-                    position: "absolute", top: -1, left: "50%", transform: "translateX(-50%)",
-                    width: 40, height: 3, borderRadius: 2, background: s.color,
-                  }} />
-                  <div style={{
-                    width: 52, height: 52, borderRadius: 16, margin: "8px auto 14px",
-                    background: `${s.color}12`, display: "flex", alignItems: "center",
-                    justifyContent: "center", fontSize: 24,
-                  }}>{s.icon}</div>
-                  <div style={{ fontWeight: 800, fontSize: 15, color: "#f5f9ff", marginBottom: 6 }}>{s.title}</div>
-                  <div style={{ fontSize: 12.5, color: "#91a7bd", lineHeight: 1.5 }}>{s.desc}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </FadeIn>
-      </section>
-
-      {/* ─── USE CASES ─── */}
-      <section id="industries" style={{ padding: "72px 32px", background: "#0b1a2c" }}>
-        <FadeIn>
-          <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-            <h2 style={{ fontSize: 30, fontWeight: 900, color: "#f5f9ff", textAlign: "center", marginBottom: 12, letterSpacing: -0.5 }}>
-              Built for businesses like yours
-            </h2>
-            <p style={{ color: "#7187a0", textAlign: "center", fontSize: 15, marginBottom: 40 }}>
-              If people book time with you, we make sure they show up
-            </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
-              {[
-                { icon: "💇", title: "Salons", stat: "28%", desc: "average no-show rate in UAE salons. Reminders cut that to under 10%." },
-                { icon: "🏥", title: "Clinics", stat: "4 hrs", desc: "per week staff spend calling patients to confirm. Zero with automation." },
-                { icon: "📚", title: "Tutors", stat: "3x", desc: "more rebookings when students get a follow-up after their session." },
-                { icon: "💅", title: "Spas", stat: "AED 600+", desc: "average revenue recovered per month from prevented no-shows." },
-                { icon: "✈️", title: "Travel", stat: "92%", desc: "of travelers appreciate pre-trip reminders (visa, docs, check-in)." },
-              ].map((c, i) => (
-                <div key={i} style={{
-                  background: "#081525", borderRadius: 18, padding: "24px 20px",
-                  flex: "1 1 170px", maxWidth: 190, border: "1px solid #1d3b59",
-                  textAlign: "center",
-                }}>
-                  <div style={{ fontSize: 32, marginBottom: 8 }}>{c.icon}</div>
-                  <div style={{ fontWeight: 800, fontSize: 15, color: "#f5f9ff", marginBottom: 6 }}>{c.title}</div>
-                  <div style={{ fontSize: 24, fontWeight: 900, color: "#1687ff", marginBottom: 6 }}>{c.stat}</div>
-                  <div style={{ fontSize: 12, color: "#91a7bd", lineHeight: 1.5 }}>{c.desc}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </FadeIn>
       </section>
 
       {/* ─── PRICING ─── */}
