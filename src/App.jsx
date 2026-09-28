@@ -1,6 +1,30 @@
 import { useState, useEffect, useRef } from "react";
 
 const DASHBOARD_URL = "https://dashboard.autoflow.ivanit.work";
+function AutoFlowLogo({ compact = false, monochrome = false }) {
+  const id = compact ? "afLogoCompact" : "afLogo";
+  return (
+    <span className={compact ? "af-logo af-logo--compact" : "af-logo"} aria-label="AutoFlow">
+      <svg className="af-logo-mark" viewBox="0 0 120 100" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id={id + "Blue"} x1="18" y1="78" x2="94" y2="15" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stopColor={monochrome ? "#FFFFFF" : "#1687FF"} />
+            <stop offset="0.55" stopColor={monochrome ? "#FFFFFF" : "#00C8FF"} />
+            <stop offset="1" stopColor={monochrome ? "#FFFFFF" : "#49D7FF"} />
+          </linearGradient>
+        </defs>
+        <path d="M18 77 42 18c2-5 6-8 12-8h11l30 67c2 5-1 9-7 9H74L54 38 40 72c-2 5-7 8-13 8H22c-5 0-6-2-4-3Z" fill={"url(#" + id + "Blue)"} />
+        <path d="M8 58h43M15 46h31M25 34h21" stroke={monochrome ? "#FFFFFF" : "#00C8FF"} strokeWidth="8" strokeLinecap="round" />
+        <circle cx="5" cy="58" r="4" fill={monochrome ? "#FFFFFF" : "#00C8FF"} />
+        <path d="M47 18c13 4 24 13 31 25" stroke={monochrome ? "#FFFFFF" : "#1687FF"} strokeWidth="7" strokeLinecap="round" opacity=".9" />
+      </svg>
+      {!compact && (
+        <span className="af-logo-type"><span>Auto</span><strong>Flow</strong></span>
+      )}
+    </span>
+  );
+}
+
 
 function scrollToQuote() {
   const el = document.getElementById("quote");
@@ -307,15 +331,7 @@ function DashboardMockup() {
     <div className="af-hero-visual">
       <div className="af-dashboard-glow" />
       <div className="af-dashboard">
-        <div className="af-dashboard-top"><div className="af-window-dots"><i /><i /><i /></div><div className="af-dashboard-brand">
-              <span className="af-dashboard-brand-mark" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
-                  <path d="M5 16 9.5 6h5L19 16" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M7.5 13h9" stroke="#9BE7FF" strokeWidth="2" strokeLinecap="round"/>
-                  <path d="M14 6 18 11" stroke="#00C8FF" strokeWidth="2.5" strokeLinecap="round"/>
-                </svg>
-              </span> AutoFlow
-            </div><div className="af-live">● Live</div></div>
+        <div className="af-dashboard-top"><div className="af-window-dots"><i /><i /><i /></div><div className="af-dashboard-brand"><AutoFlowLogo compact /></div><div className="af-live">● Live</div></div>
         <div className="af-dashboard-body">
           <aside className="af-dashboard-sidebar">
             <div className="af-side-item active">⌂ <span>Dashboard</span></div>
@@ -379,8 +395,15 @@ export default function AutoFlowLanding() {
         .login-link:hover { border-color: rgba(255,255,255,0.4) !important; color: white !important; }
         .af-nav { display:flex; justify-content:space-between; align-items:center; padding:16px 32px; background:rgba(6,17,31,.72); backdrop-filter:blur(18px); position:fixed; inset:0 0 auto 0; z-index:100; border-bottom:1px solid rgba(255,255,255,.06); transition:all .25s ease; }
         .af-nav.af-nav-scrolled { background:rgba(6,17,31,.96); padding-top:11px; padding-bottom:11px; }
-        .af-brand { display:flex; align-items:center; gap:10px; color:#fff; text-decoration:none; font-size:20px; font-weight:900; letter-spacing:-.5px; }
-        .af-brand-mark { width:44px; height:44px; display:grid; place-items:center; border-radius:13px; background:linear-gradient(145deg,#0b74ff 0%,#1687ff 45%,#00c8ff 100%); box-shadow:0 8px 28px rgba(0,160,255,.28), inset 0 1px 0 rgba(255,255,255,.18); } .af-brand-mark svg { display:block; }
+        .af-brand { display:flex; align-items:center; color:#fff; text-decoration:none; }
+        .af-logo { display:inline-flex; align-items:center; gap:11px; }
+        .af-logo-mark { width:50px; height:42px; display:block; flex:0 0 auto; filter:drop-shadow(0 7px 18px rgba(0,170,255,.2)); }
+        .af-logo-type { display:inline-flex; align-items:baseline; font-size:25px; line-height:1; font-weight:900; letter-spacing:-1.25px; color:#fff; }
+        .af-logo-type strong { font-weight:900; background:linear-gradient(135deg,#1687ff,#00c8ff); -webkit-background-clip:text; background-clip:text; color:transparent; }
+        .af-logo--compact { gap:0; }
+        .af-logo--compact .af-logo-mark { width:21px; height:18px; filter:none; }
+        .af-logo--compact .af-logo-type { display:none; }
+        .af-dashboard-brand { display:flex; align-items:center; flex:1; }
         .af-nav-links { display:flex; align-items:center; gap:24px; }
         .af-nav-links a { color:rgba(255,255,255,.68); text-decoration:none; font-weight:600; font-size:13px; transition:color .2s,background .2s,border .2s; }
         .af-nav-links a:hover { color:#fff; }
@@ -393,7 +416,7 @@ export default function AutoFlowLanding() {
         .af-dashboard { position:relative; z-index:2; width:min(560px,100%); border:1px solid rgba(255,255,255,.13); border-radius:18px; overflow:hidden; background:#081525; box-shadow:0 28px 80px rgba(0,0,0,.48),0 0 60px rgba(0,140,255,.09); transform:perspective(1100px) rotateY(-4deg); }
         .af-dashboard-top { height:44px; display:flex; align-items:center; gap:14px; padding:0 14px; border-bottom:1px solid rgba(255,255,255,.08); background:#0b1a2c; }
         .af-window-dots { display:flex; gap:5px; }.af-window-dots i { width:7px;height:7px;border-radius:50%;background:#34516c;display:block; }
-        .af-dashboard-brand { color:#eaf4ff; font-size:11px; font-weight:800; flex:1; display:flex; align-items:center; gap:5px; }.af-dashboard-brand-mark { display:grid; place-items:center; width:18px; height:18px; border-radius:5px; background:linear-gradient(135deg,#1687ff,#00c8ff); }
+        .af-dashboard-brand { color:#eaf4ff; font-size:11px; font-weight:800; flex:1; display:flex; align-items:center; gap:5px; }
         .af-live { color:#19d98a; font-size:10px; font-weight:700; }
         .af-dashboard-body { display:flex; min-height:330px; }
         .af-dashboard-sidebar { width:125px; padding:14px 9px; background:#071321; border-right:1px solid rgba(255,255,255,.06); }
@@ -406,8 +429,10 @@ export default function AutoFlowLanding() {
         .af-data-list { display:flex; flex-direction:column; gap:8px; }.af-data-row { display:flex; align-items:center; gap:10px; padding:11px; border:1px solid #1d3b59; border-radius:9px; color:#dce7f3; font-size:11px; }.af-data-row span:nth-child(2){flex:1}.af-data-row small{display:block;color:#7187a0;margin-top:3px}.af-data-row b{color:#19d98a;font-size:10px}.af-avatar{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#143a62;color:#6fc4ff;font-weight:800}
         .af-flow-preview { display:flex; flex-direction:column; align-items:center; gap:7px; padding:15px; }.af-flow-node { width:80%; padding:13px; text-align:center; border:1px solid #315474; border-radius:9px; background:#10243a; color:#dce7f3; font-size:11px; }.af-flow-node.blue-node{border-color:#1687ff}.af-flow-node.green-node{border-color:#19d98a}
         .af-phone-mini { position:absolute; z-index:3; right:-28px; bottom:-34px; transform:scale(.58); transform-origin:bottom right; filter:drop-shadow(0 20px 30px rgba(0,0,0,.5)); }
+        .af-footer .af-logo-mark { width:40px; height:34px; }
+        .af-footer .af-logo-type { font-size:21px; }
         @media (max-width: 900px) {
-          .af-nav { padding:12px 18px; }.af-nav-links { position:absolute; top:66px; left:12px; right:12px; display:none; flex-direction:column; align-items:stretch; gap:4px; padding:12px; background:rgba(7,19,33,.98); border:1px solid rgba(255,255,255,.1); border-radius:14px; box-shadow:0 20px 50px rgba(0,0,0,.45); }.af-nav-links.open { display:flex; }.af-nav-links a { padding:12px 13px; border-radius:9px; }.af-nav-links .af-nav-cta { text-align:center; }.af-menu-btn { display:block; }
+          .af-nav { padding:12px 18px; }.af-logo-mark { width:46px; height:39px; }.af-logo-type { font-size:22px; }.af-nav-links { position:absolute; top:66px; left:12px; right:12px; display:none; flex-direction:column; align-items:stretch; gap:4px; padding:12px; background:rgba(7,19,33,.98); border:1px solid rgba(255,255,255,.1); border-radius:14px; box-shadow:0 20px 50px rgba(0,0,0,.45); }.af-nav-links.open { display:flex; }.af-nav-links a { padding:12px 13px; border-radius:9px; }.af-nav-links .af-nav-cta { text-align:center; }.af-menu-btn { display:block; }
           .af-hero-visual { min-height:400px; margin-top:10px; }.af-dashboard { transform:none; }.af-phone-mini { right:-10px; bottom:-45px; transform:scale(.47); }
         }
         @media (max-width: 620px) {
@@ -418,14 +443,7 @@ export default function AutoFlowLanding() {
 
       {/* ─── NAV ─── */}
       <nav className={"af-nav " + (scrolled ? "af-nav-scrolled" : "")}>
-        <a href="#" className="af-brand" aria-label="AutoFlow home"><span className="af-brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 48 48" width="28" height="28" fill="none">
-              <path d="M10 31.5 19.5 11h9L38 31.5" stroke="white" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M15 27h18" stroke="#9BE7FF" strokeWidth="4" strokeLinecap="round"/>
-              <path d="M27.5 11 35 20.5" stroke="#00C8FF" strokeWidth="5" strokeLinecap="round"/>
-              <path d="M31 31.5c2.2-3.1 3.6-6.5 3.8-10.2" stroke="#1687FF" strokeWidth="4" strokeLinecap="round"/>
-            </svg>
-          </span><span>AutoFlow</span></a>
+        <a href="#" className="af-brand" aria-label="AutoFlow home"><AutoFlowLogo /></a>
         <div className={"af-nav-links " + (mobileNavOpen ? "open" : "")}>
           <a href="#how" onClick={() => setMobileNavOpen(false)}>How it works</a>
           <a href="#industries" onClick={() => setMobileNavOpen(false)}>Industries</a>
@@ -707,7 +725,7 @@ export default function AutoFlowLanding() {
             display: "flex", alignItems: "center", justifyContent: "center",
             color: "white", fontWeight: 900, fontSize: 15,
           }}>A</div>
-          <span style={{ fontWeight: 900, fontSize: 17, color: "white" }}>AutoFlow</span>
+          <AutoFlowLogo />
         </div>
         <div style={{ display: "flex", justifyContent: "center", gap: 20, marginBottom: 16 }}>
           <a href="#pricing" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Pricing</a>
