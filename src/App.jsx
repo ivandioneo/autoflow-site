@@ -328,10 +328,6 @@ function DashboardMockup() {
 }
 // ─── Main Page ───
 export default function AutoFlowLanding() {
-  const [form, setForm] = useState({ name: "", business: "", email: "", whatsapp: "", type: "", message: "" });
-  const [errors, setErrors] = useState({});
-  const [submitted, setSubmitted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
@@ -340,65 +336,6 @@ export default function AutoFlowLanding() {
     window.addEventListener("scroll", h);
     return () => window.removeEventListener("scroll", h);
   }, []);
-
-  const sanitize = (str) => str.replace(/<[^>]*>/g, "").replace(/[<>"'`]/g, "").trim();
-  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const isValidWhatsApp = (num) => {
-    const digits = num.replace(/[\s\-\+\(\)]/g, "");
-    return /^\d{7,15}$/.test(digits);
-  };
-  const isValidName = (name) => /^[a-zA-Z\s\-'.]{2,50}$/.test(name);
-
-  const lastSubmitRef = useRef(0);
-
-  const handleInputChange = (key, value) => {
-    let processed = value;
-    if (key === "email") processed = value.toLowerCase().trim();
-    if (key === "whatsapp") processed = value.replace(/[^0-9+\-\s()]/g, "");
-    if (key === "name" || key === "business") processed = value.replace(/[^a-zA-Z\s\-'.]/g, "");
-    if (key === "message") processed = value.slice(0, 500);
-    setForm(prev => ({ ...prev, [key]: processed }));
-    if (errors[key]) setErrors(prev => ({ ...prev, [key]: null }));
-  };
-
-  const validate = () => {
-    const e = {};
-    if (!form.name || !isValidName(form.name)) e.name = "Enter a valid name (letters only, 2-50 chars)";
-    if (!form.business || form.business.trim().length < 2) e.business = "Enter a business name";
-    if (!form.email || !isValidEmail(form.email)) e.email = "Enter a valid email address";
-    if (!form.whatsapp || !isValidWhatsApp(form.whatsapp)) e.whatsapp = "Enter a valid phone number (7-15 digits)";
-    if (!form.type) e.type = "Select a business type";
-    if (form.message && form.message.length > 500) e.message = "Message too long (max 500 characters)";
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
-  const handleSubmit = async () => {
-    const now = Date.now();
-    if (now - lastSubmitRef.current < 10000) return;
-    if (!validate()) return;
-    setSubmitting(true);
-    lastSubmitRef.current = now;
-    try {
-      const sanitizedForm = {
-        name: sanitize(form.name),
-        business: sanitize(form.business),
-        email: form.email.toLowerCase().trim(),
-        whatsapp: form.whatsapp.replace(/[^0-9+\-\s()]/g, ""),
-        type: form.type,
-        message: sanitize(form.message).slice(0, 500),
-      };
-      await fetch('https://automate.ivanit.work/api/v1/webhooks/1UIlGrv4FI4uRYsYdfWc5', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sanitizedForm)
-      });
-      setSubmitted(true);
-    } catch (err) {
-      setErrors({ submit: "Something went wrong. Please try again." });
-    }
-    setSubmitting(false);
-  };
 
   return (
     <div className="autoflow-dark-site" style={{ fontFamily: "'Inter', system-ui, sans-serif", color: "#dce7f3", background: "#06111f", overflowX: "hidden" }}>
@@ -423,7 +360,6 @@ export default function AutoFlowLanding() {
           0%, 100% { transform: translateY(0px); }
           50% { transform: translateY(-12px); }
         }
-        input:focus, textarea:focus { border-color: #1687ff !important; box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
         a:focus-visible, button:focus-visible { outline: 2px solid #00c8ff; outline-offset: 2px; }
         /* AutoFlow dark landing-page system */
         ::selection { background: rgba(22,135,255,0.35); color: #fff; }
@@ -481,7 +417,7 @@ export default function AutoFlowLanding() {
           <a href="#calc" onClick={() => setMobileNavOpen(false)}>Calculator</a>
           <a href="#pricing" onClick={() => setMobileNavOpen(false)}>Pricing</a>
           <a href={DASHBOARD_URL} className="af-login">Log in</a>
-          <a href="#quote" className="af-nav-cta" onClick={() => setMobileNavOpen(false)}>Get Started Free →</a>
+          <a href={DASHBOARD_URL} className="af-nav-cta" onClick={() => setMobileNavOpen(false)}>Open AutoFlow →</a>
         </div>
         <button className="af-menu-btn" type="button" aria-label={mobileNavOpen ? "Close menu" : "Open menu"} aria-expanded={mobileNavOpen} onClick={() => setMobileNavOpen(v => !v)}><span /><span /><span /></button>
       </nav>
@@ -536,13 +472,13 @@ export default function AutoFlowLanding() {
               Automated reminders, follow-ups, and booking confirmations that run on their own — so you stop chasing customers and start reclaiming your time. Built for salons, clinics, tutors, and travel agencies in the UAE.
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 36 }}>
-              <a href="#quote" style={{
+              <a href="#how" style={{
                 background: "linear-gradient(135deg, #1687ff, #00c8ff)",
                 color: "white", padding: "16px 32px", borderRadius: 14,
                 textDecoration: "none", fontWeight: 800, fontSize: 16,
                 boxShadow: "0 8px 32px rgba(13,148,136,0.35)",
                 transition: "transform 0.2s", display: "inline-block",
-              }}>Request a Free Quote</a>
+              }}>See How It Works →</a>
               <a href="#calc" style={{
                 background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
                 color: "white", padding: "16px 28px", borderRadius: 14,
@@ -573,7 +509,7 @@ export default function AutoFlowLanding() {
                 See exactly how much you're leaving on the table
               </h2>
               <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 15, lineHeight: 1.7, marginBottom: 24 }}>
-                The average appointment business loses 15–30% of revenue to no-shows. Drag the sliders to see your numbers — then let us fix them.
+                The average appointment business loses 15–30% of revenue to no-shows. Drag the sliders to see your numbers and understand where automation can help.
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 {[
@@ -699,13 +635,13 @@ export default function AutoFlowLanding() {
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center", alignItems: "stretch" }}>
               <PricingCard tier="Starter" price="Free" desc="Try it with basic reminders"
-                ctaLabel="Start Free" onCta={scrollToQuote}
+                ctaLabel="Start Free" onCta={() => { window.location.href = DASHBOARD_URL; }}
                 features={["1 active automation", "Up to 50 reminders/month", "WhatsApp or SMS", "Basic dashboard"]} />
               <PricingCard tier="Professional" price="AED 149" desc="For businesses that can't afford no-shows" highlight badge="Most Popular"
-                ctaLabel="Get Started" onCta={scrollToQuote}
+                ctaLabel="Get Started" onCta={() => { window.location.href = DASHBOARD_URL; }}
                 features={["5 active automations", "Unlimited reminders", "WhatsApp + SMS", "No-show tracking dashboard", "Follow-up sequences", "Priority support"]} />
               <PricingCard tier="Business" price="AED 349" desc="Full automation suite, custom workflows"
-                ctaLabel="Get Started" onCta={scrollToQuote}
+                ctaLabel="Get Started" onCta={() => { window.location.href = DASHBOARD_URL; }}
                 features={["Unlimited automations", "Custom workflow builds", "Multi-location support", "Lead capture + CRM sync", "Dedicated account manager", "Monthly performance report"]} />
             </div>
             <p style={{ textAlign: "center", color: "#7187a0", fontSize: 13, marginTop: 28 }}>
@@ -744,137 +680,6 @@ export default function AutoFlowLanding() {
         </FadeIn>
       </section>
 
-      {/* ─── QUOTE FORM ─── */}
-      <section id="quote" style={{ padding: "80px 32px", background: "#0b1a2c" }}>
-        <FadeIn>
-          <div style={{ maxWidth: 560, margin: "0 auto" }}>
-            <div style={{ textAlign: "center", marginBottom: 36 }}>
-              <h2 style={{ fontSize: 34, fontWeight: 900, color: "#f5f9ff", letterSpacing: -1 }}>
-                Get your free automation plan
-              </h2>
-              <p style={{ color: "#7187a0", fontSize: 15, marginTop: 8 }}>
-                Tell us about your business — we'll design your first flow and set it up for free.
-              </p>
-            </div>
-            {submitted ? (
-              <div style={{
-                background: "#F0FDF4", borderRadius: 20, padding: "56px 32px",
-                textAlign: "center", border: "1px solid #BBF7D0",
-              }}>
-                <div style={{ fontSize: 56, marginBottom: 16 }}>🎉</div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: "#f5f9ff", marginBottom: 8 }}>
-                  You're in!
-                </div>
-                <div style={{ color: "#91a7bd", fontSize: 14, lineHeight: 1.6 }}>
-                  We'll reach out on WhatsApp within 24 hours with your custom automation plan. No payment needed to start.
-                </div>
-              </div>
-            ) : (
-              <div style={{
-                background: "#081525", borderRadius: 20, padding: "36px 28px",
-                border: "1px solid #1d3b59",
-              }}>
-                {errors.submit && (
-                  <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, padding: "10px 14px", marginBottom: 14, color: "#DC2626", fontSize: 13 }}>
-                    {errors.submit}
-                  </div>
-                )}
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginBottom: 14 }}>
-                  {[
-                    { key: "name", label: "Your name", ph: "Ahmed", w: "1 1 48%", type: "text", maxLen: 50 },
-                    { key: "business", label: "Business name", ph: "GlowCuts Salon", w: "1 1 48%", type: "text", maxLen: 50 },
-                    { key: "email", label: "Email", ph: "ahmed@glowcuts.ae", w: "1 1 48%", type: "email", maxLen: 100 },
-                    { key: "whatsapp", label: "WhatsApp", ph: "+971 50 123 4567", w: "1 1 48%", type: "tel", maxLen: 20 },
-                  ].map(f => (
-                    <div key={f.key} style={{ flex: f.w }}>
-                      <label style={{ fontSize: 12, fontWeight: 700, color: "#f5f9ff", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
-                        {f.label}
-                      </label>
-                      <input
-                        type={f.type}
-                        placeholder={f.ph}
-                        value={form[f.key]}
-                        maxLength={f.maxLen}
-                        onChange={e => handleInputChange(f.key, e.target.value)}
-                        style={{
-                          width: "100%", padding: "12px 14px", borderRadius: 10,
-                          border: errors[f.key] ? "1px solid #EF4444" : "1px solid #1d3b59",
-                          fontSize: 14, outline: "none",
-                          fontFamily: "inherit", background: "#0b1a2c", transition: "all 0.2s",
-                        }}
-                      />
-                      {errors[f.key] && (
-                        <p style={{ color: "#EF4444", fontSize: 11, marginTop: 4 }}>{errors[f.key]}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <div style={{ marginBottom: 14 }}>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: "#f5f9ff", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
-                    Business type
-                  </label>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                    {["Salon", "Clinic", "Tutor", "Spa", "Travel", "Other"].map(t => (
-                      <button
-                        key={t}
-                        onClick={() => { setForm(prev => ({ ...prev, type: t })); if (errors.type) setErrors(prev => ({ ...prev, type: null })); }}
-                        style={{
-                          padding: "8px 16px", borderRadius: 10, fontSize: 13, fontWeight: 600,
-                          border: form.type === t ? "2px solid #1687ff" : errors.type ? "1px solid #EF4444" : "1px solid #1d3b59",
-                          background: form.type === t ? "rgba(13,148,136,0.08)" : "white",
-                          color: form.type === t ? "#1687ff" : "#64748B",
-                          cursor: "pointer", transition: "all 0.2s",
-                        }}
-                      >{t}</button>
-                    ))}
-                  </div>
-                  {errors.type && (
-                    <p style={{ color: "#EF4444", fontSize: 11, marginTop: 4 }}>{errors.type}</p>
-                  )}
-                </div>
-                <div style={{ marginBottom: 18 }}>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: "#f5f9ff", display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.3 }}>
-                    What do you need automated?
-                  </label>
-                  <textarea
-                    placeholder="e.g. appointment reminders, follow-ups, booking confirmations..."
-                    value={form.message} rows={3}
-                    maxLength={500}
-                    onChange={e => handleInputChange("message", e.target.value)}
-                    style={{
-                      width: "100%", padding: "12px 14px", borderRadius: 10,
-                      border: "1px solid #1d3b59", fontSize: 14, outline: "none",
-                      fontFamily: "inherit", resize: "vertical", background: "#0b1a2c",
-                      transition: "all 0.2s",
-                    }}
-                  />
-                  <p style={{ textAlign: "right", fontSize: 11, color: "#7187a0", marginTop: 2 }}>
-                    {form.message.length}/500
-                  </p>
-                </div>
-                <button
-                  onClick={handleSubmit}
-                  disabled={submitting}
-                  style={{
-                    width: "100%", padding: "16px", borderRadius: 14, border: "none",
-                    background: submitting ? "#94A3B8" : "linear-gradient(135deg, #1687ff, #00c8ff)",
-                    color: "white", fontWeight: 800, fontSize: 16,
-                    cursor: submitting ? "not-allowed" : "pointer",
-                    boxShadow: submitting ? "none" : "0 8px 32px rgba(13,148,136,0.3)",
-                    transition: "all 0.2s",
-                  }}
-                >
-                  {submitting ? "Submitting..." : "Submit — It's Free"}
-                </button>
-                <p style={{ textAlign: "center", fontSize: 12, color: "#7187a0", marginTop: 10 }}>
-                  No payment required. We'll design your automation and show you how it works first.
-                </p>
-              </div>
-            )}
-          </div>
-        </FadeIn>
-      </section>
-
       {/* ─── FOOTER ─── */}
       <footer style={{
         background: "#0F172A", padding: "48px 32px", textAlign: "center",
@@ -891,7 +696,6 @@ export default function AutoFlowLanding() {
         </div>
         <div style={{ display: "flex", justifyContent: "center", gap: 20, marginBottom: 16 }}>
           <a href="#pricing" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Pricing</a>
-          <a href="#quote" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Get a Quote</a>
           <a href={DASHBOARD_URL} style={{ color: "rgba(255,255,255,0.4)", textDecoration: "none", fontSize: 13 }}>Log in</a>
         </div>
         <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, marginBottom: 6 }}>
