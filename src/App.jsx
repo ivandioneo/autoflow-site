@@ -295,6 +295,37 @@ function PricingCard({ tier, price, desc, features, highlight, badge, onCta, cta
   );
 }
 
+// ─── Interactive Dashboard Preview ───
+function DashboardMockup() {
+  const [active, setActive] = useState("bookings");
+  const tabs = [
+    { key: "bookings", label: "Bookings" },
+    { key: "customers", label: "Customers" },
+    { key: "automations", label: "Automations" },
+  ];
+  return (
+    <div className="af-hero-visual">
+      <div className="af-dashboard-glow" />
+      <div className="af-dashboard">
+        <div className="af-dashboard-top"><div className="af-window-dots"><i /><i /><i /></div><div className="af-dashboard-brand"><span>A</span> AutoFlow</div><div className="af-live">● Live</div></div>
+        <div className="af-dashboard-body">
+          <aside className="af-dashboard-sidebar">
+            <div className="af-side-item active">⌂ <span>Dashboard</span></div>
+            {tabs.map(t => <button key={t.key} className={active === t.key ? "af-side-item active" : "af-side-item"} onClick={() => setActive(t.key)} type="button">{t.key === "bookings" ? "▣" : t.key === "customers" ? "♙" : "⚡"} <span>{t.label}</span></button>)}
+            <div className="af-side-item">⚙ <span>Settings</span></div>
+          </aside>
+          <div className="af-dashboard-main">
+            <div className="af-dashboard-heading"><div><small>Monday, June 16</small><h3>{active === "bookings" ? "Bookings" : active === "customers" ? "Customers" : "Automation flows"}</h3></div><button className="af-mini-cta" type="button">+ New</button></div>
+            {active === "bookings" && <div className="af-calendar">{["Mon 10","Tue 11","Wed 12","Thu 13"].map((d,i) => <div className="af-day" key={d}><strong>{d}</strong><div className="af-event blue" style={{marginTop:28}}>Haircut<br/><small>10:00</small></div>{i===1 && <div className="af-event purple">Hair Color<br/><small>11:30</small></div>}{i===2 && <div className="af-event green">Treatment<br/><small>14:00</small></div>}</div>)}</div>}
+            {active === "customers" && <div className="af-data-list">{["Sarah Lim","Jane Doe","Mike Tan","Anna Lee"].map((n,i) => <div className="af-data-row" key={n}><span className="af-avatar">{n[0]}</span><span>{n}<small>{i%2 ? "Returning customer" : "New customer"}</small></span><b>{i+2} visits</b></div>)}</div>}
+            {active === "automations" && <div className="af-flow-preview"><div className="af-flow-node">📅 Customer books</div><span>↓</span><div className="af-flow-node blue-node">⚡ Confirmation sent</div><span>↓</span><div className="af-flow-node green-node">💬 Reminder sent</div></div>}
+          </div>
+        </div>
+      </div>
+      <div className="af-phone-mini"><PhoneMockup /></div>
+    </div>
+  );
+}
 // ─── Main Page ───
 export default function AutoFlowLanding() {
   const [form, setForm] = useState({ name: "", business: "", email: "", whatsapp: "", type: "", message: "" });
@@ -302,6 +333,7 @@ export default function AutoFlowLanding() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 40);
@@ -401,46 +433,58 @@ export default function AutoFlowLanding() {
         }
         .nav-link:hover { color: white !important; }
         .login-link:hover { border-color: rgba(255,255,255,0.4) !important; color: white !important; }
+        .af-nav { display:flex; justify-content:space-between; align-items:center; padding:16px 32px; background:rgba(6,17,31,.72); backdrop-filter:blur(18px); position:fixed; inset:0 0 auto 0; z-index:100; border-bottom:1px solid rgba(255,255,255,.06); transition:all .25s ease; }
+        .af-nav.af-nav-scrolled { background:rgba(6,17,31,.96); padding-top:11px; padding-bottom:11px; }
+        .af-brand { display:flex; align-items:center; gap:10px; color:#fff; text-decoration:none; font-size:20px; font-weight:900; letter-spacing:-.5px; }
+        .af-brand-mark { width:38px; height:38px; display:grid; place-items:center; border-radius:11px; background:linear-gradient(135deg,#1687ff,#00c8ff); box-shadow:0 8px 26px rgba(0,160,255,.25); }
+        .af-nav-links { display:flex; align-items:center; gap:24px; }
+        .af-nav-links a { color:rgba(255,255,255,.68); text-decoration:none; font-weight:600; font-size:13px; transition:color .2s,background .2s,border .2s; }
+        .af-nav-links a:hover { color:#fff; }
+        .af-nav-links .af-login { padding:9px 15px; border:1px solid rgba(255,255,255,.16); border-radius:10px; }
+        .af-nav-links .af-nav-cta { color:#fff; padding:10px 17px; border-radius:11px; background:linear-gradient(135deg,#1687ff,#00c8ff); box-shadow:0 7px 24px rgba(22,135,255,.25); }
+        .af-menu-btn { display:none; width:44px; height:44px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); border-radius:11px; padding:9px; cursor:pointer; }
+        .af-menu-btn span { display:block; height:2px; margin:5px 0; border-radius:2px; background:#fff; }
+        .af-hero-visual { position:relative; min-height:470px; display:flex; align-items:center; justify-content:center; }
+        .af-dashboard-glow { position:absolute; width:460px; height:380px; border-radius:50%; background:radial-gradient(circle,rgba(22,135,255,.22),transparent 68%); filter:blur(28px); }
+        .af-dashboard { position:relative; z-index:2; width:min(560px,100%); border:1px solid rgba(255,255,255,.13); border-radius:18px; overflow:hidden; background:#081525; box-shadow:0 28px 80px rgba(0,0,0,.48),0 0 60px rgba(0,140,255,.09); transform:perspective(1100px) rotateY(-4deg); }
+        .af-dashboard-top { height:44px; display:flex; align-items:center; gap:14px; padding:0 14px; border-bottom:1px solid rgba(255,255,255,.08); background:#0b1a2c; }
+        .af-window-dots { display:flex; gap:5px; }.af-window-dots i { width:7px;height:7px;border-radius:50%;background:#34516c;display:block; }
+        .af-dashboard-brand { color:#eaf4ff; font-size:11px; font-weight:800; flex:1; }.af-dashboard-brand span { display:inline-grid;place-items:center;width:18px;height:18px;border-radius:5px;background:linear-gradient(135deg,#1687ff,#00c8ff);margin-right:5px;color:#fff; }
+        .af-live { color:#19d98a; font-size:10px; font-weight:700; }
+        .af-dashboard-body { display:flex; min-height:330px; }
+        .af-dashboard-sidebar { width:125px; padding:14px 9px; background:#071321; border-right:1px solid rgba(255,255,255,.06); }
+        .af-side-item { width:100%; border:0; background:none; color:#7088a1; display:flex; gap:8px; align-items:center; padding:9px 7px; border-radius:7px; font-size:10px; cursor:pointer; text-align:left; margin-bottom:4px; }
+        .af-side-item.active { color:#fff; background:rgba(22,135,255,.13); }.af-side-item:hover { color:#fff; }
+        .af-dashboard-main { flex:1; min-width:0; padding:18px; }.af-dashboard-heading { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }.af-dashboard-heading small { color:#7187a0; font-size:9px; }.af-dashboard-heading h3 { color:#f5f9ff; font-size:18px; margin-top:3px; }
+        .af-mini-cta { border:0; color:#fff; background:#1687ff; border-radius:7px; padding:7px 10px; font-size:9px; cursor:pointer; }
+        .af-calendar { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; }.af-day { min-height:235px; border:1px solid #1d3b59; border-radius:8px; padding:8px; background:#0b1a2c; }.af-day strong { color:#91a7bd; font-size:9px; }
+        .af-event { margin-top:8px; padding:8px 6px; border-radius:6px; color:#fff; font-size:9px; line-height:1.35; }.af-event small { color:rgba(255,255,255,.55); }.af-event.blue{background:rgba(22,135,255,.26);border-left:2px solid #1687ff}.af-event.purple{background:rgba(139,92,246,.24);border-left:2px solid #8b5cf6}.af-event.green{background:rgba(25,217,138,.18);border-left:2px solid #19d98a}
+        .af-data-list { display:flex; flex-direction:column; gap:8px; }.af-data-row { display:flex; align-items:center; gap:10px; padding:11px; border:1px solid #1d3b59; border-radius:9px; color:#dce7f3; font-size:11px; }.af-data-row span:nth-child(2){flex:1}.af-data-row small{display:block;color:#7187a0;margin-top:3px}.af-data-row b{color:#19d98a;font-size:10px}.af-avatar{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#143a62;color:#6fc4ff;font-weight:800}
+        .af-flow-preview { display:flex; flex-direction:column; align-items:center; gap:7px; padding:15px; }.af-flow-node { width:80%; padding:13px; text-align:center; border:1px solid #315474; border-radius:9px; background:#10243a; color:#dce7f3; font-size:11px; }.af-flow-node.blue-node{border-color:#1687ff}.af-flow-node.green-node{border-color:#19d98a}
+        .af-phone-mini { position:absolute; z-index:3; right:-28px; bottom:-34px; transform:scale(.58); transform-origin:bottom right; filter:drop-shadow(0 20px 30px rgba(0,0,0,.5)); }
+        @media (max-width: 900px) {
+          .af-nav { padding:12px 18px; }.af-nav-links { position:absolute; top:66px; left:12px; right:12px; display:none; flex-direction:column; align-items:stretch; gap:4px; padding:12px; background:rgba(7,19,33,.98); border:1px solid rgba(255,255,255,.1); border-radius:14px; box-shadow:0 20px 50px rgba(0,0,0,.45); }.af-nav-links.open { display:flex; }.af-nav-links a { padding:12px 13px; border-radius:9px; }.af-nav-links .af-nav-cta { text-align:center; }.af-menu-btn { display:block; }
+          .af-hero-visual { min-height:400px; margin-top:10px; }.af-dashboard { transform:none; }.af-phone-mini { right:-10px; bottom:-45px; transform:scale(.47); }
+        }
+        @media (max-width: 620px) {
+          .af-hero-visual { min-height:350px; }.af-dashboard-sidebar { display:none; }.af-dashboard { width:100%; }.af-dashboard-body { min-height:280px; }.af-calendar { gap:4px; }.af-day { min-height:190px; padding:5px; }.af-event { font-size:8px; padding:6px 4px; }
+          .af-phone-mini { right:-20px; bottom:-58px; transform:scale(.38); }.af-hero-visual { margin-left:-4px; margin-right:-4px; }
+        }
       `}</style>
 
       {/* ─── NAV ─── */}
-      <nav style={{
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: scrolled ? "12px 32px" : "18px 32px",
-        background: scrolled ? "rgba(15,23,42,0.95)" : "transparent",
-        backdropFilter: scrolled ? "blur(20px)" : "none",
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        transition: "all 0.3s ease",
-        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "none",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 10,
-            background: "linear-gradient(135deg, #1687ff, #00c8ff)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "white", fontWeight: 900, fontSize: 17,
-            boxShadow: "0 4px 12px rgba(13,148,136,0.3)",
-          }}>A</div>
-          <span style={{ fontWeight: 900, fontSize: 19, color: "white", letterSpacing: -0.5 }}>AutoFlow</span>
+      <nav className={"af-nav " + (scrolled ? "af-nav-scrolled" : "")}>
+        <a href="#" className="af-brand" aria-label="AutoFlow home"><span className="af-brand-mark">A</span><span>AutoFlow</span></a>
+        <div className={"af-nav-links " + (mobileNavOpen ? "open" : "")}>
+          <a href="#how" onClick={() => setMobileNavOpen(false)}>How it works</a>
+          <a href="#industries" onClick={() => setMobileNavOpen(false)}>Industries</a>
+          <a href="#calc" onClick={() => setMobileNavOpen(false)}>Calculator</a>
+          <a href="#pricing" onClick={() => setMobileNavOpen(false)}>Pricing</a>
+          <a href={DASHBOARD_URL} className="af-login">Log in</a>
+          <a href="#quote" className="af-nav-cta" onClick={() => setMobileNavOpen(false)}>Get Started Free →</a>
         </div>
-        <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
-          <a href="#calc" className="nav-link" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>Calculator</a>
-          <a href="#how" className="nav-link" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>How it works</a>
-          <a href="#pricing" className="nav-link" style={{ color: "rgba(255,255,255,0.6)", textDecoration: "none", fontWeight: 500, fontSize: 13, transition: "color 0.2s" }}>Pricing</a>
-          <a href={DASHBOARD_URL} className="login-link" style={{
-            color: "rgba(255,255,255,0.75)", textDecoration: "none", fontWeight: 600, fontSize: 13,
-            padding: "8px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)",
-            transition: "all 0.2s",
-          }}>Log in</a>
-          <a href="#quote" style={{
-            background: "linear-gradient(135deg, #F59E0B, #F97316)",
-            color: "white", padding: "9px 20px", borderRadius: 10,
-            textDecoration: "none", fontWeight: 700, fontSize: 13,
-            boxShadow: "0 4px 16px rgba(245,158,11,0.3)",
-          }}>Get a Quote</a>
-        </div>
+        <button className="af-menu-btn" type="button" aria-label={mobileNavOpen ? "Close menu" : "Open menu"} aria-expanded={mobileNavOpen} onClick={() => setMobileNavOpen(v => !v)}><span /><span /><span /></button>
       </nav>
-
       {/* ─── HERO ─── */}
       <section style={{
         background: "linear-gradient(135deg, #0F172A 0%, #1E293B 40%, #0F172A 100%)",
@@ -460,8 +504,8 @@ export default function AutoFlowLanding() {
         }} />
 
         <div style={{
-          maxWidth: 1140, margin: "0 auto", display: "flex", flexWrap: "wrap",
-          alignItems: "center", justifyContent: "center", gap: 56, position: "relative",
+          maxWidth: 1240, margin: "0 auto", display: "flex", flexWrap: "wrap",
+          alignItems: "center", justifyContent: "space-between", gap: 42, position: "relative",
         }}>
           <div style={{ flex: "1 1 420px", maxWidth: 540 }}>
             <div style={{
@@ -476,7 +520,7 @@ export default function AutoFlowLanding() {
             </div>
 
             <h1 style={{
-              fontSize: 52, fontWeight: 900, color: "white", lineHeight: 1.08,
+              fontSize: "clamp(44px, 5.5vw, 68px)", fontWeight: 900, color: "white", lineHeight: 1.02,
               letterSpacing: -1.5, marginBottom: 20,
             }}>
               Put your business on{" "}
@@ -511,8 +555,8 @@ export default function AutoFlowLanding() {
               <span>✦ Cancel anytime</span>
             </div>
           </div>
-          <div style={{ flex: "0 0 auto", animation: "float 6s ease-in-out infinite" }}>
-            <PhoneMockup />
+          <div style={{ flex: "1 1 520px", maxWidth: 600 }}>
+            <DashboardMockup />
           </div>
         </div>
       </section>
@@ -612,7 +656,7 @@ export default function AutoFlowLanding() {
       </section>
 
       {/* ─── USE CASES ─── */}
-      <section style={{ padding: "72px 32px", background: "#0b1a2c" }}>
+      <section id="industries" style={{ padding: "72px 32px", background: "#0b1a2c" }}>
         <FadeIn>
           <div style={{ maxWidth: 1000, margin: "0 auto" }}>
             <h2 style={{ fontSize: 30, fontWeight: 900, color: "#f5f9ff", textAlign: "center", marginBottom: 12, letterSpacing: -0.5 }}>
