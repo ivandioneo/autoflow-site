@@ -320,35 +320,32 @@ function PricingCard({ tier, price, desc, features, highlight, badge, onCta, cta
 }
 
 // ─── Interactive Dashboard Preview ───
-function DashboardMockup() {
-  const [active, setActive] = useState("bookings");
-  const tabs = [
-    { key: "bookings", label: "Bookings" },
-    { key: "customers", label: "Customers" },
-    { key: "automations", label: "Automations" },
+function AutomationFlowMockup() {
+  const steps = [
+    { icon: "📅", title: "Booking received", text: "Customer books", cls: "af-flow-blue" },
+    { icon: "✓", title: "Confirmation", text: "Sent automatically", cls: "af-flow-cyan" },
+    { icon: "⏰", title: "Reminder", text: "Scheduled before visit", cls: "af-flow-green" },
+    { icon: "↻", title: "Follow-up", text: "Runs after booking", cls: "af-flow-purple" },
   ];
-  return (
-    <div className="af-hero-visual">
-      <div className="af-dashboard-glow" />
-      <div className="af-dashboard">
-        <div className="af-dashboard-top"><div className="af-window-dots"><i /><i /><i /></div><div className="af-dashboard-brand"><AutoFlowLogo compact /></div><div className="af-live">● Live</div></div>
-        <div className="af-dashboard-body">
-          <aside className="af-dashboard-sidebar">
-            <div className="af-side-item active">⌂ <span>Dashboard</span></div>
-            {tabs.map(t => <button key={t.key} className={active === t.key ? "af-side-item active" : "af-side-item"} onClick={() => setActive(t.key)} type="button">{t.key === "bookings" ? "▣" : t.key === "customers" ? "♙" : "⚡"} <span>{t.label}</span></button>)}
-            <div className="af-side-item">⚙ <span>Settings</span></div>
-          </aside>
-          <div className="af-dashboard-main">
-            <div className="af-dashboard-heading"><div><small>Monday, June 16</small><h3>{active === "bookings" ? "Bookings" : active === "customers" ? "Customers" : "Automation flows"}</h3></div><button className="af-mini-cta" type="button">+ New</button></div>
-            {active === "bookings" && <div className="af-calendar">{["Mon 10","Tue 11","Wed 12","Thu 13"].map((d,i) => <div className="af-day" key={d}><strong>{d}</strong><div className="af-event blue" style={{marginTop:28}}>Haircut<br/><small>10:00</small></div>{i===1 && <div className="af-event purple">Hair Color<br/><small>11:30</small></div>}{i===2 && <div className="af-event green">Treatment<br/><small>14:00</small></div>}</div>)}</div>}
-            {active === "customers" && <div className="af-data-list">{["Sarah Lim","Jane Doe","Mike Tan","Anna Lee"].map((n,i) => <div className="af-data-row" key={n}><span className="af-avatar">{n[0]}</span><span>{n}<small>{i%2 ? "Returning customer" : "New customer"}</small></span><b>{i+2} visits</b></div>)}</div>}
-            {active === "automations" && <div className="af-flow-preview"><div className="af-flow-node">📅 Customer books</div><span>↓</span><div className="af-flow-node blue-node">⚡ Confirmation sent</div><span>↓</span><div className="af-flow-node green-node">💬 Reminder sent</div></div>}
-          </div>
-        </div>
-      </div>
-      <div className="af-phone-mini"><PhoneMockup /></div>
-    </div>
-  );
+  return <div className="af-automation-visual"><div className="af-automation-glow" /><div className="af-flow-card">
+    <div className="af-flow-card-head"><div><small>AutoFlow automation</small><strong>Booking workflow</strong></div><span className="af-flow-status"><i /> Active</span></div>
+    <div className="af-flow-track">{steps.map((step,i)=><div className="af-flow-step-wrap" key={step.title}><div className={"af-flow-step "+step.cls}><span className="af-flow-icon">{step.icon}</span><div><strong>{step.title}</strong><small>{step.text}</small></div></div>{i<steps.length-1&&<div className="af-flow-connector"><span /></div>}</div>)}</div>
+    <div className="af-flow-result"><span>⚡</span><div><strong>Runs automatically</strong><small>No manual chasing required</small></div><b>LIVE</b></div>
+  </div></div>;
+}
+
+function DashboardMockup() {
+  const [active,setActive]=useState("bookings");
+  const tabs=[{key:"bookings",label:"Bookings"},{key:"customers",label:"Customers"},{key:"automations",label:"Automations"}];
+  return <div className="af-hero-visual"><div className="af-dashboard-glow" /><div className="af-dashboard">
+    <div className="af-dashboard-top"><div className="af-window-dots"><i/><i/><i/></div><div className="af-dashboard-brand"><AutoFlowLogo compact /></div><div className="af-live">● Live</div></div>
+    <div className="af-dashboard-body"><aside className="af-dashboard-sidebar"><div className="af-side-item active">⌂ <span>Dashboard</span></div>
+      {tabs.map(t=><button key={t.key} className={active===t.key?"af-side-item active":"af-side-item"} onClick={()=>setActive(t.key)} type="button">{t.key==="bookings"?"▣":t.key==="customers"?"♙":"⚡"} <span>{t.label}</span></button>)}<div className="af-side-item">⚙ <span>Settings</span></div>
+    </aside><div className="af-dashboard-main"><div className="af-dashboard-heading"><div><small>Monday, June 16</small><h3>{active==="bookings"?"Bookings":active==="customers"?"Customers":"Automation flows"}</h3></div><button className="af-mini-cta" type="button">+ New</button></div>
+      {active==="bookings"&&<div className="af-calendar">{["Mon 10","Tue 11","Wed 12","Thu 13"].map((d,i)=><div className="af-day" key={d}><strong>{d}</strong><div className="af-event blue" style={{marginTop:28}}>Haircut<br/><small>10:00</small></div>{i===1&&<div className="af-event purple">Hair Color<br/><small>11:30</small></div>}{i===2&&<div className="af-event green">Treatment<br/><small>14:00</small></div>}</div>)}</div>}
+      {active==="customers"&&<div className="af-data-list">{["Sarah Lim","Jane Doe","Mike Tan","Anna Lee"].map((n,i)=><div className="af-data-row" key={n}><span className="af-avatar">{n[0]}</span><span>{n}<small>{i%2?"Returning customer":"New customer"}</small></span><b>{i+2} visits</b></div>)}</div>}
+      {active==="automations"&&<div className="af-flow-preview"><div className="af-flow-node">📅 Customer books</div><span>↓</span><div className="af-flow-node blue-node">✓ Confirmation sent</div><span>↓</span><div className="af-flow-node green-node">⏰ Reminder scheduled</div><span>↓</span><div className="af-flow-node purple-node">↻ Follow-up triggered</div></div>}
+    </div></div></div><AutomationFlowMockup /></div>;
 }
 // ─── Main Page ───
 export default function AutoFlowLanding() {
@@ -393,6 +390,16 @@ export default function AutoFlowLanding() {
         }
         .nav-link:hover { color: white !important; }
         .login-link:hover { border-color: rgba(255,255,255,0.4) !important; color: white !important; }
+        .af-automation-visual { position:absolute; right:-34px; bottom:-54px; width:420px; z-index:4; animation:float 5s ease-in-out infinite; }
+        .af-automation-glow { position:absolute; inset:10% 0 0; background:radial-gradient(circle,rgba(0,200,255,.22),transparent 68%); filter:blur(30px); }
+        .af-flow-card { position:relative; background:rgba(7,20,37,.94); border:1px solid rgba(0,200,255,.18); border-radius:22px; padding:20px; box-shadow:0 26px 70px rgba(0,0,0,.42),0 0 35px rgba(0,140,255,.12); backdrop-filter:blur(16px); }
+        .af-flow-card-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }.af-flow-card-head small,.af-flow-step small,.af-flow-result small { display:block; color:#7187a0; font-size:10px; margin-top:3px; }.af-flow-card-head strong { display:block; color:#fff; font-size:14px; }
+        .af-flow-status { color:#43e6a0; font-size:10px; font-weight:800; padding:6px 9px; border-radius:99px; background:rgba(67,230,160,.08); border:1px solid rgba(67,230,160,.16); }.af-flow-status i { display:inline-block; width:6px; height:6px; border-radius:50%; background:#43e6a0; margin-right:5px; box-shadow:0 0 8px #43e6a0; }
+        .af-flow-step { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:13px; background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.07); }.af-flow-step strong { display:block; color:#eaf4ff; font-size:12px; }.af-flow-icon { width:31px; height:31px; display:grid; place-items:center; border-radius:9px; font-size:14px; background:rgba(22,135,255,.13); }.af-flow-cyan .af-flow-icon{background:rgba(0,200,255,.12)}.af-flow-green .af-flow-icon{background:rgba(67,230,160,.12)}.af-flow-purple .af-flow-icon{background:rgba(139,92,246,.13)}
+        .af-flow-connector { height:17px; position:relative; }.af-flow-connector:before { content:""; position:absolute; left:27px; top:0; bottom:0; border-left:1px dashed rgba(0,200,255,.28); }.af-flow-connector span { position:absolute; width:6px; height:6px; border-radius:50%; background:#00c8ff; left:24px; top:5px; box-shadow:0 0 10px #00c8ff; animation:flowPulse 1.8s ease-in-out infinite; }
+        .af-flow-result { display:flex; align-items:center; gap:10px; margin-top:16px; padding:10px 12px; border-radius:12px; background:linear-gradient(90deg,rgba(22,135,255,.1),rgba(67,230,160,.07)); border:1px solid rgba(0,200,255,.1); }.af-flow-result > span{font-size:17px}.af-flow-result strong{display:block;color:#fff;font-size:11px}.af-flow-result b{margin-left:auto;color:#43e6a0;font-size:9px;letter-spacing:1px}
+        @keyframes flowPulse { 0%,100%{transform:translateY(0);opacity:.4} 50%{transform:translateY(8px);opacity:1} }
+        .af-feature-strip { display:flex; gap:12px; padding:12px max(24px,calc((100vw - 1240px)/2)); background:#0b1a2c; border-top:1px solid rgba(255,255,255,.04); border-bottom:1px solid rgba(255,255,255,.05); overflow-x:auto; }.af-feature-card{min-width:205px;flex:1;display:flex;align-items:center;gap:11px;padding:13px 14px;border-radius:13px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.045)}.af-feature-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;color:#fff;font-weight:800;background:rgba(22,135,255,.15)}.af-feature-icon-1{background:rgba(0,200,255,.12);color:#00c8ff}.af-feature-icon-2{background:rgba(139,92,246,.13);color:#b69cff}.af-feature-icon-3{background:rgba(67,230,160,.12);color:#43e6a0}.af-feature-icon-4{background:rgba(245,158,11,.12);color:#f5b84a}.af-feature-card strong{display:block;color:#eaf4ff;font-size:11px}.af-feature-card small{display:block;color:#7187a0;font-size:9px;margin-top:3px}
         .af-nav { display:flex; justify-content:space-between; align-items:center; padding:16px 32px; background:rgba(6,17,31,.72); backdrop-filter:blur(18px); position:fixed; inset:0 0 auto 0; z-index:100; border-bottom:1px solid rgba(255,255,255,.06); transition:all .25s ease; }
         .af-nav.af-nav-scrolled { background:rgba(6,17,31,.96); padding-top:11px; padding-bottom:11px; }
         .af-brand { display:flex; align-items:center; color:#fff; text-decoration:none; }
@@ -432,6 +439,7 @@ export default function AutoFlowLanding() {
         .af-footer .af-logo-mark { width:40px; height:34px; }
         .af-footer .af-logo-type { font-size:21px; }
         @media (max-width: 900px) {
+          .af-automation-visual { position:relative; right:auto; bottom:auto; width:100%; margin:18px 0 0; animation:none; } .af-flow-card { padding:16px; }
           .af-nav { padding:12px 18px; }.af-logo-mark { width:46px; height:39px; }.af-logo-type { font-size:22px; }.af-nav-links { position:absolute; top:66px; left:12px; right:12px; display:none; flex-direction:column; align-items:stretch; gap:4px; padding:12px; background:rgba(7,19,33,.98); border:1px solid rgba(255,255,255,.1); border-radius:14px; box-shadow:0 20px 50px rgba(0,0,0,.45); }.af-nav-links.open { display:flex; }.af-nav-links a { padding:12px 13px; border-radius:9px; }.af-nav-links .af-nav-cta { text-align:center; }.af-menu-btn { display:block; }
           .af-hero-visual { min-height:400px; margin-top:10px; }.af-dashboard { transform:none; }.af-phone-mini { right:-10px; bottom:-45px; transform:scale(.47); }
         }
@@ -492,17 +500,17 @@ export default function AutoFlowLanding() {
               fontSize: "clamp(44px, 5.5vw, 68px)", fontWeight: 900, color: "white", lineHeight: 1.02,
               letterSpacing: -1.5, marginBottom: 20,
             }}>
-              Put your business on{" "}
+              Your business.<br />
               <span style={{
-                background: "linear-gradient(135deg, #00c8ff, #F59E0B)",
+                background: "linear-gradient(135deg, #1687FF, #00C8FF)",
                 WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-              }}>autopilot.</span>
+              }}>On autopilot.</span>
             </h1>
             <p style={{
               fontSize: 17, color: "rgba(255,255,255,0.5)", lineHeight: 1.7,
               marginBottom: 32, maxWidth: 440,
             }}>
-              Automated reminders, follow-ups, and booking confirmations that run on their own — so you stop chasing customers and start reclaiming your time. Built for salons, clinics, tutors, and travel agencies in the UAE.
+              Automated bookings, reminders, confirmations, and follow-ups that keep moving without manual work. Built to help small businesses save time and keep customers coming back.
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 36 }}>
               <a href="#how" style={{
@@ -519,15 +527,26 @@ export default function AutoFlowLanding() {
               }}>Calculate Your Savings ↓</a>
             </div>
             <div style={{ display: "flex", gap: 20, fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
-              <span>✦ No setup fees</span>
-              <span>✦ Works with WhatsApp</span>
-              <span>✦ Cancel anytime</span>
+              <span>✦ Less manual work</span>
+              <span>✦ Automated reminders</span>
+              <span>✦ Built for small businesses</span>
             </div>
           </div>
           <div style={{ flex: "1 1 520px", maxWidth: 600 }}>
             <DashboardMockup />
           </div>
         </div>
+      </section>
+
+      {/* ─── FEATURE STRIP ─── */}
+      <section className="af-feature-strip">
+        {[
+          { icon:"▣", title:"Online bookings", text:"Keep appointments organized" },
+          { icon:"✓", title:"Automated reminders", text:"Confirmations and follow-ups" },
+          { icon:"♙", title:"Customer management", text:"Keep customer details together" },
+          { icon:"▥", title:"Business insights", text:"See what is working" },
+          { icon:"⚡", title:"Save time", text:"Less admin, more focus" },
+        ].map((item,i)=><div className="af-feature-card" key={item.title}><span className={"af-feature-icon af-feature-icon-"+i}>{item.icon}</span><div><strong>{item.title}</strong><small>{item.text}</small></div></div>)}
       </section>
 
       {/* ─── SAVINGS CALCULATOR ─── */}
