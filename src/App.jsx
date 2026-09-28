@@ -337,15 +337,27 @@ function AutomationFlowMockup() {
 function DashboardMockup() {
   const [active,setActive]=useState("bookings");
   const tabs=[{key:"bookings",label:"Bookings"},{key:"customers",label:"Customers"},{key:"automations",label:"Automations"}];
-  return <div className="af-hero-visual"><div className="af-dashboard-glow" /><div className="af-dashboard">
-    <div className="af-dashboard-top"><div className="af-window-dots"><i/><i/><i/></div><div className="af-dashboard-brand"><AutoFlowLogo compact /></div><div className="af-live">● Live</div></div>
-    <div className="af-dashboard-body"><aside className="af-dashboard-sidebar"><div className="af-side-item active">⌂ <span>Dashboard</span></div>
-      {tabs.map(t=><button key={t.key} className={active===t.key?"af-side-item active":"af-side-item"} onClick={()=>setActive(t.key)} type="button">{t.key==="bookings"?"▣":t.key==="customers"?"♙":"⚡"} <span>{t.label}</span></button>)}<div className="af-side-item">⚙ <span>Settings</span></div>
-    </aside><div className="af-dashboard-main"><div className="af-dashboard-heading"><div><small>Monday, June 16</small><h3>{active==="bookings"?"Bookings":active==="customers"?"Customers":"Automation flows"}</h3></div><button className="af-mini-cta" type="button">+ New</button></div>
-      {active==="bookings"&&<div className="af-calendar">{["Mon 10","Tue 11","Wed 12","Thu 13"].map((d,i)=><div className="af-day" key={d}><strong>{d}</strong><div className="af-event blue" style={{marginTop:28}}>Haircut<br/><small>10:00</small></div>{i===1&&<div className="af-event purple">Hair Color<br/><small>11:30</small></div>}{i===2&&<div className="af-event green">Treatment<br/><small>14:00</small></div>}</div>)}</div>}
-      {active==="customers"&&<div className="af-data-list">{["Sarah Lim","Jane Doe","Mike Tan","Anna Lee"].map((n,i)=><div className="af-data-row" key={n}><span className="af-avatar">{n[0]}</span><span>{n}<small>{i%2?"Returning customer":"New customer"}</small></span><b>{i+2} visits</b></div>)}</div>}
-      {active==="automations"&&<div className="af-flow-preview"><div className="af-flow-node">📅 Customer books</div><span>↓</span><div className="af-flow-node blue-node">✓ Confirmation sent</div><span>↓</span><div className="af-flow-node green-node">⏰ Reminder scheduled</div><span>↓</span><div className="af-flow-node purple-node">↻ Follow-up triggered</div></div>}
-    </div></div></div><AutomationFlowMockup /></div>;
+  return <div className="af-hero-visual">
+    <div className="af-dashboard-glow" />
+    <div className="af-laptop">
+      <div className="af-laptop-screen">
+        <div className="af-laptop-camera" />
+        <div className="af-dashboard">
+          <div className="af-dashboard-top"><div className="af-window-dots"><i/><i/><i/></div><div className="af-dashboard-brand"><AutoFlowLogo compact /></div><div className="af-live">● Live</div></div>
+          <div className="af-dashboard-body"><aside className="af-dashboard-sidebar"><div className="af-side-item active">⌂ <span>Dashboard</span></div>
+            {tabs.map(t=><button key={t.key} className={active===t.key?"af-side-item active":"af-side-item"} onClick={()=>setActive(t.key)} type="button">{t.key==="bookings"?"▣":t.key==="customers"?"♙":"⚡"} <span>{t.label}</span></button>)}<div className="af-side-item">⚙ <span>Settings</span></div>
+          </aside><div className="af-dashboard-main"><div className="af-dashboard-heading"><div><small>Monday, June 16</small><h3>{active==="bookings"?"Bookings":active==="customers"?"Customers":"Automation flows"}</h3></div><button className="af-mini-cta" type="button">+ New</button></div>
+            {active==="bookings"&&<div className="af-calendar">{["Mon 10","Tue 11","Wed 12","Thu 13"].map((d,i)=><div className="af-day" key={d}><strong>{d}</strong><div className="af-event blue" style={{marginTop:28}}>Haircut<br/><small>10:00</small></div>{i===1&&<div className="af-event purple">Hair Color<br/><small>11:30</small></div>}{i===2&&<div className="af-event green">Treatment<br/><small>14:00</small></div>}</div>)}</div>}
+            {active==="customers"&&<div className="af-data-list">{["Sarah Lim","Jane Doe","Mike Tan","Anna Lee"].map((n,i)=><div className="af-data-row" key={n}><span className="af-avatar">{n[0]}</span><span>{n}<small>{i%2?"Returning customer":"New customer"}</small></span><b>{i+2} visits</b></div>)}</div>}
+            {active==="automations"&&<div className="af-flow-preview"><div className="af-flow-node">📅 Customer books</div><span>↓</span><div className="af-flow-node blue-node">✓ Confirmation sent</div><span>↓</span><div className="af-flow-node green-node">⏰ Reminder scheduled</div><span>↓</span><div className="af-flow-node purple-node">↻ Follow-up triggered</div></div>}
+          </div></div>
+        </div>
+      </div>
+      <div className="af-laptop-hinge" />
+      <div className="af-laptop-base"><div className="af-laptop-trackpad" /></div>
+    </div>
+    <AutomationFlowMockup />
+  </div>;
 }
 // ─── Main Page ───
 export default function AutoFlowLanding() {
@@ -390,7 +402,7 @@ export default function AutoFlowLanding() {
         }
         .nav-link:hover { color: white !important; }
         .login-link:hover { border-color: rgba(255,255,255,0.4) !important; color: white !important; }
-        .af-automation-visual { position:absolute; right:-8px; bottom:-18px; width:470px; z-index:4; animation:float 5s ease-in-out infinite; }
+        .af-automation-visual { position:absolute; right:-12px; bottom:18px; width:470px; z-index:5; animation:float 5s ease-in-out infinite; }
         .af-automation-glow { position:absolute; inset:10% 0 0; background:radial-gradient(circle,rgba(0,200,255,.22),transparent 68%); filter:blur(30px); }
         .af-flow-card { position:relative; background:rgba(7,20,37,.94); border:1px solid rgba(0,200,255,.18); border-radius:22px; padding:20px; box-shadow:0 26px 70px rgba(0,0,0,.42),0 0 35px rgba(0,140,255,.12); backdrop-filter:blur(16px); }
         .af-flow-card-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }.af-flow-card-head small,.af-flow-step small,.af-flow-result small { display:block; color:#7187a0; font-size:10px; margin-top:3px; }.af-flow-card-head strong { display:block; color:#fff; font-size:14px; }
@@ -400,7 +412,7 @@ export default function AutoFlowLanding() {
         .af-flow-result { display:flex; align-items:center; gap:10px; margin-top:16px; padding:10px 12px; border-radius:12px; background:linear-gradient(90deg,rgba(22,135,255,.1),rgba(67,230,160,.07)); border:1px solid rgba(0,200,255,.1); }.af-flow-result > span{font-size:17px}.af-flow-result strong{display:block;color:#fff;font-size:11px}.af-flow-result b{margin-left:auto;color:#43e6a0;font-size:9px;letter-spacing:1px}
         @keyframes flowPulse { 0%,100%{transform:translateY(0);opacity:.4} 50%{transform:translateY(8px);opacity:1} }
         .af-feature-strip { display:flex; gap:12px; padding:14px max(24px,calc((100vw - 1240px)/2)); background:rgba(7,24,43,.92); border-top:1px solid rgba(255,255,255,.04); border-bottom:1px solid rgba(255,255,255,.05); overflow-x:auto; }.af-feature-card{min-width:205px;flex:1;display:flex;align-items:center;gap:11px;padding:13px 14px;border-radius:13px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.045)}.af-feature-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;color:#fff;font-weight:800;background:rgba(22,135,255,.15)}.af-feature-icon-1{background:rgba(0,200,255,.12);color:#00c8ff}.af-feature-icon-2{background:rgba(139,92,246,.13);color:#b69cff}.af-feature-icon-3{background:rgba(67,230,160,.12);color:#43e6a0}.af-feature-icon-4{background:rgba(245,158,11,.12);color:#f5b84a}.af-feature-card strong{display:block;color:#eaf4ff;font-size:11px}.af-feature-card small{display:block;color:#7187a0;font-size:9px;margin-top:3px}
-        .af-hero-photo { position:absolute; inset:0; background-image:url("https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=2200&q=80"); background-size:cover; background-position:center; opacity:.20; filter:saturate(.9) blur(.2px); transform:scale(1.03); }
+        .af-hero-photo { position:absolute; inset:0; background-image:url("https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=2200&q=80"); background-size:cover; background-position:center right; opacity:.32; filter:saturate(1.05) contrast(1.03); transform:scale(1.03); }
         .af-hero-photo-overlay { position:absolute; inset:0; background:linear-gradient(90deg,rgba(3,14,28,.98) 0%,rgba(4,19,38,.88) 40%,rgba(4,18,35,.62) 72%,rgba(2,12,25,.78) 100%),linear-gradient(180deg,rgba(4,16,31,.35),#061426 92%); z-index:1; }
         .af-hero-grid { position:absolute; inset:0; z-index:1; opacity:.5; background-image:linear-gradient(rgba(0,200,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,255,.045) 1px,transparent 1px); background-size:80px 80px; mask-image:linear-gradient(to bottom,rgba(0,0,0,.7),transparent 85%); }
         .af-hero-section:after { content:""; position:absolute; width:700px; height:700px; right:-260px; top:-240px; border-radius:50%; background:radial-gradient(circle,rgba(0,200,255,.18),transparent 65%); filter:blur(20px); z-index:1; pointer-events:none; }
@@ -422,9 +434,16 @@ export default function AutoFlowLanding() {
         .af-nav-links .af-nav-cta { color:#fff; padding:10px 17px; border-radius:11px; background:linear-gradient(135deg,#1687ff,#00c8ff); box-shadow:0 7px 24px rgba(22,135,255,.25); }
         .af-menu-btn { display:none; width:44px; height:44px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); border-radius:11px; padding:9px; cursor:pointer; }
         .af-menu-btn span { display:block; height:2px; margin:5px 0; border-radius:2px; background:#fff; }
-        .af-hero-visual { position:relative; min-height:590px; display:flex; align-items:center; justify-content:center; padding:20px 0 85px; }
-        .af-dashboard-glow { position:absolute; width:460px; height:380px; border-radius:50%; background:radial-gradient(circle,rgba(22,135,255,.22),transparent 68%); filter:blur(28px); }
-        .af-dashboard { position:relative; z-index:2; width:min(680px,100%); border:1px solid rgba(255,255,255,.13); border-radius:18px; overflow:hidden; background:#081525; box-shadow:0 28px 80px rgba(0,0,0,.48),0 0 60px rgba(0,140,255,.09); transform:perspective(1100px) rotateY(-4deg); }
+        .af-hero-visual { position:relative; min-height:650px; display:flex; align-items:center; justify-content:center; padding:25px 0 90px; }
+        .af-dashboard-glow { position:absolute; width:560px; height:430px; border-radius:50%; background:radial-gradient(circle,rgba(22,135,255,.25),transparent 68%); filter:blur(32px); }
+        .af-laptop { position:relative; z-index:2; width:min(700px,100%); padding:0 10px 68px; filter:drop-shadow(0 30px 45px rgba(0,0,0,.32)); }
+        .af-laptop-screen { position:relative; padding:10px 10px 0; border-radius:18px 18px 8px 8px; background:linear-gradient(145deg,#1a2738,#07111d 70%); border:1px solid rgba(255,255,255,.18); box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 55px rgba(0,140,255,.12); }
+        .af-laptop-screen:before { content:""; position:absolute; inset:0; border-radius:18px 18px 8px 8px; box-shadow:inset 0 1px 0 rgba(255,255,255,.1); pointer-events:none; }
+        .af-laptop-camera { position:absolute; z-index:4; top:3px; left:50%; width:7px; height:3px; transform:translateX(-50%); border-radius:0 0 4px 4px; background:#02070d; }
+        .af-dashboard { position:relative; z-index:2; width:100%; border:1px solid rgba(255,255,255,.13); border-radius:10px 10px 4px 4px; overflow:hidden; background:#081525; box-shadow:inset 0 0 35px rgba(0,0,0,.2); }
+        .af-laptop-hinge { position:absolute; z-index:3; left:50%; bottom:62px; width:90px; height:8px; transform:translateX(-50%); border-radius:0 0 8px 8px; background:#111c29; border:1px solid rgba(255,255,255,.1); }
+        .af-laptop-base { position:absolute; z-index:1; left:-2%; right:-2%; bottom:20px; height:48px; border-radius:5px 5px 18px 18px; background:linear-gradient(180deg,#26384c 0%,#152337 38%,#091522 100%); border:1px solid rgba(255,255,255,.14); box-shadow:0 12px 28px rgba(0,0,0,.5); clip-path:polygon(3% 0,97% 0,100% 72%,94% 100%,6% 100%,0 72%); }
+        .af-laptop-trackpad { position:absolute; left:41%; top:8px; width:18%; height:25px; border-radius:4px 4px 9px 9px; background:rgba(8,18,30,.6); border:1px solid rgba(255,255,255,.07); }
         .af-dashboard-top { height:44px; display:flex; align-items:center; gap:14px; padding:0 14px; border-bottom:1px solid rgba(255,255,255,.08); background:#0b1a2c; }
         .af-window-dots { display:flex; gap:5px; }.af-window-dots i { width:7px;height:7px;border-radius:50%;background:#34516c;display:block; }
         .af-dashboard-brand { color:#eaf4ff; font-size:11px; font-weight:800; flex:1; display:flex; align-items:center; gap:5px; }
@@ -443,15 +462,16 @@ export default function AutoFlowLanding() {
         .af-footer .af-logo-mark { width:40px; height:34px; }
         .af-footer .af-logo-type { font-size:21px; }
         @media (max-width: 900px) {
-          .af-hero-photo { background-position:62% center; opacity:.14; } .af-hero-photo-overlay { background:linear-gradient(180deg,rgba(3,14,28,.97) 0%,rgba(4,18,35,.9) 55%,rgba(3,14,28,.98) 100%); }
-          .af-automation-visual { position:relative; right:auto; bottom:auto; width:94%; margin:-58px 0 0 auto; animation:none; } .af-flow-card { padding:16px; }
+          .af-hero-photo { background-position:72% center; opacity:.20; } .af-hero-photo-overlay { background:linear-gradient(180deg,rgba(3,14,28,.91) 0%,rgba(4,18,35,.86) 55%,rgba(3,14,28,.97) 100%); }
+          .af-automation-visual { position:relative; right:auto; bottom:auto; width:100%; margin:18px auto 0; animation:none; } .af-flow-card { padding:16px; }
           .af-nav { padding:12px 18px; }.af-logo-mark { width:46px; height:39px; }.af-logo-type { font-size:22px; }.af-nav-links { position:absolute; top:66px; left:12px; right:12px; display:none; flex-direction:column; align-items:stretch; gap:4px; padding:12px; background:rgba(7,19,33,.98); border:1px solid rgba(255,255,255,.1); border-radius:14px; box-shadow:0 20px 50px rgba(0,0,0,.45); }.af-nav-links.open { display:flex; }.af-nav-links a { padding:12px 13px; border-radius:9px; }.af-nav-links .af-nav-cta { text-align:center; }.af-menu-btn { display:block; }
-          .af-hero-visual { min-height:0; margin-top:18px; padding:0 0 24px; display:block; }.af-dashboard { transform:none; width:100%; }.af-phone-mini { display:none; }
+          .af-hero-visual { min-height:0; margin-top:18px; padding:0 0 24px; display:block; }.af-laptop { width:100%; padding:0 2px 42px; }.af-laptop-screen { padding:7px 7px 0; border-radius:13px 13px 6px 6px; }.af-dashboard { width:100%; }.af-laptop-base { left:-3%; right:-3%; bottom:9px; height:34px; border-radius:4px 4px 13px 13px; }.af-laptop-trackpad { top:6px; height:18px; }.af-laptop-hinge { bottom:43px; width:60px; height:6px; }.af-phone-mini { display:none; }
         }
         @media (max-width: 620px) {
-          .af-hero-section { padding-left:20px !important; padding-right:20px !important; } .af-hero-photo { background-position:58% center; opacity:.12; }
-          .af-hero-visual { min-height:0; margin-left:-4px; margin-right:-4px; }.af-dashboard-sidebar { display:none; }.af-dashboard { width:100%; }.af-dashboard-body { min-height:280px; }.af-calendar { gap:4px; }.af-day { min-height:190px; padding:5px; }.af-event { font-size:8px; padding:6px 4px; }
-          .af-automation-visual { position:relative; right:auto; bottom:auto; width:96%; margin:-48px 0 0 auto; } .af-flow-card { padding:13px; border-radius:17px; } .af-flow-step { padding:8px 9px; gap:9px; } .af-flow-step strong { font-size:10px; } .af-flow-step small { font-size:8px; } .af-flow-icon { width:26px; height:26px; font-size:12px; } .af-flow-result { margin-top:10px; padding:8px 10px; }
+          .af-hero-section { padding-left:20px !important; padding-right:20px !important; } .af-hero-photo { background-position:76% center; opacity:.18; }
+          .af-hero-visual { min-height:0; margin-left:-4px; margin-right:-4px; }.af-dashboard-sidebar { display:none; }.af-dashboard-body { min-height:230px; }.af-calendar { gap:4px; }.af-day { min-height:165px; padding:5px; }.af-event { font-size:8px; padding:6px 4px; }
+          .af-laptop { padding-bottom:34px; }.af-laptop-screen { padding:5px 5px 0; border-radius:10px 10px 5px 5px; }.af-laptop-base { bottom:5px; height:27px; }.af-laptop-trackpad { top:5px; height:13px; }.af-laptop-hinge { bottom:32px; width:48px; height:5px; }
+          .af-automation-visual { position:relative; right:auto; bottom:auto; width:100%; margin:14px auto 0; } .af-flow-card { padding:13px; border-radius:17px; } .af-flow-step { padding:8px 9px; gap:9px; } .af-flow-step strong { font-size:10px; } .af-flow-step small { font-size:8px; } .af-flow-icon { width:26px; height:26px; font-size:12px; } .af-flow-result { margin-top:10px; padding:8px 10px; }
         }
       `}</style>
 
@@ -539,7 +559,7 @@ export default function AutoFlowLanding() {
               <span>✦ Built for small businesses</span>
             </div>
           </div>
-          <div style={{ flex: "1 1 520px", maxWidth: 600 }}>
+          <div style={{ flex: "1 1 540px", maxWidth: 700 }}>
             <DashboardMockup />
           </div>
         </div>
