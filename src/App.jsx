@@ -402,7 +402,7 @@ export default function AutoFlowLanding() {
         }
         .nav-link:hover { color: white !important; }
         .login-link:hover { border-color: rgba(255,255,255,0.4) !important; color: white !important; }
-        .af-automation-visual { position:absolute; right:-12px; bottom:18px; width:470px; z-index:5; animation:float 5s ease-in-out infinite; }
+        .af-automation-visual { position:absolute; right:-24px; bottom:-18px; width:430px; z-index:5; animation:float 5s ease-in-out infinite; }
         .af-automation-glow { position:absolute; inset:10% 0 0; background:radial-gradient(circle,rgba(0,200,255,.22),transparent 68%); filter:blur(30px); }
         .af-flow-card { position:relative; background:rgba(7,20,37,.94); border:1px solid rgba(0,200,255,.18); border-radius:22px; padding:20px; box-shadow:0 26px 70px rgba(0,0,0,.42),0 0 35px rgba(0,140,255,.12); backdrop-filter:blur(16px); }
         .af-flow-card-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }.af-flow-card-head small,.af-flow-step small,.af-flow-result small { display:block; color:#7187a0; font-size:10px; margin-top:3px; }.af-flow-card-head strong { display:block; color:#fff; font-size:14px; }
@@ -436,7 +436,7 @@ export default function AutoFlowLanding() {
         .af-menu-btn span { display:block; height:2px; margin:5px 0; border-radius:2px; background:#fff; }
         .af-hero-visual { position:relative; min-height:650px; display:flex; align-items:center; justify-content:center; padding:25px 0 90px; }
         .af-dashboard-glow { position:absolute; width:560px; height:430px; border-radius:50%; background:radial-gradient(circle,rgba(22,135,255,.25),transparent 68%); filter:blur(32px); }
-        .af-laptop { position:relative; z-index:2; width:min(700px,100%); padding:0 10px 68px; filter:drop-shadow(0 30px 45px rgba(0,0,0,.32)); }
+        .af-laptop { position:relative; z-index:2; width:min(735px,100%); padding:0 10px 68px; filter:drop-shadow(0 30px 45px rgba(0,0,0,.32)); }
         .af-laptop-screen { position:relative; padding:10px 10px 0; border-radius:18px 18px 8px 8px; background:linear-gradient(145deg,#1a2738,#07111d 70%); border:1px solid rgba(255,255,255,.18); box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 55px rgba(0,140,255,.12); }
         .af-laptop-screen:before { content:""; position:absolute; inset:0; border-radius:18px 18px 8px 8px; box-shadow:inset 0 1px 0 rgba(255,255,255,.1); pointer-events:none; }
         .af-laptop-camera { position:absolute; z-index:4; top:3px; left:50%; width:7px; height:3px; transform:translateX(-50%); border-radius:0 0 4px 4px; background:#02070d; }
@@ -463,15 +463,17 @@ export default function AutoFlowLanding() {
         .af-footer .af-logo-type { font-size:21px; }
         @media (max-width: 900px) {
           .af-hero-photo { background-position:72% center; opacity:.20; } .af-hero-photo-overlay { background:linear-gradient(180deg,rgba(3,14,28,.91) 0%,rgba(4,18,35,.86) 55%,rgba(3,14,28,.97) 100%); }
-          .af-automation-visual { position:relative; right:auto; bottom:auto; width:100%; margin:18px auto 0; animation:none; } .af-flow-card { padding:16px; }
           .af-nav { padding:12px 18px; }.af-logo-mark { width:46px; height:39px; }.af-logo-type { font-size:22px; }.af-nav-links { position:absolute; top:66px; left:12px; right:12px; display:none; flex-direction:column; align-items:stretch; gap:4px; padding:12px; background:rgba(7,19,33,.98); border:1px solid rgba(255,255,255,.1); border-radius:14px; box-shadow:0 20px 50px rgba(0,0,0,.45); }.af-nav-links.open { display:flex; }.af-nav-links a { padding:12px 13px; border-radius:9px; }.af-nav-links .af-nav-cta { text-align:center; }.af-menu-btn { display:block; }
-          .af-hero-visual { min-height:0; margin-top:18px; padding:0 0 24px; display:block; }.af-laptop { width:100%; padding:0 2px 42px; }.af-laptop-screen { padding:7px 7px 0; border-radius:13px 13px 6px 6px; }.af-dashboard { width:100%; }.af-laptop-base { left:-3%; right:-3%; bottom:9px; height:34px; border-radius:4px 4px 13px 13px; }.af-laptop-trackpad { top:6px; height:18px; }.af-laptop-hinge { bottom:43px; width:60px; height:6px; }.af-phone-mini { display:none; }
+          .af-hero-visual { min-height:0; margin-top:18px; padding:0 0 8px; display:block; }.af-laptop { width:100%; padding:0 0 42px; }.af-laptop-screen { padding:7px 7px 0; border-radius:13px 13px 6px 6px; }.af-dashboard { width:100%; }.af-laptop-base { left:-3%; right:-3%; bottom:9px; height:34px; border-radius:4px 4px 13px 13px; }.af-laptop-trackpad { top:6px; height:18px; }.af-laptop-hinge { bottom:43px; width:60px; height:6px; }.af-phone-mini { display:none; }
+          .af-automation-visual { position:relative; right:auto; bottom:auto; width:82%; margin:-10px 0 0 auto; animation:none; transform:translateX(2%); }
+          .af-flow-card { padding:14px; border-radius:18px; }
         }
         @media (max-width: 620px) {
-          .af-hero-section { padding-left:20px !important; padding-right:20px !important; } .af-hero-photo { background-position:76% center; opacity:.18; }
-          .af-hero-visual { min-height:0; margin-left:-4px; margin-right:-4px; }.af-dashboard-sidebar { display:none; }.af-dashboard-body { min-height:230px; }.af-calendar { gap:4px; }.af-day { min-height:165px; padding:5px; }.af-event { font-size:8px; padding:6px 4px; }
+          .af-hero-section { padding-left:16px !important; padding-right:16px !important; } .af-hero-photo { background-position:76% center; opacity:.18; }
+          .af-hero-visual { min-height:0; margin-left:-2px; margin-right:-2px; }.af-dashboard-sidebar { display:none; }.af-dashboard-body { min-height:230px; }.af-calendar { gap:4px; }.af-day { min-height:165px; padding:5px; }.af-event { font-size:8px; padding:6px 4px; }
           .af-laptop { padding-bottom:34px; }.af-laptop-screen { padding:5px 5px 0; border-radius:10px 10px 5px 5px; }.af-laptop-base { bottom:5px; height:27px; }.af-laptop-trackpad { top:5px; height:13px; }.af-laptop-hinge { bottom:32px; width:48px; height:5px; }
-          .af-automation-visual { position:relative; right:auto; bottom:auto; width:100%; margin:14px auto 0; } .af-flow-card { padding:13px; border-radius:17px; } .af-flow-step { padding:8px 9px; gap:9px; } .af-flow-step strong { font-size:10px; } .af-flow-step small { font-size:8px; } .af-flow-icon { width:26px; height:26px; font-size:12px; } .af-flow-result { margin-top:10px; padding:8px 10px; }
+          .af-automation-visual { width:84%; margin:-6px 0 0 auto; transform:translateX(1%); }
+          .af-flow-card { padding:12px; border-radius:16px; } .af-flow-step { padding:8px 9px; gap:9px; } .af-flow-step strong { font-size:10px; } .af-flow-step small { font-size:8px; } .af-flow-icon { width:26px; height:26px; font-size:12px; } .af-flow-result { margin-top:10px; padding:8px 10px; }
         }
       `}</style>
 
@@ -491,7 +493,7 @@ export default function AutoFlowLanding() {
       {/* ─── HERO ─── */}
       <section className="af-hero-section" style={{
         background: "#061426",
-        padding: "120px 32px 80px", position: "relative", overflow: "hidden",
+        padding: "112px 32px 74px", position: "relative", overflow: "hidden",
       }}>
         <div className="af-hero-photo" aria-hidden="true" />
         <div className="af-hero-photo-overlay" aria-hidden="true" />
@@ -559,7 +561,7 @@ export default function AutoFlowLanding() {
               <span>✦ Built for small businesses</span>
             </div>
           </div>
-          <div style={{ flex: "1 1 540px", maxWidth: 700 }}>
+          <div style={{ flex: "1 1 560px", maxWidth: 735, transform: "translateY(18px)" }}>
             <DashboardMockup />
           </div>
         </div>
