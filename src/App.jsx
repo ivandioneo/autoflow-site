@@ -390,7 +390,7 @@ export default function AutoFlowLanding() {
         }
         .nav-link:hover { color: white !important; }
         .login-link:hover { border-color: rgba(255,255,255,0.4) !important; color: white !important; }
-        .af-automation-visual { position:absolute; right:-28px; bottom:-36px; width:360px; z-index:4; animation:float 5s ease-in-out infinite; }
+        .af-automation-visual { position:absolute; right:-8px; bottom:-18px; width:470px; z-index:4; animation:float 5s ease-in-out infinite; }
         .af-automation-glow { position:absolute; inset:10% 0 0; background:radial-gradient(circle,rgba(0,200,255,.22),transparent 68%); filter:blur(30px); }
         .af-flow-card { position:relative; background:rgba(7,20,37,.94); border:1px solid rgba(0,200,255,.18); border-radius:22px; padding:20px; box-shadow:0 26px 70px rgba(0,0,0,.42),0 0 35px rgba(0,140,255,.12); backdrop-filter:blur(16px); }
         .af-flow-card-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }.af-flow-card-head small,.af-flow-step small,.af-flow-result small { display:block; color:#7187a0; font-size:10px; margin-top:3px; }.af-flow-card-head strong { display:block; color:#fff; font-size:14px; }
@@ -399,7 +399,11 @@ export default function AutoFlowLanding() {
         .af-flow-connector { height:17px; position:relative; }.af-flow-connector:before { content:""; position:absolute; left:27px; top:0; bottom:0; border-left:1px dashed rgba(0,200,255,.28); }.af-flow-connector span { position:absolute; width:6px; height:6px; border-radius:50%; background:#00c8ff; left:24px; top:5px; box-shadow:0 0 10px #00c8ff; animation:flowPulse 1.8s ease-in-out infinite; }
         .af-flow-result { display:flex; align-items:center; gap:10px; margin-top:16px; padding:10px 12px; border-radius:12px; background:linear-gradient(90deg,rgba(22,135,255,.1),rgba(67,230,160,.07)); border:1px solid rgba(0,200,255,.1); }.af-flow-result > span{font-size:17px}.af-flow-result strong{display:block;color:#fff;font-size:11px}.af-flow-result b{margin-left:auto;color:#43e6a0;font-size:9px;letter-spacing:1px}
         @keyframes flowPulse { 0%,100%{transform:translateY(0);opacity:.4} 50%{transform:translateY(8px);opacity:1} }
-        .af-feature-strip { display:flex; gap:12px; padding:12px max(24px,calc((100vw - 1240px)/2)); background:#0b1a2c; border-top:1px solid rgba(255,255,255,.04); border-bottom:1px solid rgba(255,255,255,.05); overflow-x:auto; }.af-feature-card{min-width:205px;flex:1;display:flex;align-items:center;gap:11px;padding:13px 14px;border-radius:13px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.045)}.af-feature-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;color:#fff;font-weight:800;background:rgba(22,135,255,.15)}.af-feature-icon-1{background:rgba(0,200,255,.12);color:#00c8ff}.af-feature-icon-2{background:rgba(139,92,246,.13);color:#b69cff}.af-feature-icon-3{background:rgba(67,230,160,.12);color:#43e6a0}.af-feature-icon-4{background:rgba(245,158,11,.12);color:#f5b84a}.af-feature-card strong{display:block;color:#eaf4ff;font-size:11px}.af-feature-card small{display:block;color:#7187a0;font-size:9px;margin-top:3px}
+        .af-feature-strip { display:flex; gap:12px; padding:14px max(24px,calc((100vw - 1240px)/2)); background:rgba(7,24,43,.92); border-top:1px solid rgba(255,255,255,.04); border-bottom:1px solid rgba(255,255,255,.05); overflow-x:auto; }.af-feature-card{min-width:205px;flex:1;display:flex;align-items:center;gap:11px;padding:13px 14px;border-radius:13px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.045)}.af-feature-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;color:#fff;font-weight:800;background:rgba(22,135,255,.15)}.af-feature-icon-1{background:rgba(0,200,255,.12);color:#00c8ff}.af-feature-icon-2{background:rgba(139,92,246,.13);color:#b69cff}.af-feature-icon-3{background:rgba(67,230,160,.12);color:#43e6a0}.af-feature-icon-4{background:rgba(245,158,11,.12);color:#f5b84a}.af-feature-card strong{display:block;color:#eaf4ff;font-size:11px}.af-feature-card small{display:block;color:#7187a0;font-size:9px;margin-top:3px}
+        .af-hero-photo { position:absolute; inset:0; background-image:url("https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=2200&q=80"); background-size:cover; background-position:center; opacity:.20; filter:saturate(.9) blur(.2px); transform:scale(1.03); }
+        .af-hero-photo-overlay { position:absolute; inset:0; background:linear-gradient(90deg,rgba(3,14,28,.98) 0%,rgba(4,19,38,.88) 40%,rgba(4,18,35,.62) 72%,rgba(2,12,25,.78) 100%),linear-gradient(180deg,rgba(4,16,31,.35),#061426 92%); z-index:1; }
+        .af-hero-grid { position:absolute; inset:0; z-index:1; opacity:.5; background-image:linear-gradient(rgba(0,200,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,255,.045) 1px,transparent 1px); background-size:80px 80px; mask-image:linear-gradient(to bottom,rgba(0,0,0,.7),transparent 85%); }
+        .af-hero-section:after { content:""; position:absolute; width:700px; height:700px; right:-260px; top:-240px; border-radius:50%; background:radial-gradient(circle,rgba(0,200,255,.18),transparent 65%); filter:blur(20px); z-index:1; pointer-events:none; }
         .af-nav { display:flex; justify-content:space-between; align-items:center; padding:16px 32px; background:rgba(6,17,31,.72); backdrop-filter:blur(18px); position:fixed; inset:0 0 auto 0; z-index:100; border-bottom:1px solid rgba(255,255,255,.06); transition:all .25s ease; }
         .af-nav.af-nav-scrolled { background:rgba(6,17,31,.96); padding-top:11px; padding-bottom:11px; }
         .af-brand { display:flex; align-items:center; color:#fff; text-decoration:none; }
@@ -418,9 +422,9 @@ export default function AutoFlowLanding() {
         .af-nav-links .af-nav-cta { color:#fff; padding:10px 17px; border-radius:11px; background:linear-gradient(135deg,#1687ff,#00c8ff); box-shadow:0 7px 24px rgba(22,135,255,.25); }
         .af-menu-btn { display:none; width:44px; height:44px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); border-radius:11px; padding:9px; cursor:pointer; }
         .af-menu-btn span { display:block; height:2px; margin:5px 0; border-radius:2px; background:#fff; }
-        .af-hero-visual { position:relative; min-height:500px; display:flex; align-items:center; justify-content:center; padding:18px 0 72px; }
+        .af-hero-visual { position:relative; min-height:590px; display:flex; align-items:center; justify-content:center; padding:20px 0 85px; }
         .af-dashboard-glow { position:absolute; width:460px; height:380px; border-radius:50%; background:radial-gradient(circle,rgba(22,135,255,.22),transparent 68%); filter:blur(28px); }
-        .af-dashboard { position:relative; z-index:2; width:min(560px,100%); border:1px solid rgba(255,255,255,.13); border-radius:18px; overflow:hidden; background:#081525; box-shadow:0 28px 80px rgba(0,0,0,.48),0 0 60px rgba(0,140,255,.09); transform:perspective(1100px) rotateY(-4deg); }
+        .af-dashboard { position:relative; z-index:2; width:min(680px,100%); border:1px solid rgba(255,255,255,.13); border-radius:18px; overflow:hidden; background:#081525; box-shadow:0 28px 80px rgba(0,0,0,.48),0 0 60px rgba(0,140,255,.09); transform:perspective(1100px) rotateY(-4deg); }
         .af-dashboard-top { height:44px; display:flex; align-items:center; gap:14px; padding:0 14px; border-bottom:1px solid rgba(255,255,255,.08); background:#0b1a2c; }
         .af-window-dots { display:flex; gap:5px; }.af-window-dots i { width:7px;height:7px;border-radius:50%;background:#34516c;display:block; }
         .af-dashboard-brand { color:#eaf4ff; font-size:11px; font-weight:800; flex:1; display:flex; align-items:center; gap:5px; }
@@ -439,13 +443,15 @@ export default function AutoFlowLanding() {
         .af-footer .af-logo-mark { width:40px; height:34px; }
         .af-footer .af-logo-type { font-size:21px; }
         @media (max-width: 900px) {
-          .af-automation-visual { position:absolute; right:10px; bottom:12px; width:340px; margin:0; animation:none; } .af-flow-card { padding:16px; }
+          .af-hero-photo { background-position:62% center; opacity:.14; } .af-hero-photo-overlay { background:linear-gradient(180deg,rgba(3,14,28,.97) 0%,rgba(4,18,35,.9) 55%,rgba(3,14,28,.98) 100%); }
+          .af-automation-visual { position:relative; right:auto; bottom:auto; width:94%; margin:-58px 0 0 auto; animation:none; } .af-flow-card { padding:16px; }
           .af-nav { padding:12px 18px; }.af-logo-mark { width:46px; height:39px; }.af-logo-type { font-size:22px; }.af-nav-links { position:absolute; top:66px; left:12px; right:12px; display:none; flex-direction:column; align-items:stretch; gap:4px; padding:12px; background:rgba(7,19,33,.98); border:1px solid rgba(255,255,255,.1); border-radius:14px; box-shadow:0 20px 50px rgba(0,0,0,.45); }.af-nav-links.open { display:flex; }.af-nav-links a { padding:12px 13px; border-radius:9px; }.af-nav-links .af-nav-cta { text-align:center; }.af-menu-btn { display:block; }
-          .af-hero-visual { min-height:500px; margin-top:10px; padding-bottom:20px; }.af-dashboard { transform:none; }.af-phone-mini { display:none; }
+          .af-hero-visual { min-height:0; margin-top:18px; padding:0 0 24px; display:block; }.af-dashboard { transform:none; width:100%; }.af-phone-mini { display:none; }
         }
         @media (max-width: 620px) {
-          .af-hero-visual { min-height:520px; margin-left:-4px; margin-right:-4px; }.af-dashboard-sidebar { display:none; }.af-dashboard { width:100%; }.af-dashboard-body { min-height:280px; }.af-calendar { gap:4px; }.af-day { min-height:190px; padding:5px; }.af-event { font-size:8px; padding:6px 4px; }
-          .af-automation-visual { position:absolute; right:4px; bottom:8px; width:calc(100% - 18px); margin:0; } .af-flow-card { padding:13px; border-radius:17px; } .af-flow-step { padding:8px 9px; gap:9px; } .af-flow-step strong { font-size:10px; } .af-flow-step small { font-size:8px; } .af-flow-icon { width:26px; height:26px; font-size:12px; } .af-flow-result { margin-top:10px; padding:8px 10px; }
+          .af-hero-section { padding-left:20px !important; padding-right:20px !important; } .af-hero-photo { background-position:58% center; opacity:.12; }
+          .af-hero-visual { min-height:0; margin-left:-4px; margin-right:-4px; }.af-dashboard-sidebar { display:none; }.af-dashboard { width:100%; }.af-dashboard-body { min-height:280px; }.af-calendar { gap:4px; }.af-day { min-height:190px; padding:5px; }.af-event { font-size:8px; padding:6px 4px; }
+          .af-automation-visual { position:relative; right:auto; bottom:auto; width:96%; margin:-48px 0 0 auto; } .af-flow-card { padding:13px; border-radius:17px; } .af-flow-step { padding:8px 9px; gap:9px; } .af-flow-step strong { font-size:10px; } .af-flow-step small { font-size:8px; } .af-flow-icon { width:26px; height:26px; font-size:12px; } .af-flow-result { margin-top:10px; padding:8px 10px; }
         }
       `}</style>
 
@@ -463,12 +469,13 @@ export default function AutoFlowLanding() {
         <button className="af-menu-btn" type="button" aria-label={mobileNavOpen ? "Close menu" : "Open menu"} aria-expanded={mobileNavOpen} onClick={() => setMobileNavOpen(v => !v)}><span /><span /><span /></button>
       </nav>
       {/* ─── HERO ─── */}
-      <section style={{
-        background: "linear-gradient(135deg, #0F172A 0%, #1E293B 40%, #0F172A 100%)",
-        backgroundSize: "200% 200%",
-        animation: "gradientShift 12s ease infinite",
+      <section className="af-hero-section" style={{
+        background: "#061426",
         padding: "120px 32px 80px", position: "relative", overflow: "hidden",
       }}>
+        <div className="af-hero-photo" aria-hidden="true" />
+        <div className="af-hero-photo-overlay" aria-hidden="true" />
+        <div className="af-hero-grid" aria-hidden="true" />
         <div style={{
           position: "absolute", top: -100, right: -100, width: 400, height: 400,
           borderRadius: "50%", background: "radial-gradient(circle, rgba(13,148,136,0.12) 0%, transparent 70%)",
@@ -481,7 +488,7 @@ export default function AutoFlowLanding() {
         }} />
 
         <div style={{
-          maxWidth: 1240, margin: "0 auto", display: "flex", flexWrap: "wrap",
+          maxWidth: 1240, margin: "0 auto", display: "flex", flexWrap: "wrap", zIndex: 2,
           alignItems: "center", justifyContent: "space-between", gap: 42, position: "relative",
         }}>
           <div style={{ flex: "1 1 420px", maxWidth: 540 }}>
