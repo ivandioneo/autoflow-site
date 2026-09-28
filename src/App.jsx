@@ -390,7 +390,7 @@ export default function AutoFlowLanding() {
         }
         .nav-link:hover { color: white !important; }
         .login-link:hover { border-color: rgba(255,255,255,0.4) !important; color: white !important; }
-        .af-automation-visual { position:absolute; right:-34px; bottom:-54px; width:420px; z-index:4; animation:float 5s ease-in-out infinite; }
+        .af-automation-visual { position:absolute; right:-28px; bottom:-36px; width:360px; z-index:4; animation:float 5s ease-in-out infinite; }
         .af-automation-glow { position:absolute; inset:10% 0 0; background:radial-gradient(circle,rgba(0,200,255,.22),transparent 68%); filter:blur(30px); }
         .af-flow-card { position:relative; background:rgba(7,20,37,.94); border:1px solid rgba(0,200,255,.18); border-radius:22px; padding:20px; box-shadow:0 26px 70px rgba(0,0,0,.42),0 0 35px rgba(0,140,255,.12); backdrop-filter:blur(16px); }
         .af-flow-card-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }.af-flow-card-head small,.af-flow-step small,.af-flow-result small { display:block; color:#7187a0; font-size:10px; margin-top:3px; }.af-flow-card-head strong { display:block; color:#fff; font-size:14px; }
@@ -418,7 +418,7 @@ export default function AutoFlowLanding() {
         .af-nav-links .af-nav-cta { color:#fff; padding:10px 17px; border-radius:11px; background:linear-gradient(135deg,#1687ff,#00c8ff); box-shadow:0 7px 24px rgba(22,135,255,.25); }
         .af-menu-btn { display:none; width:44px; height:44px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); border-radius:11px; padding:9px; cursor:pointer; }
         .af-menu-btn span { display:block; height:2px; margin:5px 0; border-radius:2px; background:#fff; }
-        .af-hero-visual { position:relative; min-height:470px; display:flex; align-items:center; justify-content:center; }
+        .af-hero-visual { position:relative; min-height:500px; display:flex; align-items:center; justify-content:center; padding:18px 0 72px; }
         .af-dashboard-glow { position:absolute; width:460px; height:380px; border-radius:50%; background:radial-gradient(circle,rgba(22,135,255,.22),transparent 68%); filter:blur(28px); }
         .af-dashboard { position:relative; z-index:2; width:min(560px,100%); border:1px solid rgba(255,255,255,.13); border-radius:18px; overflow:hidden; background:#081525; box-shadow:0 28px 80px rgba(0,0,0,.48),0 0 60px rgba(0,140,255,.09); transform:perspective(1100px) rotateY(-4deg); }
         .af-dashboard-top { height:44px; display:flex; align-items:center; gap:14px; padding:0 14px; border-bottom:1px solid rgba(255,255,255,.08); background:#0b1a2c; }
@@ -439,13 +439,13 @@ export default function AutoFlowLanding() {
         .af-footer .af-logo-mark { width:40px; height:34px; }
         .af-footer .af-logo-type { font-size:21px; }
         @media (max-width: 900px) {
-          .af-automation-visual { position:relative; right:auto; bottom:auto; width:100%; margin:18px 0 0; animation:none; } .af-flow-card { padding:16px; }
+          .af-automation-visual { position:absolute; right:10px; bottom:12px; width:340px; margin:0; animation:none; } .af-flow-card { padding:16px; }
           .af-nav { padding:12px 18px; }.af-logo-mark { width:46px; height:39px; }.af-logo-type { font-size:22px; }.af-nav-links { position:absolute; top:66px; left:12px; right:12px; display:none; flex-direction:column; align-items:stretch; gap:4px; padding:12px; background:rgba(7,19,33,.98); border:1px solid rgba(255,255,255,.1); border-radius:14px; box-shadow:0 20px 50px rgba(0,0,0,.45); }.af-nav-links.open { display:flex; }.af-nav-links a { padding:12px 13px; border-radius:9px; }.af-nav-links .af-nav-cta { text-align:center; }.af-menu-btn { display:block; }
-          .af-hero-visual { min-height:400px; margin-top:10px; }.af-dashboard { transform:none; }.af-phone-mini { right:-10px; bottom:-45px; transform:scale(.47); }
+          .af-hero-visual { min-height:500px; margin-top:10px; padding-bottom:20px; }.af-dashboard { transform:none; }.af-phone-mini { display:none; }
         }
         @media (max-width: 620px) {
-          .af-hero-visual { min-height:350px; }.af-dashboard-sidebar { display:none; }.af-dashboard { width:100%; }.af-dashboard-body { min-height:280px; }.af-calendar { gap:4px; }.af-day { min-height:190px; padding:5px; }.af-event { font-size:8px; padding:6px 4px; }
-          .af-phone-mini { right:-20px; bottom:-58px; transform:scale(.38); }.af-hero-visual { margin-left:-4px; margin-right:-4px; }
+          .af-hero-visual { min-height:520px; margin-left:-4px; margin-right:-4px; }.af-dashboard-sidebar { display:none; }.af-dashboard { width:100%; }.af-dashboard-body { min-height:280px; }.af-calendar { gap:4px; }.af-day { min-height:190px; padding:5px; }.af-event { font-size:8px; padding:6px 4px; }
+          .af-automation-visual { position:absolute; right:4px; bottom:8px; width:calc(100% - 18px); margin:0; } .af-flow-card { padding:13px; border-radius:17px; } .af-flow-step { padding:8px 9px; gap:9px; } .af-flow-step strong { font-size:10px; } .af-flow-step small { font-size:8px; } .af-flow-icon { width:26px; height:26px; font-size:12px; } .af-flow-result { margin-top:10px; padding:8px 10px; }
         }
       `}</style>
 
